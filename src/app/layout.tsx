@@ -14,23 +14,23 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Delivro - Every Delivery. One App.",
-  description: "The ultimate delivery aggregation super-app. Compare prices, save money, and earn rewards across all delivery platforms.",
-  keywords: ["Delivro", "delivery", "food delivery", "groceries", "compare prices", "aggregation"],
-  authors: [{ name: "Delivro Team" }],
+  title: "GigRider - One App. Every Platform. More Earnings.",
+  description: "The ultimate delivery partner aggregation app. Manage orders from Swiggy, Zomato, Uber Eats, DoorDash and more — all in one app. More earnings, less switching.",
+  keywords: ["GigRider", "delivery rider", "delivery partner", "gig economy", "multi-platform", "Swiggy", "Zomato", "Uber Eats", "DoorDash"],
+  authors: [{ name: "GigRider Team" }],
   icons: {
-    icon: "/delivro-logo.png",
+    icon: "/gigrider-logo.png",
   },
   openGraph: {
-    title: "Delivro - Every Delivery. One App.",
-    description: "Compare prices across all delivery platforms and save up to 40%",
-    siteName: "Delivro",
+    title: "GigRider - One App. Every Platform. More Earnings.",
+    description: "Manage all your delivery platform orders in one unified app. No more switching between apps.",
+    siteName: "GigRider",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Delivro - Every Delivery. One App.",
-    description: "Compare prices across all delivery platforms and save up to 40%",
+    title: "GigRider - One App. Every Platform. More Earnings.",
+    description: "Manage all your delivery platform orders in one unified app. No more switching between apps.",
   },
 };
 
@@ -42,7 +42,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#0F0F0F] text-[#FAFAFA] overflow-x-hidden`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#0A0A0A] text-[#FAFAFA] overflow-x-hidden`}
       >
         {children}
         <Toaster />
