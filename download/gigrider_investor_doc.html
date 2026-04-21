@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GigRider - Revenue Model & Investor Presentation</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Lora:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  :root {
+    --cream: #FBF7F0;
+    --navy: #1B2A4A;
+    --navy-light: #2A3F6A;
+    --gold: #C9A84C;
+    --gold-light: #D4BA6A;
+    --gold-dark: #A8893A;
+    --burgundy: #7A2E3B;
+    --text-dark: #1A1A2E;
+    --text-medium: #3D3D5C;
+    --text-light: #6B6B8D;
+    --cream-dark: #F0EAE0;
+    --white: #FFFFFF;
+    --border: #E0D8C8;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--navy);
+    font-family: 'Lora', 'Georgia', serif;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .page {
+    width: 210mm;
+    height: 297mm;
+    overflow: hidden;
+    page-break-after: always;
+    position: relative;
+  }
+  .page:last-child { page-break-after: auto; }
+
+  /* ═══ COVER ═══ */
+  .cover {
+    background: var(--navy);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px 70px;
+  }
+
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(ellipse at 80% 20%, rgba(201,168,76,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 20% 80%, rgba(201,168,76,0.05) 0%, transparent 40%);
+    pointer-events: none;
+  }
+
+  .cover-ornament {
+    width: 80px; height: 3px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+    margin-bottom: 36px; margin-top: 100px;
+  }
+
+  .cover-kicker {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px; font-weight: 500;
+    letter-spacing: 6px; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 24px;
+  }
+
+  .cover-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 76px; font-weight: 800;
+    color: var(--white); line-height: 1.05;
+    letter-spacing: -1px; margin-bottom: 20px;
+  }
+  .cover-title span { color: var(--gold); }
+
+  .cover-subtitle {
+    font-family: 'Lora', serif;
+    font-size: 21px; color: rgba(255,255,255,0.6);
+    line-height: 1.6; margin-bottom: 50px; max-width: 480px;
+  }
+
+  .cover-stats {
+    display: flex; gap: 40px;
+    padding: 30px 0;
+    border-top: 1px solid rgba(201,168,76,0.2);
+    border-bottom: 1px solid rgba(201,168,76,0.2);
+    margin-bottom: 40px;
+  }
+
+  .cover-stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 30px; font-weight: 800;
+    color: var(--gold); line-height: 1; margin-bottom: 4px;
+  }
+
+  .cover-stat-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 9px; font-weight: 500;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+  }
+
+  .cover-meta {
+    display: flex; gap: 30px; flex-wrap: wrap;
+  }
+
+  .cover-meta-item {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px; letter-spacing: 2px;
+    text-transform: uppercase; color: rgba(255,255,255,0.35);
+  }
+  .cover-meta-item strong { color: var(--gold); font-weight: 500; }
+
+  /* ═══ CONTENT PAGES ═══ */
+  .content-page {
+    background: var(--cream);
+    padding: 42px 54px;
+  }
+
+  .page-header {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .page-header-line { width: 40px; height: 2px; background: var(--gold); }
+
+  .page-header-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 4px; text-transform: uppercase;
+    color: var(--gold-dark);
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 30px; font-weight: 700;
+    color: var(--navy); line-height: 1.2; margin-bottom: 10px;
+  }
+
+  .section-subtitle {
+    font-family: 'Lora', serif;
+    font-size: 13px; color: var(--text-light);
+    line-height: 1.7; margin-bottom: 28px; max-width: 540px;
+  }
+
+  /* ═══ REVENUE TABLE ═══ */
+  .rev-table { width: 100%; border-collapse: collapse; }
+
+  .rev-table thead th {
+    font-family: 'Inter', sans-serif;
+    font-size: 8px; font-weight: 600;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--gold-dark); padding: 10px 10px;
+    border-bottom: 2px solid var(--gold); text-align: left;
+  }
+  .rev-table thead th:nth-child(4),
+  .rev-table thead th:nth-child(5) { text-align: right; }
+
+  .rev-table tbody td {
+    padding: 11px 10px;
+    font-family: 'Lora', serif;
+    font-size: 12px; color: var(--text-dark);
+    line-height: 1.45; vertical-align: top;
+    border-bottom: 1px solid var(--border);
+  }
+  .rev-table tbody td:first-child {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600; color: var(--navy); font-size: 11px;
+  }
+  .rev-table tbody td:nth-child(4) {
+    text-align: right; font-family: 'Inter', sans-serif;
+    font-weight: 700; color: var(--navy); font-size: 12px;
+  }
+  .rev-table tbody td:nth-child(5) {
+    text-align: right; font-family: 'Inter', sans-serif;
+    font-size: 11px; color: var(--text-light);
+  }
+
+  .total-row { background: var(--navy) !important; }
+  .total-row td {
+    color: var(--white) !important; font-size: 13px !important;
+    padding: 14px 10px !important; border-bottom: none !important;
+  }
+  .total-row td:nth-child(4) { color: var(--gold) !important; font-size: 15px !important; }
+
+  /* Stats Row */
+  .stats-row { display: flex; gap: 14px; margin-top: 20px; }
+
+  .stat-card {
+    flex: 1; background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 18px 16px; text-align: center;
+  }
+
+  .stat-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px; font-weight: 800;
+    color: var(--navy); line-height: 1; margin-bottom: 4px;
+  }
+  .stat-number.gold { color: var(--gold-dark); }
+
+  .stat-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 8px; font-weight: 500;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text-light);
+  }
+
+  /* ═══ STREAM CARDS ═══ */
+  .stream-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .stream-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 16px 16px 20px;
+    position: relative;
+  }
+
+  .stream-card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; width: 3px; height: 100%;
+    background: var(--gold); border-radius: 8px 0 0 8px;
+  }
+
+  .stream-name {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px; font-weight: 700;
+    color: var(--navy); margin-bottom: 4px;
+  }
+
+  .stream-desc {
+    font-family: 'Lora', serif;
+    font-size: 10.5px; color: var(--text-medium);
+    line-height: 1.5; margin-bottom: 8px;
+  }
+
+  .stream-revenue {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px; font-weight: 700; color: var(--gold-dark);
+  }
+
+  .stream-revenue-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 8px; font-weight: 500;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text-light); margin-left: 4px;
+  }
+
+  /* ═══ PITCH TIMELINE ═══ */
+  .pitch-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 20px;
+  }
+
+  .pitch-item {
+    padding: 10px 14px;
+    border-left: 3px solid var(--gold);
+    background: var(--white);
+    border-radius: 0 6px 6px 0;
+  }
+
+  .pitch-slide-num {
+    font-family: 'Inter', sans-serif;
+    font-size: 8px; font-weight: 600;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--gold-dark); margin-bottom: 2px;
+  }
+
+  .pitch-slide-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 14px; font-weight: 700;
+    color: var(--navy); margin-bottom: 3px;
+  }
+
+  .pitch-slide-desc {
+    font-family: 'Lora', serif;
+    font-size: 10.5px; color: var(--text-medium); line-height: 1.5;
+  }
+
+  /* ═══ Q&A ═══ */
+  .qa-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px 18px; margin-bottom: 10px;
+  }
+
+  .qa-question {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px; font-weight: 700;
+    color: var(--navy); margin-bottom: 6px;
+    padding-left: 14px; border-left: 3px solid var(--gold);
+  }
+
+  .qa-answer {
+    font-family: 'Lora', serif;
+    font-size: 10.5px; color: var(--text-medium); line-height: 1.55;
+    padding-left: 14px;
+  }
+
+  /* ═══ METRICS TABLE ═══ */
+  .metrics-table { width: 100%; border-collapse: collapse; }
+
+  .metrics-table thead th {
+    font-family: 'Inter', sans-serif;
+    font-size: 8px; font-weight: 600;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--gold-dark); padding: 8px 10px;
+    border-bottom: 2px solid var(--gold); text-align: left;
+  }
+
+  .metrics-table tbody td {
+    font-family: 'Lora', serif;
+    font-size: 10.5px; color: var(--text-dark);
+    padding: 8px 10px; border-bottom: 1px solid var(--border); line-height: 1.45;
+  }
+  .metrics-table tbody td:nth-child(2) {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700; color: var(--navy); text-align: center; white-space: nowrap;
+  }
+
+  /* ═══ PATENT CARDS ═══ */
+  .patent-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px 18px; margin-bottom: 10px;
+    position: relative;
+  }
+
+  .patent-badge {
+    display: inline-block;
+    font-family: 'Inter', sans-serif;
+    font-size: 8px; font-weight: 700;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--white); background: var(--navy);
+    padding: 2px 8px; border-radius: 3px; margin-bottom: 8px;
+  }
+
+  .patent-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 14px; font-weight: 700;
+    color: var(--navy); margin-bottom: 4px; line-height: 1.3;
+  }
+
+  .patent-desc {
+    font-family: 'Lora', serif;
+    font-size: 10.5px; color: var(--text-medium); line-height: 1.55;
+  }
+
+  /* ═══ ACTION BOX ═══ */
+  .action-box {
+    background: var(--navy);
+    border-radius: 10px; padding: 22px 24px; margin-top: 16px;
+  }
+
+  .action-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px; font-weight: 700;
+    color: var(--gold); margin-bottom: 14px;
+  }
+
+  .action-step { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+
+  .action-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px; font-weight: 800;
+    color: var(--gold); line-height: 1; min-width: 24px;
+  }
+
+  .action-text {
+    font-family: 'Lora', serif;
+    font-size: 11px; color: rgba(255,255,255,0.8); line-height: 1.55;
+  }
+  .action-text strong { color: var(--white); }
+
+  /* ═══ NDA BOX ═══ */
+  .nda-box {
+    background: linear-gradient(135deg, var(--navy), var(--navy-light));
+    border-radius: 8px; padding: 20px;
+  }
+
+  .nda-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 14px; font-weight: 700;
+    color: var(--gold); margin-bottom: 8px;
+  }
+
+  .nda-text {
+    font-family: 'Lora', serif;
+    font-size: 10.5px; color: rgba(255,255,255,0.7); line-height: 1.55;
+  }
+
+  /* Footer */
+  .page-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    position: absolute; bottom: 30px; left: 54px; right: 54px;
+  }
+
+  .page-footer-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 8px; font-weight: 500;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text-light);
+  }
+
+  .page-footer-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 14px; font-weight: 700; color: var(--gold-dark);
+  }
+
+  /* Two Column */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .cost-box {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 18px;
+  }
+
+  .cost-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 8px; font-weight: 600;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--gold-dark); margin-bottom: 10px;
+  }
+
+  .cost-line {
+    font-family: 'Lora', serif;
+    font-size: 11px; color: var(--text-medium); line-height: 2;
+  }
+  .cost-line strong { color: var(--navy); }
+  .cost-line .gold { color: var(--gold-dark); font-weight: 700; }
+
+  /* Demo flow table */
+  .demo-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  .demo-table thead th {
+    font-family: 'Inter', sans-serif;
+    font-size: 8px; font-weight: 600;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--gold-dark); padding: 8px 10px;
+    border-bottom: 2px solid var(--gold); text-align: left;
+  }
+  .demo-table tbody td {
+    font-family: 'Lora', serif;
+    font-size: 10.5px; color: var(--text-dark);
+    padding: 8px 10px; border-bottom: 1px solid var(--border); line-height: 1.45;
+  }
+  .demo-table tbody td:first-child {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700; color: var(--navy); font-size: 11px;
+  }
+
+  /* Tips section */
+  .tip-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    margin-bottom: 10px;
+  }
+  .tip-bullet {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--gold); margin-top: 4px; flex-shrink: 0;
+  }
+  .tip-text {
+    font-family: 'Lora', serif;
+    font-size: 10.5px; color: var(--text-medium); line-height: 1.55;
+  }
+  .tip-text strong { color: var(--navy); }
+</style>
+</head>
+<body>
+
+<!-- ═══ PAGE 1: COVER ═══ -->
+<div class="page cover">
+  <div class="cover-ornament"></div>
+  <div class="cover-kicker">Investor Presentation Document</div>
+  <h1 class="cover-title">Gig<span>Rider</span></h1>
+  <p class="cover-subtitle">One App. Every Order. More Money.<br>The billion-dollar platform for delivery riders.</p>
+
+  <div class="cover-stats">
+    <div>
+      <div class="cover-stat-num">Rs 4,097 Cr</div>
+      <div class="cover-stat-label">Annual Revenue at Scale</div>
+    </div>
+    <div>
+      <div class="cover-stat-num">10</div>
+      <div class="cover-stat-label">Revenue Streams</div>
+    </div>
+    <div>
+      <div class="cover-stat-num">3</div>
+      <div class="cover-stat-label">Patent Applications</div>
+    </div>
+    <div>
+      <div class="cover-stat-num">5M+</div>
+      <div class="cover-stat-label">Target Riders</div>
+    </div>
+  </div>
+
+  <div class="cover-meta">
+    <div class="cover-meta-item"><strong>Revenue Model</strong> &mdash; 10 Streams</div>
+    <div class="cover-meta-item"><strong>Pitch Guide</strong> &mdash; 12-Slide Deck</div>
+    <div class="cover-meta-item"><strong>Patents</strong> &mdash; 3 Provisional Filings</div>
+    <div class="cover-meta-item"><strong>Confidential</strong> &mdash; April 2026</div>
+  </div>
+</div>
+
+<!-- ═══ PAGE 2: REVENUE TABLE ═══ -->
+<div class="page content-page">
+  <div class="page-header">
+    <div class="page-header-line"></div>
+    <div class="page-header-label">Part I &mdash; Revenue Model</div>
+  </div>
+
+  <h2 class="section-title">The Billion-Dollar Revenue Engine</h2>
+  <p class="section-subtitle">GigRider leverages its position at the intersection of riders, platforms, restaurants, and financial institutions to create a multi-layered monetization engine that grows exponentially with network effects.</p>
+
+  <table class="rev-table">
+    <thead>
+      <tr>
+        <th style="width:5%">#</th>
+        <th style="width:20%">Revenue Stream</th>
+        <th style="width:40%">How It Works</th>
+        <th style="width:18%">Monthly (5M Riders)</th>
+        <th style="width:12%">Margin</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>01</td><td>Freemium Tiers</td><td>Free / Pro Rs 299 / Elite Rs 799 / Fleet Rs 1,999 per month</td><td>Rs 27.9 Cr</td><td>85-90%</td></tr>
+      <tr><td>02</td><td>Commission per Order</td><td>2% transaction fee on every order accepted through GigRider</td><td>Rs 187.5 Cr</td><td>70-80%</td></tr>
+      <tr><td>03</td><td>Financial Services</td><td>Micro-loans, insurance, savings &mdash; riders are financially underserved</td><td>Rs 35 Cr</td><td>40-60%</td></tr>
+      <tr><td>04</td><td>Data Monetization</td><td>Anonymized delivery analytics for restaurants and enterprises</td><td>Rs 12.5 Cr</td><td>90-95%</td></tr>
+      <tr><td>05</td><td>B2B Enterprise API</td><td>License aggregation technology to restaurant chains via SaaS</td><td>Rs 15 Cr</td><td>85-95%</td></tr>
+      <tr><td>06</td><td>White-Label Licensing</td><td>License to international partners with setup fee + revenue share</td><td>Rs 8 Cr</td><td>80-90%</td></tr>
+      <tr><td>07</td><td>Advertising</td><td>Sponsored orders, banner ads, partner push notifications</td><td>Rs 10 Cr</td><td>75-85%</td></tr>
+      <tr><td>08</td><td>Rider Marketplace</td><td>Direct restaurant-rider connect with 5-8% transaction fee</td><td>Rs 22.5 Cr</td><td>60-70%</td></tr>
+      <tr><td>09</td><td>Training &amp; Certification</td><td>Paid courses, tax filing, and legal document services</td><td>Rs 3 Cr</td><td>85-90%</td></tr>
+      <tr><td>10</td><td>Referral Partnerships</td><td>Commission from fuel, telecom, and vehicle service partners</td><td>Rs 20 Cr</td><td>70-80%</td></tr>
+      <tr class="total-row"><td></td><td>TOTAL MONTHLY</td><td></td><td>Rs 341.4 Cr</td><td></td></tr>
+    </tbody>
+  </table>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-number gold">Rs 4,097 Cr</div>
+      <div class="stat-label">Annual Revenue at 5M Riders</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">USD 488M</div>
+      <div class="stat-label">Annual Revenue (USD)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number gold">55%</div>
+      <div class="stat-label">From Commission Alone</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">18-24 Mo</div>
+      <div class="stat-label">Breakeven Timeline</div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <div class="page-footer-text">GigRider &mdash; Confidential</div>
+    <div class="page-footer-num">02</div>
+  </div>
+</div>
+
+<!-- ═══ PAGE 3: STREAMS DETAIL (1-5) ═══ -->
+<div class="page content-page">
+  <div class="page-header">
+    <div class="page-header-line"></div>
+    <div class="page-header-label">Revenue Deep Dive</div>
+  </div>
+
+  <h2 class="section-title">How Each Stream Works</h2>
+  <p class="section-subtitle">Every revenue stream is designed so that GigRider only earns when riders earn more &mdash; creating a self-reinforcing flywheel of growth and trust.</p>
+
+  <div class="stream-grid">
+    <div class="stream-card">
+      <div class="stream-name">01 &mdash; Freemium Subscriptions</div>
+      <div class="stream-desc">Free tier ensures maximum adoption and network effects. Pro (Rs 299/mo) unlocks Auto-Rank, Smart Stack, and countdown timers. Elite (Rs 799/mo) adds financial services, auto-accept rules, and tax filing. Fleet (Rs 1,999/mo) serves fleet operators managing 5+ riders with analytics dashboards.</div>
+      <div class="stream-revenue">Rs 27.9 Cr<span class="stream-revenue-label">/month</span></div>
+    </div>
+    <div class="stream-card">
+      <div class="stream-name">02 &mdash; Commission per Order</div>
+      <div class="stream-desc">The single largest revenue stream. A 2% fee on every order is negligible for riders who save time and fuel, but at massive scale generates Rs 187.5 Crore monthly. Riders earn 15-25% more even after the fee, making this a win-win proposition that aligns incentives perfectly.</div>
+      <div class="stream-revenue">Rs 187.5 Cr<span class="stream-revenue-label">/month</span></div>
+    </div>
+    <div class="stream-card">
+      <div class="stream-name">03 &mdash; Financial Services</div>
+      <div class="stream-desc">Delivery riders are the most underserved demographic in finance. Micro-loans (Rs 50-80K for vehicle purchase at 18-24% interest), pay-per-trip accident insurance (Rs 5-10/day), and auto-savings wallets. GigRider's real-time earnings data enables credit scoring no bank can match.</div>
+      <div class="stream-revenue">Rs 35 Cr<span class="stream-revenue-label">/month</span></div>
+    </div>
+    <div class="stream-card">
+      <div class="stream-name">04 &mdash; Data Monetization</div>
+      <div class="stream-desc">Aggregated, anonymized delivery intelligence sold as subscriptions: city-level analytics for restaurant chains (Rs 5-25K/mo), demand heatmaps for dark kitchens (Rs 10-50K/mo), custom research for investors (Rs 1-5 Lakh), and platform intelligence products (Rs 50K-2L/mo). 90%+ margins.</div>
+      <div class="stream-revenue">Rs 12.5 Cr<span class="stream-revenue-label">/month</span></div>
+    </div>
+    <div class="stream-card">
+      <div class="stream-name">05 &mdash; B2B Enterprise API</div>
+      <div class="stream-desc">The core aggregation technology is a product in itself. Restaurant chains, cloud kitchens, and new delivery platforms need a unified API to interact with multiple platforms. Per-call fees (Rs 0.50-2.00), monthly SaaS subscriptions (Rs 10K-1L/mo), and custom enterprise contracts (Rs 5-20L/year).</div>
+      <div class="stream-revenue">Rs 15 Cr<span class="stream-revenue-label">/month</span></div>
+    </div>
+    <div class="stream-card">
+      <div class="stream-name">06 &mdash; White-Label Licensing</div>
+      <div class="stream-desc">The rider aggregation problem exists in every country. License technology to local partners with Rs 20-50 Lakh setup fee, 15-25% revenue share, and Rs 5-15 Lakh annual maintenance. 20 international partners generate Rs 4-10 Cr upfront plus Rs 10-25 Cr annually.</div>
+      <div class="stream-revenue">Rs 8 Cr<span class="stream-revenue-label">/month</span></div>
+    </div>
+    <div class="stream-card">
+      <div class="stream-name">07 &mdash; Advertising</div>
+      <div class="stream-desc">The home screen is prime real estate viewed dozens of times daily. Sponsored order placement (Rs 5-20 per order), banner ads on earnings screen (Rs 50K-2L/mo per city), push notification partnerships (Rs 2-5 per click), and branded vehicle decals (Rs 500-1,500/mo per rider).</div>
+      <div class="stream-revenue">Rs 10 Cr<span class="stream-revenue-label">/month</span></div>
+    </div>
+    <div class="stream-card">
+      <div class="stream-name">08 &mdash; Rider Marketplace</div>
+      <div class="stream-desc">Direct restaurant-rider connection bypassing delivery platforms entirely. GigRider charges 5-8% vs. platforms' 20-30%. Creates powerful network effects: more restaurants attract more riders, more riders attract more restaurants. 10K restaurants at 20 orders/day generates Rs 4.5 Cr monthly.</div>
+      <div class="stream-revenue">Rs 22.5 Cr<span class="stream-revenue-label">/month</span></div>
+    </div>
+    <div class="stream-card">
+      <div class="stream-name">09 &mdash; Training &amp; Certification</div>
+      <div class="stream-desc">Paid courses: Food Safety Certification (Rs 499), Route Optimization (Rs 299), Financial Literacy (Rs 149). Tax filing services (Rs 499-999), GST registration (Rs 1,499), and legal document services. 100K enrollments/year at Rs 350 average generates Rs 3.5 Cr annually with very high margins.</div>
+      <div class="stream-revenue">Rs 3 Cr<span class="stream-revenue-label">/month</span></div>
+    </div>
+    <div class="stream-card">
+      <div class="stream-name">10 &mdash; Referral Partnerships</div>
+      <div class="stream-desc">Riders spend Rs 3,000+/month on fuel and Rs 500 on mobile recharges. Partner with telecom companies, petrol pumps, service centers, and equipment brands for 3-10% commission. 200K riders using partner services generates Rs 2.1-7 Crore monthly commission revenue.</div>
+      <div class="stream-revenue">Rs 20 Cr<span class="stream-revenue-label">/month</span></div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <div class="page-footer-text">GigRider &mdash; Confidential</div>
+    <div class="page-footer-num">03</div>
+  </div>
+</div>
+
+<!-- ═══ PAGE 4: PITCH DECK GUIDE ═══ -->
+<div class="page content-page">
+  <div class="page-header">
+    <div class="page-header-line"></div>
+    <div class="page-header-label">Part II &mdash; Pitch Preparation</div>
+  </div>
+
+  <h2 class="section-title">12-Slide Pitch Deck Guide</h2>
+  <p class="section-subtitle">Each slide serves a specific purpose in building investor understanding and excitement. Tell a story they can feel.</p>
+
+  <div class="pitch-grid">
+    <div class="pitch-item">
+      <div class="pitch-slide-num">Slide 01</div>
+      <div class="pitch-slide-title">Title &amp; Hook</div>
+      <div class="pitch-slide-desc">Open with "One App. Every Order. More Money." Old Money aesthetic. First 30 seconds decide everything.</div>
+    </div>
+    <div class="pitch-item">
+      <div class="pitch-slide-num">Slide 02</div>
+      <div class="pitch-slide-title">The Problem</div>
+      <div class="pitch-slide-desc">15M riders juggling 2-4 phones. 30% orders missed. Rs 200-500 lost daily. Show the pain vividly.</div>
+    </div>
+    <div class="pitch-item">
+      <div class="pitch-slide-num">Slide 03</div>
+      <div class="pitch-slide-title">The Solution</div>
+      <div class="pitch-slide-desc">Live Order Feed, Auto-Rank, Smart Stack. One phone, all platforms. Show the magic moment.</div>
+    </div>
+    <div class="pitch-item">
+      <div class="pitch-slide-num">Slide 04</div>
+      <div class="pitch-slide-title">Market Size</div>
+      <div class="pitch-slide-desc">TAM: USD 120B. SAM: USD 30B India+SE Asia. SOM: USD 3B achievable in 5 years.</div>
+    </div>
+    <div class="pitch-item">
+      <div class="pitch-slide-num">Slide 05</div>
+      <div class="pitch-slide-title">Business Model</div>
+      <div class="pitch-slide-desc">10 streams. Commission (55%) + Subscriptions (8%) + Fintech (10%) + Marketplace (7%) drive 80%.</div>
+    </div>
+    <div class="pitch-item">
+      <div class="pitch-slide-num">Slide 06</div>
+      <div class="pitch-slide-title">Traction</div>
+      <div class="pitch-slide-desc">Prototype built. Auth ready. Core features functional. Revenue model validated. Patent pending.</div>
+    </div>
+    <div class="pitch-item">
+      <div class="pitch-slide-num">Slide 07</div>
+      <div class="pitch-slide-title">Competitive Landscape</div>
+      <div class="pitch-slide-desc">No multi-platform aggregator at scale. Para acquired by DoorDash (USD 50M+) validated the space.</div>
+    </div>
+    <div class="pitch-item">
+      <div class="pitch-slide-num">Slide 08</div>
+      <div class="pitch-slide-title">Go-to-Market</div>
+      <div class="pitch-slide-desc">Phase 1: 3 cities, 50K riders. Phase 2: 15 cities + fintech. Phase 3: International. Viral: 5x.</div>
+    </div>
+    <div class="pitch-item">
+      <div class="pitch-slide-num">Slide 09</div>
+      <div class="pitch-slide-title">Team</div>
+      <div class="pitch-slide-desc">Technical capability, financial acumen, legal awareness. Investors bet on people, not just ideas.</div>
+    </div>
+    <div class="pitch-item">
+      <div class="pitch-slide-num">Slide 10</div>
+      <div class="pitch-slide-title">Projections</div>
+      <div class="pitch-slide-desc">Y1: Rs 8 Cr. Y3: Rs 250 Cr. Y5: Rs 2,500 Cr. Breakeven Y2. Fintech revenue has 12-18 month lag.</div>
+    </div>
+    <div class="pitch-item">
+      <div class="pitch-slide-num">Slide 11</div>
+      <div class="pitch-slide-title">The Ask</div>
+      <div class="pitch-slide-desc">Rs 25 Cr (USD 3M) seed for 10% equity. 40% eng, 25% acquisition, 20% fintech, 15% ops.</div>
+    </div>
+    <div class="pitch-item">
+      <div class="pitch-slide-num">Slide 12</div>
+      <div class="pitch-slide-title">Closing Vision</div>
+      <div class="pitch-slide-desc">"GigRider: the operating system for 50 million delivery riders worldwide." Make it feel inevitable.</div>
+    </div>
+  </div>
+
+  <div style="margin-top: 20px;">
+    <h3 style="font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: var(--navy); margin-bottom: 12px;">Live Demo Flow</h3>
+    <table class="demo-table">
+      <thead><tr><th>Step</th><th>Screen</th><th>What to Say</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Splash Screen</td><td>"This is GigRider. Let me show you how it works for a real rider."</td></tr>
+        <tr><td>2</td><td>Login + OTP</td><td>"Riders log in with phone number. Simple, familiar, fast."</td></tr>
+        <tr><td>3</td><td>Home Screen</td><td>"Here's the magic: orders from Swiggy, Zomato, Uber Eats in ONE feed."</td></tr>
+        <tr><td>4</td><td>Auto-Rank</td><td>"One tap reorders the feed so the highest-earning, closest orders are on top."</td></tr>
+        <tr><td>5</td><td>Smart Stack</td><td>"Groups nearby deliveries together. More money, less fuel."</td></tr>
+        <tr><td>6</td><td>Earnings</td><td>"All earnings across platforms in one view. No more checking four apps."</td></tr>
+        <tr><td>7</td><td>Financial Services</td><td>"Insurance, loans, savings &mdash; all accessible because we know earnings in real-time."</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="page-footer">
+    <div class="page-footer-text">GigRider &mdash; Confidential</div>
+    <div class="page-footer-num">04</div>
+  </div>
+</div>
+
+<!-- ═══ PAGE 5: Q&A + METRICS ═══ -->
+<div class="page content-page">
+  <div class="page-header">
+    <div class="page-header-line"></div>
+    <div class="page-header-label">Investor Q&amp;A + Key Metrics</div>
+  </div>
+
+  <h2 class="section-title">Anticipated Tough Questions</h2>
+
+  <div class="qa-card">
+    <div class="qa-question">Won't delivery platforms block GigRider?</div>
+    <div class="qa-answer">GigRider is a rider productivity tool, not a competing platform. We aggregate notifications riders already receive on their own devices. Legally, this is equivalent to a notification manager. Precedent: Para operated the same model in the US and was acquired by DoorDash for USD 50M+. Platforms benefit from riders who complete more deliveries, creating alignment of interests.</div>
+  </div>
+
+  <div class="qa-card">
+    <div class="qa-question">How do you prevent the commission from alienating riders?</div>
+    <div class="qa-answer">Riders earn 15-25% more using GigRider. Even after a 2% commission, net income increases by 13-23%. We demonstrate this with an "Earnings Boost" counter in the app. Riders who see Rs 500 extra daily earnings happily pay Rs 5 per order. The Free tier pays zero commission.</div>
+  </div>
+
+  <div class="qa-card">
+    <div class="qa-question">What about platforms building their own multi-app features?</div>
+    <div class="qa-answer">No platform will help riders use a competitor. Swiggy will never show Zomato orders. This structural conflict of interest means multi-platform aggregation can only come from a neutral third party. GigRider's neutrality is its moat. Riders also won't trust a platform to fairly rank competitor orders.</div>
+  </div>
+
+  <div class="qa-card">
+    <div class="qa-question">How do you verify the financial projections?</div>
+    <div class="qa-answer">Benchmarked against Paytm/PhonePe (commission models), BharatPe/KreditBee (gig worker lending), and Razorpay/BillDesk (per-transaction API fees). We use conservative conversion rates (12% vs. industry 15-20%), conservative commission (2% vs. potential 3-5%), and linear growth vs. exponential growth seen in ride-hailing.</div>
+  </div>
+
+  <div style="margin-top: 20px;">
+    <h2 class="section-title">10 Numbers Every Investor Remembers</h2>
+    <table class="metrics-table">
+      <thead><tr><th>Metric</th><th>Value</th><th>Why It Matters</th></tr></thead>
+      <tbody>
+        <tr><td>Delivery riders in India</td><td>15 million</td><td>Massive addressable user base</td></tr>
+        <tr><td>Orders missed per rider/day</td><td>8-12 (30%)</td><td>Quantifies the problem</td></tr>
+        <tr><td>GigRider earnings uplift</td><td>15-25%</td><td>Proves value with hard numbers</td></tr>
+        <tr><td>Year 5 projected revenue</td><td>Rs 2,500 Cr</td><td>Billion-dollar trajectory</td></tr>
+        <tr><td>Commission at 5M riders</td><td>Rs 187.5 Cr/mo</td><td>Single largest stream, scalable</td></tr>
+        <tr><td>Breakeven timeline</td><td>18-24 months</td><td>Capital-efficient path</td></tr>
+        <tr><td>Rider referral viral coefficient</td><td>5x</td><td>Organic growth reduces CAC</td></tr>
+        <tr><td>Para acquisition by DoorDash</td><td>USD 50M+</td><td>Validates the space</td></tr>
+        <tr><td>Platform commission on restaurants</td><td>20-30%</td><td>Our 2% is 10-15x cheaper</td></tr>
+        <tr><td>Gig economy CAGR (2024-2030)</td><td>25% annually</td><td>Market tailwind</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="page-footer">
+    <div class="page-footer-text">GigRider &mdash; Confidential</div>
+    <div class="page-footer-num">05</div>
+  </div>
+</div>
+
+<!-- ═══ PAGE 6: PATENTS + ACTION ═══ -->
+<div class="page content-page">
+  <div class="page-header">
+    <div class="page-header-line"></div>
+    <div class="page-header-label">Part III &mdash; Patent Strategy &amp; Action Plan</div>
+  </div>
+
+  <h2 class="section-title">Three Patent Applications</h2>
+  <p class="section-subtitle">Three patents create three walls around your moat. Competitors cannot simply design around one.</p>
+
+  <div class="patent-card">
+    <div class="patent-badge">Patent I</div>
+    <div class="patent-title">Multi-Platform Delivery Order Aggregation &amp; Prioritization</div>
+    <div class="patent-desc">Core system for intercepting notifications from multiple delivery platforms, normalizing data into a unified structure (UODS), and ranking orders using a multi-variable algorithm with 6 weighted factors: earnings per km, earnings per minute, countdown urgency, pickup proximity, platform reliability, and rider history. Includes adaptive weight adjustment through machine learning feedback loop.</div>
+  </div>
+
+  <div class="patent-card">
+    <div class="patent-badge">Patent II</div>
+    <div class="patent-title">Multi-Platform Gig Credit Scoring (MPGCS)</div>
+    <div class="patent-desc">Credit scoring system (300-900 range) using cross-platform delivery performance data: order completion rate (20%), earnings stability index (20%), on-time delivery rate (15%), working consistency index (15%), platform diversity score (10%), customer satisfaction composite (10%), and tenure factor (10%). Enables automated loan origination and insurance underwriting.</div>
+  </div>
+
+  <div class="patent-card">
+    <div class="patent-badge">Patent III</div>
+    <div class="patent-title">Geographic Delivery Batching Across Independent Platforms</div>
+    <div class="patent-desc">Smart Stack technology identifying batchable orders across platforms using Haversine proximity detection (2km pickup, 3km delivery thresholds), modified TSP route optimization with real-time traffic data, and Stack Score computation measuring efficiency gain of batched vs. individual delivery routes.</div>
+  </div>
+
+  <div class="two-col" style="margin-top: 14px;">
+    <div class="action-box">
+      <div class="action-title">Immediate Action Plan</div>
+      <div class="action-step">
+        <div class="action-num">1</div>
+        <div class="action-text"><strong>File provisional patents TODAY</strong> at ipindiaonline.gov.in. Cost: Rs 1,600/patent. Get "Patent Pending" status immediately.</div>
+      </div>
+      <div class="action-step">
+        <div class="action-num">2</div>
+        <div class="action-text"><strong>Have investors sign NDA</strong> before any demo. Template available in patent document.</div>
+      </div>
+      <div class="action-step">
+        <div class="action-num">3</div>
+        <div class="action-text"><strong>Present with confidence.</strong> Say "patent-pending proprietary technology." Never reveal algorithm internals.</div>
+      </div>
+      <div class="action-step">
+        <div class="action-num">4</div>
+        <div class="action-text"><strong>Within 12 months:</strong> File complete specs with attorney (Rs 30-80K/patent) and PCT international applications.</div>
+      </div>
+    </div>
+    <div>
+      <div class="nda-box">
+        <div class="nda-title">NDA Ready</div>
+        <div class="nda-text">Comprehensive NDA template prepared covering: confidential information definition, receiving party obligations, 3-year term with 5-year survival clause, injunctive relief remedies, and Indian jurisdiction. Available in the patent specifications document.</div>
+      </div>
+      <div class="cost-box" style="margin-top: 10px;">
+        <div class="cost-label">Cost Summary</div>
+        <div class="cost-line">
+          <strong>3 Provisional filings (startup):</strong> Rs 4,800<br>
+          <strong>Patent attorney (complete, x3):</strong> Rs 90K-2.4L<br>
+          <strong>PCT international (x3):</strong> Rs 1.5-3L<br>
+          <span class="gold"><strong>Total (India + PCT):</strong> Rs 2.4-5.4L</span>
+        </div>
+      </div>
+      <div class="cost-box" style="margin-top: 10px;">
+        <div class="cost-label">Delivery Tips</div>
+        <div class="tip-item"><div class="tip-bullet"></div><div class="tip-text"><strong>Start with energy.</strong> First 30 seconds set the tone. Make them feel the rider's pain before showing the solution.</div></div>
+        <div class="tip-item"><div class="tip-bullet"></div><div class="tip-text"><strong>Use the demo as your weapon.</strong> Nothing convinces like seeing the product work. Practice 10+ times.</div></div>
+        <div class="tip-item"><div class="tip-bullet"></div><div class="tip-text"><strong>Own the numbers.</strong> If someone asks about unit economics at 1M riders, you should calculate it on the spot.</div></div>
+        <div class="tip-item"><div class="tip-bullet"></div><div class="tip-text"><strong>Close with conviction.</strong> The ask is not the time for uncertainty. State it like the most obvious decision in the world.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <div class="page-footer-text">GigRider &mdash; Confidential</div>
+    <div class="page-footer-num">06</div>
+  </div>
+</div>
+
+</body>
+</html>
