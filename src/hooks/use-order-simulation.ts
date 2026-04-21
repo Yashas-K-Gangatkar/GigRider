@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useCallback, useState } from 'react';
-import { useGigRiderStore, generateOrder, generateStack, type Order } from '@/lib/store';
+import { useGigRiderStore, generateOrder, generateStack } from '@/lib/store';
 
 /**
  * Hook that simulates real-time incoming orders.
@@ -101,29 +101,29 @@ export function useOrderTimers(): Record<string, number> {
   const incomingOrders = useGigRiderStore(s => s.incomingOrders);
   const acceptedOrderIds = useGigRiderStore(s => s.acceptedOrderIds);
   const declinedOrderIds = useGigRiderStore(s => s.declinedOrderIds);
-  const timersRef = useRef<Record<string, number>>({});
-  const [tick, setTick] = useState(0);
+  const [timers, setTimers] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const interval = setInterval(() => {
-      let changed = false;
-      incomingOrders.forEach(order => {
-        if (acceptedOrderIds.includes(order.id) || declinedOrderIds.includes(order.id)) return;
-        if (timersRef.current[order.id] === undefined) {
-          timersRef.current[order.id] = order.timer;
-        } else if (timersRef.current[order.id] > 0) {
-          timersRef.current[order.id] -= 1;
-          changed = true;
-        }
+      setTimers(prev => {
+        const next = { ...prev };
+        let changed = false;
+        incomingOrders.forEach(order => {
+          if (acceptedOrderIds.includes(order.id) || declinedOrderIds.includes(order.id)) return;
+          if (next[order.id] === undefined) {
+            next[order.id] = order.timer;
+          } else if (next[order.id] > 0) {
+            next[order.id] -= 1;
+            changed = true;
+          }
+        });
+        return changed ? next : prev;
       });
-      if (changed) {
-        setTick(t => t + 1);
-      }
     }, 1000);
     return () => clearInterval(interval);
   }, [incomingOrders, acceptedOrderIds, declinedOrderIds]);
 
-  return timersRef.current;
+  return timers;
 }
 
 /**

@@ -21,12 +21,15 @@ export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps)
 
   // Countdown timer for resend
   useEffect(() => {
-    if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-      return () => clearTimeout(timer);
-    } else {
-      setCanResend(true);
-    }
+    if (countdown <= 0) return;
+    const timer = setTimeout(() => setCountdown(c => {
+      if (c <= 1) {
+        setCanResend(true);
+        return 0;
+      }
+      return c - 1;
+    }), 1000);
+    return () => clearTimeout(timer);
   }, [countdown]);
 
   const handleVerify = useCallback((otpValue: string) => {
@@ -46,13 +49,12 @@ export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps)
     }, 1500);
   }, [isVerifying, isVerified, onVerified]);
 
-  // Auto-verify when all 6 digits entered (DEMO: any 6 digits work)
-  useEffect(() => {
-    const otpValue = otp.join('');
+  const tryAutoVerify = useCallback((newOtp: string[]) => {
+    const otpValue = newOtp.join('');
     if (otpValue.length === 6) {
       handleVerify(otpValue);
     }
-  }, [otp, handleVerify]);
+  }, [handleVerify]);
 
   const handleChange = (index: number, value: string) => {
     if (value.length > 1) {
@@ -68,6 +70,7 @@ export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps)
       // Focus last filled or next empty
       const nextIndex = Math.min(index + pasteValues.length, 5);
       inputRefs.current[nextIndex]?.focus();
+      tryAutoVerify(newOtp);
       return;
     }
 
@@ -80,6 +83,7 @@ export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps)
     if (digit && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
+    tryAutoVerify(newOtp);
   };
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent) => {

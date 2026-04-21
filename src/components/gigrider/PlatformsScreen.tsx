@@ -23,6 +23,12 @@ import {
   X,
   TrendingUp,
   Package,
+  Wifi,
+  WifiOff,
+  BarChart3,
+  ArrowUpRight,
+  CircleDot,
+  CheckCircle2,
 } from 'lucide-react';
 
 export default function PlatformsScreen() {
@@ -65,7 +71,6 @@ export default function PlatformsScreen() {
     setConnectingPlatform(platformId);
     setConnectingProgress(0);
     
-    // Animate progress
     const interval = setInterval(() => {
       setConnectingProgress(prev => {
         if (prev >= 100) {
@@ -102,6 +107,9 @@ export default function PlatformsScreen() {
   };
 
   const onlineCount = connectedPlatforms.filter(p => p.isOnline).length;
+  const totalTodayEarnings = connectedPlatforms.reduce((sum, p) => sum + p.todayEarnings, 0);
+  const totalTodayOrders = connectedPlatforms.reduce((sum, p) => sum + p.todayOrders, 0);
+  const maxEarnings = Math.max(...connectedPlatforms.map(p => p.todayEarnings), 1);
 
   return (
     <div className="min-h-screen bg-[#FAF7F2] pb-24">
@@ -118,17 +126,19 @@ export default function PlatformsScreen() {
             <motion.button
               onClick={setAllPlatformsOnline}
               whileTap={{ scale: 0.95 }}
-              className="px-3.5 py-2 bg-[#2C4A3E] text-white rounded-lg text-[11px] font-semibold hover:bg-[#1A6B4A] transition-colors duration-200 shadow-sm"
+              className="px-3.5 py-2 bg-[#2C4A3E] text-white rounded-lg text-[11px] font-semibold hover:bg-[#1A6B4A] transition-colors duration-200 shadow-sm flex items-center gap-1.5"
               style={{ fontFamily: 'var(--font-lora), serif' }}
             >
+              <Wifi className="w-3 h-3" />
               All Online
             </motion.button>
             <motion.button
               onClick={setAllPlatformsOffline}
               whileTap={{ scale: 0.95 }}
-              className="px-3.5 py-2 bg-[#F0EBE4] text-[#7A7168] rounded-lg text-[11px] font-semibold hover:bg-[#E8E0D4] transition-colors duration-200"
+              className="px-3.5 py-2 bg-[#F0EBE4] text-[#7A7168] rounded-lg text-[11px] font-semibold hover:bg-[#E8E0D4] transition-colors duration-200 flex items-center gap-1.5"
               style={{ fontFamily: 'var(--font-lora), serif' }}
             >
+              <WifiOff className="w-3 h-3" />
               All Offline
             </motion.button>
           </div>
@@ -136,62 +146,103 @@ export default function PlatformsScreen() {
       </div>
 
       <div className="px-4 pt-4 space-y-5">
-        {/* Platform Performance Summary */}
+        {/* Status Summary Banner */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-2 gap-3"
+          className="bg-gradient-to-r from-[#1B2A4A] to-[#2A3F6A] rounded-xl p-4 text-white"
+          style={{ boxShadow: '0 4px 20px rgba(27, 42, 74, 0.2)' }}
         >
-          {connectedPlatforms.map((platform, index) => {
-            const config = PLATFORMS[platform.id];
-            return (
-              <motion.div
-                key={platform.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.06 }}
-                className="bg-white rounded-xl p-3 border border-[#D5CBBF] card-elegant"
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-[#C9A96E]" />
+              <span
+                className="text-xs font-semibold text-[#C9A96E] tracking-wider uppercase"
+                style={{ fontFamily: 'var(--font-lora), serif' }}
               >
-                <div className="flex items-center gap-2 mb-2">
-                  <div
-                    className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white border border-[#C9A96E]/20"
-                    style={{ backgroundColor: config?.color || '#7A7168' }}
-                  >
-                    {config?.letter || platform.id[0].toUpperCase()}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-[#2C2C2C] truncate" style={{ fontFamily: 'var(--font-lora), serif' }}>
-                      {config?.displayName || platform.id}
-                    </p>
-                    <p className="text-[9px] text-[#7A7168]" style={{ fontFamily: 'var(--font-lora), serif' }}>
-                      {platform.isOnline ? 'Online' : 'Offline'}
-                    </p>
-                  </div>
+                Platform Overview
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2C4A3E] opacity-75" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#4ADE80]" />
+              </span>
+              <span
+                className="text-[10px] font-semibold text-white/80"
+                style={{ fontFamily: 'var(--font-lora), serif' }}
+              >
+                {onlineCount}/{connectedPlatforms.length} Online
+              </span>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <p
+                className="text-xl font-bold text-white"
+                style={{ fontFamily: 'var(--font-playfair), serif' }}
+              >
+                ₹{totalTodayEarnings.toLocaleString()}
+              </p>
+              <p
+                className="text-[9px] text-white/50 tracking-wider uppercase"
+                style={{ fontFamily: 'var(--font-lora), serif' }}
+              >
+                Total Earnings
+              </p>
+            </div>
+            <div>
+              <p
+                className="text-xl font-bold text-white"
+                style={{ fontFamily: 'var(--font-playfair), serif' }}
+              >
+                {totalTodayOrders}
+              </p>
+              <p
+                className="text-[9px] text-white/50 tracking-wider uppercase"
+                style={{ fontFamily: 'var(--font-lora), serif' }}
+              >
+                Total Orders
+              </p>
+            </div>
+            <div>
+              <p
+                className="text-xl font-bold text-white"
+                style={{ fontFamily: 'var(--font-playfair), serif' }}
+              >
+                {connectedPlatforms.length}
+              </p>
+              <p
+                className="text-[9px] text-white/50 tracking-wider uppercase"
+                style={{ fontFamily: 'var(--font-lora), serif' }}
+              >
+                Connected
+              </p>
+            </div>
+          </div>
+
+          {/* Mini platform bar chart */}
+          <div className="flex items-end gap-1.5 mt-3 pt-3 border-t border-white/10">
+            {connectedPlatforms.map((platform) => {
+              const config = PLATFORMS[platform.id];
+              const barHeight = Math.max((platform.todayEarnings / maxEarnings) * 40, 4);
+              return (
+                <div key={platform.id} className="flex-1 flex flex-col items-center gap-1">
+                  <motion.div
+                    initial={{ height: 0 }}
+                    animate={{ height: barHeight }}
+                    transition={{ duration: 0.6, delay: 0.1 }}
+                    className="w-full rounded-t-sm"
+                    style={{ backgroundColor: platform.isOnline ? (config?.color || '#7A7168') : '#4A5568', minHeight: 4, opacity: platform.isOnline ? 1 : 0.4 }}
+                  />
+                  <span className="text-[8px] text-white/40 font-bold">{config?.letter || '?'}</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-bold text-[#1B2A4A]" style={{ fontFamily: 'var(--font-playfair), serif' }}>
-                      ₹{platform.todayEarnings}
-                    </p>
-                    <p className="text-[8px] text-[#7A7168] tracking-wider uppercase" style={{ fontFamily: 'var(--font-lora), serif' }}>
-                      Today
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-[#2C2C2C]" style={{ fontFamily: 'var(--font-playfair), serif' }}>
-                      {platform.todayOrders}
-                    </p>
-                    <p className="text-[8px] text-[#7A7168] tracking-wider uppercase" style={{ fontFamily: 'var(--font-lora), serif' }}>
-                      Orders
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
+              );
+            })}
+          </div>
         </motion.div>
 
-        {/* Connected Platforms */}
+        {/* Connected Platforms - Enhanced Cards */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -215,73 +266,90 @@ export default function PlatformsScreen() {
             {connectedPlatforms.map((platform, index) => {
               const config = PLATFORMS[platform.id];
               const isDisconnecting = disconnectingPlatform === platform.id;
+              const earningsPercent = maxEarnings > 0 ? (platform.todayEarnings / maxEarnings) * 100 : 0;
+
               return (
                 <motion.div
                   key={platform.id}
                   initial={{ opacity: 0, x: -16 }}
                   animate={{ opacity: isDisconnecting ? 0 : 1, x: isDisconnecting ? 40 : 0 }}
                   transition={{ delay: index * 0.08 }}
-                  className="flex items-center justify-between px-4 py-3 border-t border-[#F0EBE4]"
+                  className="px-4 py-3.5 border-t border-[#F0EBE4]"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white border border-[#C9A96E]/20"
-                        style={{ backgroundColor: config?.color || '#7A7168' }}
-                      >
-                        {config?.letter || platform.id[0].toUpperCase()}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="relative">
+                        <div
+                          className="w-11 h-11 rounded-xl flex items-center justify-center text-sm font-bold text-white border border-[#C9A96E]/20"
+                          style={{ backgroundColor: config?.color || '#7A7168' }}
+                        >
+                          {config?.letter || platform.id[0].toUpperCase()}
+                        </div>
+                        {platform.isOnline && (
+                          <span className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#1A6B4A] opacity-75" />
+                            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-[#2C4A3E] border-2 border-white" />
+                          </span>
+                        )}
                       </div>
-                      {platform.isOnline && (
-                        <span className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#1A6B4A] opacity-75" />
-                          <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-[#2C4A3E] border-2 border-white" />
-                        </span>
-                      )}
+                      <div>
+                        <p
+                          className="text-sm font-semibold text-[#2C2C2C]"
+                          style={{ fontFamily: 'var(--font-lora), serif' }}
+                        >
+                          {config?.displayName || platform.id}
+                        </p>
+                        <p
+                          className="text-[10px] text-[#7A7168]"
+                          style={{ fontFamily: 'var(--font-lora), serif' }}
+                        >
+                          Last order: {platform.lastOrder}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p
-                        className="text-sm font-semibold text-[#2C2C2C]"
-                        style={{ fontFamily: 'var(--font-lora), serif' }}
+
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <p
+                          className="text-sm font-bold text-[#1B2A4A]"
+                          style={{ fontFamily: 'var(--font-playfair), serif' }}
+                        >
+                          ₹{platform.todayEarnings}
+                        </p>
+                        <p
+                          className="text-[9px] text-[#7A7168] tracking-wider uppercase"
+                          style={{ fontFamily: 'var(--font-lora), serif' }}
+                        >
+                          {platform.todayOrders} orders
+                        </p>
+                      </div>
+                      <Switch
+                        checked={platform.isOnline}
+                        onCheckedChange={() => togglePlatformOnline(platform.id)}
+                        className="data-[state=checked]:bg-[#2C4A3E]"
+                      />
+                      {/* Disconnect button */}
+                      <motion.button
+                        onClick={() => handleDisconnect(platform.id)}
+                        whileTap={{ scale: 0.85 }}
+                        className="p-1 rounded-full hover:bg-[#722F37]/10 transition-colors"
                       >
-                        {config?.displayName || platform.id}
-                      </p>
-                      <p
-                        className="text-[10px] text-[#7A7168]"
-                        style={{ fontFamily: 'var(--font-lora), serif' }}
-                      >
-                        Last order: {platform.lastOrder}
-                      </p>
+                        <X className="w-3.5 h-3.5 text-[#7A7168] hover:text-[#722F37]" />
+                      </motion.button>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <p
-                        className="text-sm font-bold text-[#1B2A4A]"
-                        style={{ fontFamily: 'var(--font-playfair), serif' }}
-                      >
-                        ₹{platform.todayEarnings}
-                      </p>
-                      <p
-                        className="text-[9px] text-[#7A7168] tracking-wider uppercase"
-                        style={{ fontFamily: 'var(--font-lora), serif' }}
-                      >
-                        today
-                      </p>
+                  {/* Mini earnings bar */}
+                  <div className="mt-2.5 ml-14">
+                    <div className="w-full bg-[#F0EBE4] rounded-full h-1.5">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${earningsPercent}%` }}
+                        transition={{ duration: 0.8, delay: index * 0.1 }}
+                        className="h-1.5 rounded-full"
+                        style={{ backgroundColor: config?.color || '#7A7168', opacity: platform.isOnline ? 1 : 0.4 }}
+                      />
                     </div>
-                    <Switch
-                      checked={platform.isOnline}
-                      onCheckedChange={() => togglePlatformOnline(platform.id)}
-                      className="data-[state=checked]:bg-[#2C4A3E]"
-                    />
-                    {/* Disconnect button */}
-                    <motion.button
-                      onClick={() => handleDisconnect(platform.id)}
-                      whileTap={{ scale: 0.85 }}
-                      className="p-1 rounded-full hover:bg-[#722F37]/10 transition-colors"
-                    >
-                      <X className="w-3.5 h-3.5 text-[#7A7168] hover:text-[#722F37]" />
-                    </motion.button>
                   </div>
                 </motion.div>
               );
@@ -306,6 +374,11 @@ export default function PlatformsScreen() {
             >
               <Plus className="w-4 h-4 text-[#1B2A4A]" />
               Add New Platform
+              {availablePlatforms.length > 0 && (
+                <Badge className="bg-[#C9A96E]/10 text-[#8B5E3C] border-[#C9A96E]/20 text-[9px] ml-1">
+                  {availablePlatforms.length} available
+                </Badge>
+              )}
             </h3>
             <ChevronRight
               className={`w-4 h-4 text-[#7A7168] transition-transform ${
@@ -344,7 +417,7 @@ export default function PlatformsScreen() {
                           >
                             <div className="flex items-center gap-3">
                               <div
-                                className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white border border-[#C9A96E]/20"
+                                className="w-9 h-9 rounded-xl flex items-center justify-center text-[12px] font-bold text-white border border-[#C9A96E]/20"
                                 style={{ backgroundColor: platform.color }}
                               >
                                 {platform.letter}
@@ -367,7 +440,7 @@ export default function PlatformsScreen() {
                             <button
                               onClick={() => handleConnect(platform.id)}
                               disabled={connectingPlatform === platform.id}
-                              className="px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-200 bg-[#1B2A4A] text-[#FAF7F2] active:scale-[0.97] disabled:opacity-70"
+                              className="px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-200 bg-[#1B2A4A] text-[#FAF7F2] active:scale-[0.97] disabled:opacity-70 flex items-center gap-1.5"
                               style={{ fontFamily: 'var(--font-lora), serif' }}
                             >
                               {connectingPlatform === platform.id ? (
@@ -375,7 +448,12 @@ export default function PlatformsScreen() {
                                   <Loader2 className="w-3 h-3 animate-spin" />
                                   {connectingProgress}%
                                 </span>
-                              ) : 'Connect'}
+                              ) : (
+                                <>
+                                  <Plus className="w-3 h-3" />
+                                  Connect
+                                </>
+                              )}
                             </button>
                           </div>
                         ))}
@@ -400,7 +478,7 @@ export default function PlatformsScreen() {
                           >
                             <div className="flex items-center gap-3">
                               <div
-                                className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white border border-[#C9A96E]/20"
+                                className="w-9 h-9 rounded-xl flex items-center justify-center text-[12px] font-bold text-white border border-[#C9A96E]/20"
                                 style={{ backgroundColor: platform.color }}
                               >
                                 {platform.letter}
@@ -423,7 +501,7 @@ export default function PlatformsScreen() {
                             <button
                               onClick={() => handleConnect(platform.id)}
                               disabled={connectingPlatform === platform.id}
-                              className="px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-200 bg-[#1B2A4A] text-[#FAF7F2] active:scale-[0.97] disabled:opacity-70"
+                              className="px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-200 bg-[#1B2A4A] text-[#FAF7F2] active:scale-[0.97] disabled:opacity-70 flex items-center gap-1.5"
                               style={{ fontFamily: 'var(--font-lora), serif' }}
                             >
                               {connectingPlatform === platform.id ? (
@@ -431,7 +509,12 @@ export default function PlatformsScreen() {
                                   <Loader2 className="w-3 h-3 animate-spin" />
                                   {connectingProgress}%
                                 </span>
-                              ) : 'Connect'}
+                              ) : (
+                                <>
+                                  <Plus className="w-3 h-3" />
+                                  Connect
+                                </>
+                              )}
                             </button>
                           </div>
                         ))}
@@ -440,9 +523,17 @@ export default function PlatformsScreen() {
                   )}
 
                   {availablePlatforms.length === 0 && (
-                    <p className="text-sm text-[#7A7168] text-center py-4" style={{ fontFamily: 'var(--font-lora), serif' }}>
-                      All platforms connected!
-                    </p>
+                    <div className="text-center py-6">
+                      <div className="w-14 h-14 rounded-full bg-[#2C4A3E]/10 flex items-center justify-center mx-auto mb-3">
+                        <CheckCircle2 className="w-7 h-7 text-[#2C4A3E]" />
+                      </div>
+                      <p className="text-sm text-[#2C2C2C] font-medium" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                        All platforms connected!
+                      </p>
+                      <p className="text-[10px] text-[#7A7168] mt-1" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                        You&apos;re maximizing your earning potential
+                      </p>
+                    </div>
                   )}
                 </div>
               </motion.div>
@@ -467,10 +558,11 @@ export default function PlatformsScreen() {
                 className="text-sm font-semibold text-[#2C2C2C] flex items-center gap-2"
                 style={{ fontFamily: 'var(--font-playfair), serif' }}
               >
-                <Zap className={`w-4 h-4 ${autoAcceptRules.enabled ? 'text-[#1B2A4A]' : 'text-[#7A7168]'}`} />
+                <Zap className={`w-4 h-4 ${autoAcceptRules.enabled ? 'text-[#C9A96E]' : 'text-[#7A7168]'}`} />
                 Auto-Accept Rules
                 {autoAcceptRules.enabled && (
                   <Badge className="bg-[#2C4A3E]/10 text-[#2C4A3E] border-[#2C4A3E]/15 text-[9px] ml-1">
+                    <CircleDot className="w-2 h-2 mr-0.5 fill-[#2C4A3E]" />
                     ACTIVE
                   </Badge>
                 )}
@@ -502,7 +594,7 @@ export default function PlatformsScreen() {
                         Minimum Payout
                       </label>
                       <span
-                        className="text-sm font-bold text-[#1B2A4A]"
+                        className="text-sm font-bold text-[#1B2A4A] bg-[#1B2A4A]/5 px-2 py-0.5 rounded"
                         style={{ fontFamily: 'var(--font-playfair), serif' }}
                       >
                         ₹{autoAcceptRules.minPayout}
@@ -536,7 +628,7 @@ export default function PlatformsScreen() {
                         Maximum Distance
                       </label>
                       <span
-                        className="text-sm font-bold text-[#1B2A4A]"
+                        className="text-sm font-bold text-[#1B2A4A] bg-[#1B2A4A]/5 px-2 py-0.5 rounded"
                         style={{ fontFamily: 'var(--font-playfair), serif' }}
                       >
                         {autoAcceptRules.maxDistance} km
@@ -682,23 +774,26 @@ export default function PlatformsScreen() {
                 key={shift.day}
                 className="flex items-center justify-between p-3 bg-[#F5F0EB] rounded-lg"
               >
-                <div>
-                  <p
-                    className="text-sm font-medium text-[#2C2C2C]"
-                    style={{ fontFamily: 'var(--font-lora), serif' }}
-                  >
-                    {shift.day}
-                  </p>
-                  <p
-                    className={`text-[10px] ${shift.active ? 'text-[#2C4A3E]' : 'text-[#7A7168]'}`}
-                    style={{ fontFamily: 'var(--font-lora), serif' }}
-                  >
-                    {shift.time}
-                  </p>
+                <div className="flex items-center gap-3">
+                  <div className={`w-2 h-2 rounded-full ${shift.active ? 'bg-[#2C4A3E]' : 'bg-[#D5CBBF]'}`} />
+                  <div>
+                    <p
+                      className="text-sm font-medium text-[#2C2C2C]"
+                      style={{ fontFamily: 'var(--font-lora), serif' }}
+                    >
+                      {shift.day}
+                    </p>
+                    <p
+                      className={`text-[10px] ${shift.active ? 'text-[#2C4A3E]' : 'text-[#7A7168]'}`}
+                      style={{ fontFamily: 'var(--font-lora), serif' }}
+                    >
+                      {shift.time}
+                    </p>
+                  </div>
                 </div>
                 <button
                   onClick={() => updateShift(index, { active: !shift.active })}
-                  className={`px-2.5 py-1 rounded text-[10px] font-semibold ${
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all duration-200 ${
                     shift.active
                       ? 'bg-[#2C4A3E]/10 text-[#2C4A3E]'
                       : 'bg-[#E8E0D4] text-[#7A7168]'

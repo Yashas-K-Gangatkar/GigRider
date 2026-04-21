@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Phone, ArrowRight, ChevronLeft, CheckCircle2 } from 'lucide-react';
+import { User, Phone, ArrowRight, ChevronLeft, CheckCircle2, Shield } from 'lucide-react';
 
 interface SignupScreenProps {
   onSignup: (data: { name: string; phone: string; vehicleType: 'bicycle' | 'scooter' | 'motorcycle' | 'car' }) => void;
@@ -14,6 +14,7 @@ export default function SignupScreen({ onSignup, onGoToLogin }: SignupScreenProp
   const [phone, setPhone] = useState('');
   const [vehicleType, setVehicleType] = useState<'bicycle' | 'scooter' | 'motorcycle' | 'car'>('scooter');
   const [isLoading, setIsLoading] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   // Format phone as XXXXX XXXXX
   const formatPhone = (value: string) => {
@@ -25,13 +26,13 @@ export default function SignupScreen({ onSignup, onGoToLogin }: SignupScreenProp
   const rawPhone = phone.replace(/\s/g, '');
   const isPhoneValid = rawPhone.length >= 10;
   const isNameValid = name.length >= 2;
-  const isFormValid = isNameValid && isPhoneValid;
+  const isFormValid = isNameValid && isPhoneValid && agreedToTerms;
 
   const VEHICLE_OPTIONS = [
-    { id: 'bicycle' as const, label: 'Bicycle', icon: '🚲' },
-    { id: 'scooter' as const, label: 'Scooter', icon: '🛵' },
-    { id: 'motorcycle' as const, label: 'Motorcycle', icon: '🏍️' },
-    { id: 'car' as const, label: 'Car', icon: '🚗' },
+    { id: 'bicycle' as const, label: 'Bicycle', icon: '🚲', desc: 'Eco-friendly' },
+    { id: 'scooter' as const, label: 'Scooter', icon: '🛵', desc: 'Popular' },
+    { id: 'motorcycle' as const, label: 'Motorcycle', icon: '🏍️', desc: 'Fast' },
+    { id: 'car' as const, label: 'Car', icon: '🚗', desc: 'Premium' },
   ];
 
   const handleSignup = () => {
@@ -77,7 +78,7 @@ export default function SignupScreen({ onSignup, onGoToLogin }: SignupScreenProp
           initial={{ opacity: 0, y: -16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-10"
+          className="text-center mb-8"
         >
           <h1
             className="text-2xl tracking-[0.1em] text-[#1B2A4A] mb-2"
@@ -86,18 +87,48 @@ export default function SignupScreen({ onSignup, onGoToLogin }: SignupScreenProp
             Create Account
           </h1>
 
+          {/* Step indicator */}
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <div className="flex items-center gap-1.5">
+              <div className="w-5 h-5 rounded-full bg-[#E8E0D4] flex items-center justify-center">
+                <CheckCircle2 className="w-3 h-3 text-[#7A7168]" />
+              </div>
+              <span className="text-[9px] text-[#7A7168] tracking-wider uppercase" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                Phone
+              </span>
+            </div>
+            <div className="w-8 h-px bg-[#C9A96E]/40" />
+            <div className="flex items-center gap-1.5">
+              <div className="w-5 h-5 rounded-full bg-[#1B2A4A] flex items-center justify-center">
+                <span className="text-[9px] font-bold text-[#FAF7F2]" style={{ fontFamily: 'var(--font-lora), serif' }}>2</span>
+              </div>
+              <span className="text-[9px] text-[#1B2A4A] font-semibold tracking-wider uppercase" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                Profile
+              </span>
+            </div>
+            <div className="w-8 h-px bg-[#D5CBBF]" />
+            <div className="flex items-center gap-1.5">
+              <div className="w-5 h-5 rounded-full bg-[#E8E0D4] flex items-center justify-center">
+                <span className="text-[9px] font-bold text-[#7A7168]" style={{ fontFamily: 'var(--font-lora), serif' }}>3</span>
+              </div>
+              <span className="text-[9px] text-[#7A7168] tracking-wider uppercase" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                Verify
+              </span>
+            </div>
+          </div>
+
           {/* Ornamental divider */}
-          <div className="flex items-center justify-center gap-3 mb-3">
+          <div className="flex items-center justify-center gap-3 mb-2">
             <div className="w-8 h-px bg-gradient-to-r from-transparent to-[#C9A96E]" />
             <div className="w-1.5 h-1.5 rounded-full bg-[#C9A96E]" />
             <div className="w-8 h-px bg-gradient-to-l from-transparent to-[#C9A96E]" />
           </div>
 
           <p
-            className="text-xs text-[#7A7168] tracking-[0.1em]"
+            className="text-xs text-[#7A7168] tracking-[0.05em]"
             style={{ fontFamily: 'var(--font-lora), serif' }}
           >
-            Join the distinguished community of delivery partners
+            Join the community of multi-platform delivery partners
           </p>
         </motion.div>
 
@@ -106,12 +137,12 @@ export default function SignupScreen({ onSignup, onGoToLogin }: SignupScreenProp
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="space-y-5"
+          className="space-y-4"
         >
           {/* Full Name */}
           <div>
             <label
-              className="block text-xs text-[#7A7168] mb-2 tracking-[0.1em] uppercase"
+              className="block text-xs text-[#7A7168] mb-1.5 tracking-[0.1em] uppercase"
               style={{ fontFamily: 'var(--font-lora), serif' }}
             >
               Full Name
@@ -125,7 +156,7 @@ export default function SignupScreen({ onSignup, onGoToLogin }: SignupScreenProp
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Enter your full name"
-                className={`w-full pl-11 pr-10 py-4 bg-white border rounded-xl text-[#2C2C2C] text-sm placeholder:text-[#7A7168]/50 focus:outline-none transition-all duration-200 ${
+                className={`w-full pl-11 pr-10 py-3.5 bg-white border rounded-xl text-[#2C2C2C] text-sm placeholder:text-[#7A7168]/50 focus:outline-none transition-all duration-200 ${
                   isNameValid
                     ? 'border-[#2C4A3E] focus:ring-2 focus:ring-[#2C4A3E]/10'
                     : 'border-[#D5CBBF] focus:border-[#1B2A4A] focus:ring-2 focus:ring-[#1B2A4A]/10'
@@ -147,7 +178,7 @@ export default function SignupScreen({ onSignup, onGoToLogin }: SignupScreenProp
           {/* Phone Number */}
           <div>
             <label
-              className="block text-xs text-[#7A7168] mb-2 tracking-[0.1em] uppercase"
+              className="block text-xs text-[#7A7168] mb-1.5 tracking-[0.1em] uppercase"
               style={{ fontFamily: 'var(--font-lora), serif' }}
             >
               Mobile Number
@@ -168,7 +199,7 @@ export default function SignupScreen({ onSignup, onGoToLogin }: SignupScreenProp
                 value={phone}
                 onChange={(e) => setPhone(formatPhone(e.target.value))}
                 placeholder="Enter your mobile number"
-                className={`w-full pl-24 pr-10 py-4 bg-white border rounded-xl text-[#2C2C2C] text-sm placeholder:text-[#7A7168]/50 focus:outline-none transition-all duration-200 ${
+                className={`w-full pl-24 pr-10 py-3.5 bg-white border rounded-xl text-[#2C2C2C] text-sm placeholder:text-[#7A7168]/50 focus:outline-none transition-all duration-200 ${
                   isPhoneValid
                     ? 'border-[#2C4A3E] focus:ring-2 focus:ring-[#2C4A3E]/10'
                     : 'border-[#D5CBBF] focus:border-[#1B2A4A] focus:ring-2 focus:ring-[#1B2A4A]/10'
@@ -190,17 +221,18 @@ export default function SignupScreen({ onSignup, onGoToLogin }: SignupScreenProp
           {/* Vehicle Type */}
           <div>
             <label
-              className="block text-xs text-[#7A7168] mb-2 tracking-[0.1em] uppercase"
+              className="block text-xs text-[#7A7168] mb-1.5 tracking-[0.1em] uppercase"
               style={{ fontFamily: 'var(--font-lora), serif' }}
             >
               Vehicle Type
             </label>
             <div className="grid grid-cols-4 gap-2">
               {VEHICLE_OPTIONS.map((vehicle) => (
-                <button
+                <motion.button
                   key={vehicle.id}
                   onClick={() => setVehicleType(vehicle.id)}
-                  className={`flex flex-col items-center gap-1.5 py-3 rounded-xl border transition-all duration-200 ${
+                  whileTap={{ scale: 0.95 }}
+                  className={`flex flex-col items-center gap-1 py-3 rounded-xl border transition-all duration-200 ${
                     vehicleType === vehicle.id
                       ? 'bg-[#1B2A4A] border-[#1B2A4A] text-[#FAF7F2] shadow-sm'
                       : 'bg-white border-[#D5CBBF] text-[#2C2C2C] hover:border-[#1B2A4A]/30'
@@ -213,10 +245,55 @@ export default function SignupScreen({ onSignup, onGoToLogin }: SignupScreenProp
                   >
                     {vehicle.label}
                   </span>
-                </button>
+                  {vehicleType === vehicle.id && (
+                    <span className="text-[7px] text-[#C9A96E] tracking-wider uppercase">
+                      {vehicle.desc}
+                    </span>
+                  )}
+                </motion.button>
               ))}
             </div>
           </div>
+
+          {/* Terms Checkbox */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="flex items-start gap-2.5 pt-1"
+          >
+            <button
+              onClick={() => setAgreedToTerms(!agreedToTerms)}
+              className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-all duration-200 ${
+                agreedToTerms
+                  ? 'bg-[#1B2A4A] border-[#1B2A4A]'
+                  : 'bg-white border-[#D5CBBF]'
+              }`}
+            >
+              {agreedToTerms && (
+                <motion.svg
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                >
+                  <path d="M2 6L5 9L10 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </motion.svg>
+              )}
+            </button>
+            <p
+              className="text-[11px] text-[#7A7168] leading-relaxed"
+              style={{ fontFamily: 'var(--font-lora), serif' }}
+            >
+              I agree to the{' '}
+              <button className="text-[#1B2A4A] font-semibold underline underline-offset-2">Terms of Service</button>
+              {' '}and{' '}
+              <button className="text-[#1B2A4A] font-semibold underline underline-offset-2">Privacy Policy</button>
+            </p>
+          </motion.div>
         </motion.div>
 
         {/* Signup Button */}
@@ -224,7 +301,7 @@ export default function SignupScreen({ onSignup, onGoToLogin }: SignupScreenProp
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className="mt-8"
+          className="mt-6"
         >
           <motion.button
             onClick={handleSignup}
@@ -257,7 +334,7 @@ export default function SignupScreen({ onSignup, onGoToLogin }: SignupScreenProp
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
-          className="mt-6 text-center"
+          className="mt-5 text-center"
         >
           <p
             className="text-xs text-[#7A7168]"
@@ -273,18 +350,21 @@ export default function SignupScreen({ onSignup, onGoToLogin }: SignupScreenProp
           </p>
         </motion.div>
 
-        {/* Terms */}
-        <motion.p
+        {/* Security badge */}
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.7 }}
-          className="text-[10px] text-[#7A7168]/60 text-center mt-6 leading-relaxed"
-          style={{ fontFamily: 'var(--font-lora), serif' }}
+          className="flex items-center justify-center gap-1.5 mt-5"
         >
-          By creating an account, you agree to our Terms of Service
-          <br />
-          and Privacy Policy
-        </motion.p>
+          <Shield className="w-3.5 h-3.5 text-[#2C4A3E]/50" />
+          <span
+            className="text-[10px] text-[#7A7168]/50 tracking-wider"
+            style={{ fontFamily: 'var(--font-lora), serif' }}
+          >
+            256-bit encrypted · Your data is secure
+          </span>
+        </motion.div>
       </div>
 
       {/* Bottom decorative corners */}

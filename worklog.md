@@ -107,3 +107,25 @@ Stage Summary:
 - No trademark violations (platform names are generic)
 - Build passes successfully
 - Dev server running on port 3000
+
+---
+Task ID: 5
+Agent: Main Agent
+Task: Polish all screens - Activity, Platforms, BottomNav, Notifications, Splash/Auth
+
+Work Log:
+- ActivityScreen: Enhanced search (restaurant/customer/platform), sort menu (newest/oldest/highest/longest), date grouping with counts & earnings, highlight badges (HIGH EARN, BIG TIP), swipe-to-repeat cards, earnings breakdown bar in expanded view, clearer visual treatment with 2x2 highlight grid
+- PlatformsScreen: Added navy gradient status summary banner with platform overview stats, mini bar chart showing platform earnings comparison, enhanced platform cards with rounded-xl icons, mini earnings progress bars per platform, better empty state with checkmark, improved Add Platform section with Plus icons
+- BottomNav: Moved notification badge from Profile to Home icon, added gold active indicator dot (layoutId animated), added online dot on center Platforms button, subtle gold gradient top border, enhanced visual feedback
+- NotificationsScreen: Added filter tabs (All/Deliveries/Earnings/Tips/Platforms/Stacks) with counts, swipe-to-dismiss gesture, NEW badge on unread notifications, improved empty states per filter, better notification type icons
+- SplashScreen: Added SVG rider silhouette animation, floating platform letter badges in background, rotating diamond ornament, outer ring pulse, progress percentage indicator, enhanced gold corner animations
+- LoginScreen: Added step progress indicator (1 → 2 Verify), terms checkbox required before OTP, security badge at bottom, better visual hierarchy
+- SignupScreen: Added 3-step progress indicator (Phone → Profile → Verify), terms checkbox, vehicle type descriptions, security badge
+- Fixed 4 lint errors: CheckCircle2 import in PlatformsScreen, OTPScreen setState-in-effect (moved auto-verify to change handler), OTPScreen countdown setState-in-effect (functional updater), useOrderTimers ref-during-render (switched to useState)
+
+Stage Summary:
+- All 5 polish tasks completed
+- Zero lint errors, build passes successfully
+- Enhanced UX across all screens with better search, sorting, filtering, swipe gestures
+- Improved visual hierarchy in auth flow with step indicators and terms checkboxes
+- Notification badge properly placed on Home icon in BottomNav

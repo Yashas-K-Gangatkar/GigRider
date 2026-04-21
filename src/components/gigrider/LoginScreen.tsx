@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Phone, ArrowRight, ChevronLeft, CheckCircle2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Phone, ArrowRight, CheckCircle2, Shield } from 'lucide-react';
 
 interface LoginScreenProps {
   onLogin: (phone: string) => void;
@@ -12,6 +12,7 @@ interface LoginScreenProps {
 export default function LoginScreen({ onLogin, onGoToSignup }: LoginScreenProps) {
   const [phone, setPhone] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   // Format phone as XXXXX XXXXX
   const formatPhone = (value: string) => {
@@ -22,9 +23,10 @@ export default function LoginScreen({ onLogin, onGoToSignup }: LoginScreenProps)
 
   const rawPhone = phone.replace(/\s/g, '');
   const isPhoneValid = rawPhone.length >= 10;
+  const canProceed = isPhoneValid && agreedToTerms;
 
   const handleSendOTP = () => {
-    if (isPhoneValid) {
+    if (canProceed) {
       setIsLoading(true);
       setTimeout(() => {
         setIsLoading(false);
@@ -45,12 +47,12 @@ export default function LoginScreen({ onLogin, onGoToSignup }: LoginScreenProps)
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
-          className="text-center mb-12"
+          className="text-center mb-10"
         >
           <motion.div
             animate={{ scale: [1, 1.03, 1] }}
             transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-            className="w-20 h-20 rounded-full border-2 border-[#C9A96E] bg-white/80 flex items-center justify-center mx-auto mb-6 shadow-lg"
+            className="w-20 h-20 rounded-full border-2 border-[#C9A96E] bg-white/80 flex items-center justify-center mx-auto mb-5 shadow-lg"
             style={{ boxShadow: '0 0 24px rgba(201, 169, 110, 0.15)' }}
           >
             <span
@@ -62,14 +64,14 @@ export default function LoginScreen({ onLogin, onGoToSignup }: LoginScreenProps)
           </motion.div>
 
           <h1
-            className="text-3xl tracking-[0.12em] text-[#1B2A4A] mb-3"
+            className="text-3xl tracking-[0.12em] text-[#1B2A4A] mb-2"
             style={{ fontFamily: 'var(--font-playfair), serif', fontWeight: 700 }}
           >
             GIG<span className="text-[#C9A96E]">RIDER</span>
           </h1>
 
           {/* Ornamental divider */}
-          <div className="flex items-center justify-center gap-3 mb-3">
+          <div className="flex items-center justify-center gap-3 mb-2">
             <div className="w-10 h-px bg-gradient-to-r from-transparent to-[#C9A96E]" />
             <div className="w-1.5 h-1.5 rounded-full bg-[#C9A96E]" />
             <div className="w-10 h-px bg-gradient-to-l from-transparent to-[#C9A96E]" />
@@ -83,15 +85,28 @@ export default function LoginScreen({ onLogin, onGoToSignup }: LoginScreenProps)
           </p>
         </motion.div>
 
-        {/* Welcome Text */}
+        {/* Welcome Text - Step 1 indicator */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="mb-8"
+          className="mb-6"
         >
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-6 h-6 rounded-full bg-[#1B2A4A] flex items-center justify-center">
+              <span className="text-[10px] font-bold text-[#FAF7F2]" style={{ fontFamily: 'var(--font-lora), serif' }}>1</span>
+            </div>
+            <div className="flex-1 h-px bg-[#D5CBBF]" />
+            <div className="w-6 h-6 rounded-full bg-[#E8E0D4] flex items-center justify-center">
+              <span className="text-[10px] font-bold text-[#7A7168]" style={{ fontFamily: 'var(--font-lora), serif' }}>2</span>
+            </div>
+            <span className="text-[9px] text-[#7A7168] tracking-wider uppercase" style={{ fontFamily: 'var(--font-lora), serif' }}>
+              Verify
+            </span>
+          </div>
+
           <h2
-            className="text-xl font-bold text-[#1B2A4A] mb-2"
+            className="text-xl font-bold text-[#1B2A4A] mb-1.5"
             style={{ fontFamily: 'var(--font-playfair), serif' }}
           >
             Welcome Back
@@ -109,7 +124,7 @@ export default function LoginScreen({ onLogin, onGoToSignup }: LoginScreenProps)
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className="space-y-5"
+          className="space-y-4"
         >
           <div>
             <label
@@ -154,13 +169,53 @@ export default function LoginScreen({ onLogin, onGoToSignup }: LoginScreenProps)
             </div>
           </div>
 
+          {/* Terms Checkbox */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="flex items-start gap-2.5"
+          >
+            <button
+              onClick={() => setAgreedToTerms(!agreedToTerms)}
+              className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-all duration-200 ${
+                agreedToTerms
+                  ? 'bg-[#1B2A4A] border-[#1B2A4A]'
+                  : 'bg-white border-[#D5CBBF]'
+              }`}
+            >
+              {agreedToTerms && (
+                <motion.svg
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                >
+                  <path d="M2 6L5 9L10 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </motion.svg>
+              )}
+            </button>
+            <p
+              className="text-[11px] text-[#7A7168] leading-relaxed"
+              style={{ fontFamily: 'var(--font-lora), serif' }}
+            >
+              I agree to the{' '}
+              <button className="text-[#1B2A4A] font-semibold underline underline-offset-2">Terms of Service</button>
+              {' '}and{' '}
+              <button className="text-[#1B2A4A] font-semibold underline underline-offset-2">Privacy Policy</button>
+            </p>
+          </motion.div>
+
           {/* Send OTP Button */}
           <motion.button
             onClick={handleSendOTP}
-            disabled={!isPhoneValid || isLoading}
+            disabled={!canProceed || isLoading}
             whileTap={{ scale: 0.97 }}
             className={`w-full py-4 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-300 ${
-              isPhoneValid
+              canProceed
                 ? 'bg-[#1B2A4A] text-[#FAF7F2] shadow-md hover:bg-[#2A3F6A]'
                 : 'bg-[#E8E0D4] text-[#7A7168] cursor-not-allowed'
             }`}
@@ -186,7 +241,7 @@ export default function LoginScreen({ onLogin, onGoToSignup }: LoginScreenProps)
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
-          className="flex items-center gap-4 my-8"
+          className="flex items-center gap-4 my-6"
         >
           <div className="flex-1 h-px bg-[#D5CBBF]" />
           <span
@@ -213,18 +268,21 @@ export default function LoginScreen({ onLogin, onGoToSignup }: LoginScreenProps)
           </button>
         </motion.div>
 
-        {/* Terms */}
-        <motion.p
+        {/* Security badge */}
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
-          className="text-[10px] text-[#7A7168]/60 text-center mt-8 leading-relaxed"
-          style={{ fontFamily: 'var(--font-lora), serif' }}
+          className="flex items-center justify-center gap-1.5 mt-6"
         >
-          By continuing, you agree to our Terms of Service
-          <br />
-          and Privacy Policy
-        </motion.p>
+          <Shield className="w-3.5 h-3.5 text-[#2C4A3E]/50" />
+          <span
+            className="text-[10px] text-[#7A7168]/50 tracking-wider"
+            style={{ fontFamily: 'var(--font-lora), serif' }}
+          >
+            256-bit encrypted · Your data is secure
+          </span>
+        </motion.div>
       </div>
 
       {/* Bottom decorative */}
