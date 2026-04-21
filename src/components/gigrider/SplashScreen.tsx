@@ -20,8 +20,10 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
   const [progress, setProgress] = useState(0);
   const [taglineIndex, setTaglineIndex] = useState(0);
   const [showRider, setShowRider] = useState(false);
+  const [fadeIn, setFadeIn] = useState(false);
 
   useEffect(() => {
+    setFadeIn(true);
     const interval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
@@ -65,7 +67,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
         {/* Cream Background with subtle pattern */}
         <div className="absolute inset-0 bg-[#FAF7F2] linen-texture" />
 
-        {/* Subtle gradient overlay for depth */}
+        {/* Radial gradient overlay for depth */}
         <div
           className="absolute inset-0"
           style={{
@@ -73,28 +75,58 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
           }}
         />
 
-        {/* Decorative gold corners - enhanced */}
+        {/* Animated particle field - floating gold dots */}
+        <div className="absolute inset-0 pointer-events-none">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <motion.div
+              key={i}
+              initial={{
+                opacity: 0,
+                x: Math.random() * 400 - 200,
+                y: Math.random() * 800 - 400,
+              }}
+              animate={{
+                opacity: [0, 0.15, 0.15, 0],
+                y: [0, -30, -60],
+                scale: [0.5, 1, 0.5],
+              }}
+              transition={{
+                duration: 4 + Math.random() * 3,
+                delay: 0.5 + i * 0.3,
+                repeat: Infinity,
+                repeatDelay: 1,
+              }}
+              className="absolute w-1 h-1 rounded-full bg-[#C9A96E]"
+              style={{
+                left: `${10 + (i * 7) % 80}%`,
+                top: `${20 + (i * 11) % 60}%`,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Decorative gold corners - refined with animation */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0, scale: 0.8, x: -10, y: -10 }}
+          animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
           className="absolute top-8 left-8 w-20 h-20 border-t-2 border-l-2 border-[#C9A96E]/40"
         />
         <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0, scale: 0.8, x: 10, y: -10 }}
+          animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
           className="absolute top-8 right-8 w-20 h-20 border-t-2 border-r-2 border-[#C9A96E]/40"
         />
         <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0, scale: 0.8, x: -10, y: 10 }}
+          animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
           transition={{ duration: 0.8, delay: 0.5 }}
           className="absolute bottom-8 left-8 w-20 h-20 border-b-2 border-l-2 border-[#C9A96E]/40"
         />
         <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0, scale: 0.8, x: 10, y: 10 }}
+          animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
           className="absolute bottom-8 right-8 w-20 h-20 border-b-2 border-r-2 border-[#C9A96E]/40"
         />
@@ -110,7 +142,6 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
               className="absolute right-0 bottom-0"
             >
               <svg width="200" height="280" viewBox="0 0 200 280" fill="none">
-                {/* Simplified rider on scooter silhouette */}
                 <motion.path
                   d="M40 240 Q50 200 60 180 Q70 160 80 150 Q90 140 85 120 Q80 100 90 80 Q100 60 110 80 Q120 100 115 120 Q110 140 120 150 Q130 160 140 180 Q150 200 160 240 Z"
                   fill="#1B2A4A"
@@ -136,14 +167,12 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
                   animate={{ pathLength: 1 }}
                   transition={{ duration: 1.5, delay: 0.8 }}
                 />
-                {/* Wheels */}
                 <motion.circle cx="60" cy="260" r="18" fill="none" stroke="#1B2A4A" strokeWidth="3"
                   initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1, delay: 1 }}
                 />
                 <motion.circle cx="140" cy="260" r="18" fill="none" stroke="#1B2A4A" strokeWidth="3"
                   initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1, delay: 1.1 }}
                 />
-                {/* Delivery bag */}
                 <motion.rect x="75" y="110" width="30" height="35" rx="4" fill="#1B2A4A"
                   initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.4, delay: 1.3 }}
                 />
@@ -151,36 +180,6 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Floating platform badges - animated background elements */}
-        <div className="absolute inset-0 pointer-events-none">
-          {['S', 'Z', 'U', 'D'].map((letter, i) => (
-            <motion.div
-              key={letter}
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{
-                opacity: [0, 0.08, 0.08, 0],
-                scale: [0.5, 1, 1, 0.5],
-                x: [0, (i % 2 === 0 ? 10 : -10), 0],
-                y: [0, (i < 2 ? -10 : 10), 0],
-              }}
-              transition={{
-                duration: 4,
-                delay: 0.8 + i * 0.4,
-                repeat: Infinity,
-                repeatDelay: 2,
-              }}
-              className="absolute w-10 h-10 rounded-full border border-[#C9A96E]/20 flex items-center justify-center text-[12px] font-bold text-[#1B2A4A]/15"
-              style={{
-                top: `${20 + i * 15}%`,
-                left: `${10 + i * 22}%`,
-                fontFamily: 'var(--font-playfair), serif',
-              }}
-            >
-              {letter}
-            </motion.div>
-          ))}
-        </div>
 
         {/* Content */}
         <div className="relative z-10 flex flex-col items-center gap-6 px-8">
@@ -265,7 +264,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
               <div className="w-16 h-px bg-gradient-to-l from-transparent to-[#C9A96E]" />
             </div>
 
-            {/* Cycling Taglines */}
+            {/* Cycling Taglines - Enhanced with typewriter feel */}
             <div className="h-5 flex items-center justify-center overflow-hidden">
               <AnimatePresence mode="wait">
                 <motion.p
@@ -315,6 +314,33 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
               >
                 {Math.min(Math.round(progress), 100)}%
               </p>
+            </div>
+          </motion.div>
+
+          {/* Trust indicators */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 2 }}
+            className="flex items-center gap-4 mt-2"
+          >
+            <div className="flex items-center gap-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#2C4A3E]" />
+              <span className="text-[8px] text-[#7A7168] tracking-wider uppercase" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                8+ Platforms
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#C9A96E]" />
+              <span className="text-[8px] text-[#7A7168] tracking-wider uppercase" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                Smart Stack
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#1B2A4A]" />
+              <span className="text-[8px] text-[#7A7168] tracking-wider uppercase" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                Auto-Accept
+              </span>
             </div>
           </motion.div>
         </div>

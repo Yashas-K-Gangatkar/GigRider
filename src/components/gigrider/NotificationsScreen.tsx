@@ -20,6 +20,15 @@ import {
   Zap,
   Filter,
   X,
+  Volume2,
+  VolumeX,
+  Sparkles,
+  ArrowRight,
+  Bike,
+  MapPin,
+  Clock,
+  Eye,
+  Route,
 } from 'lucide-react';
 
 type NotifType = Notification['type'];
@@ -34,6 +43,21 @@ const NOTIFICATION_ICONS: Record<string, { icon: typeof Bell; color: string; bg:
   tip_received: { icon: Gift, color: 'text-[#C9A96E]', bg: 'bg-[#C9A96E]/10' },
   stack_order: { icon: Layers, color: 'text-[#1B2A4A]', bg: 'bg-[#1B2A4A]/10' },
   system: { icon: Info, color: 'text-[#7A7168]', bg: 'bg-[#F0EBE4]' },
+};
+
+// Action buttons per notification type
+const NOTIFICATION_ACTIONS: Record<string, { label: string; icon: typeof ArrowRight; color: string }[]> = {
+  order_accepted: [{ label: 'View Order', icon: Eye, color: 'text-[#2C4A3E] bg-[#2C4A3E]/8' }],
+  order_completed: [
+    { label: 'View Details', icon: Route, color: 'text-[#2C4A3E] bg-[#2C4A3E]/8' },
+    { label: 'Earnings', icon: DollarSign, color: 'text-[#1B2A4A] bg-[#1B2A4A]/8' },
+  ],
+  earnings_milestone: [{ label: 'View Breakdown', icon: TrendingUp, color: 'text-[#1B2A4A] bg-[#1B2A4A]/8' }],
+  platform_update: [{ label: 'View Update', icon: ArrowRight, color: 'text-[#1B2A4A] bg-[#1B2A4A]/8' }],
+  tier_upgrade: [{ label: 'View Benefits', icon: Sparkles, color: 'text-[#8B5E3C] bg-[#8B5E3C]/8' }],
+  tip_received: [{ label: 'Thank Customer', icon: Star, color: 'text-[#C9A96E] bg-[#C9A96E]/8' }],
+  stack_order: [{ label: 'View Stack', icon: Layers, color: 'text-[#1B2A4A] bg-[#1B2A4A]/8' }],
+  system: [],
 };
 
 const FILTER_TABS: { id: FilterTab; label: string; icon: typeof Bell }[] = [
@@ -81,6 +105,8 @@ export default function NotificationsScreen({ onBack }: NotificationsScreenProps
 
   const [activeFilter, setActiveFilter] = useState<FilterTab>('all');
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   // Filter notifications
   const filteredNotifications = useMemo(() => {
@@ -144,6 +170,21 @@ export default function NotificationsScreen({ onBack }: NotificationsScreenProps
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Sound toggle */}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setSoundEnabled(!soundEnabled)}
+              className={`p-1.5 rounded-lg transition-colors duration-200 ${
+                soundEnabled ? 'bg-[#2C4A3E]/10' : 'bg-[#F0EBE4]'
+              }`}
+            >
+              {soundEnabled ? (
+                <Volume2 className="w-3.5 h-3.5 text-[#2C4A3E]" />
+              ) : (
+                <VolumeX className="w-3.5 h-3.5 text-[#7A7168]" />
+              )}
+            </motion.button>
+
             {unreadCount > 0 && (
               <motion.button
                 whileTap={{ scale: 0.95 }}
@@ -251,6 +292,8 @@ export default function NotificationsScreen({ onBack }: NotificationsScreenProps
               const groupNotifs = grouped[groupName];
               if (!groupNotifs || groupNotifs.length === 0) return null;
 
+              const groupUnread = groupNotifs.filter(n => !n.isRead).length;
+
               return (
                 <div key={groupName}>
                   {/* Group Header */}
@@ -267,6 +310,11 @@ export default function NotificationsScreen({ onBack }: NotificationsScreenProps
                     >
                       {groupNotifs.length}
                     </span>
+                    {groupUnread > 0 && (
+                      <Badge className="bg-[#C9A96E]/10 text-[#8B5E3C] border-[#C9A96E]/20 text-[8px] px-1.5 py-0">
+                        {groupUnread} new
+                      </Badge>
+                    )}
                     <div className="flex-1 h-px bg-gradient-to-r from-[#D5CBBF] to-transparent" />
                   </div>
 
@@ -275,6 +323,8 @@ export default function NotificationsScreen({ onBack }: NotificationsScreenProps
                     {groupNotifs.map((notification, index) => {
                       const iconConfig = NOTIFICATION_ICONS[notification.type] || NOTIFICATION_ICONS.system;
                       const Icon = iconConfig.icon;
+                      const actions = NOTIFICATION_ACTIONS[notification.type] || [];
+                      const isExpanded = expandedId === notification.id;
 
                       return (
                         <motion.div
@@ -297,7 +347,10 @@ export default function NotificationsScreen({ onBack }: NotificationsScreenProps
                           </div>
 
                           <div
-                            onClick={() => !notification.isRead && markRead(notification.id)}
+                            onClick={() => {
+                              if (!notification.isRead) markRead(notification.id);
+                              setExpandedId(isExpanded ? null : notification.id);
+                            }}
                             className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all duration-200 relative ${
                               notification.isRead
                                 ? 'bg-white border-[#D5CBBF]'
@@ -346,6 +399,31 @@ export default function NotificationsScreen({ onBack }: NotificationsScreenProps
                                   </span>
                                 )}
                               </div>
+
+                              {/* Action buttons - shown on expanded or for unread */}
+                              {(isExpanded || !notification.isRead) && actions.length > 0 && (
+                                <motion.div
+                                  initial={{ opacity: 0, y: 4 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ delay: 0.1 }}
+                                  className="flex items-center gap-2 mt-2.5"
+                                >
+                                  {actions.map((action, i) => {
+                                    const ActionIcon = action.icon;
+                                    return (
+                                      <button
+                                        key={i}
+                                        onClick={(e) => { e.stopPropagation(); }}
+                                        className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all duration-200 ${action.color} hover:opacity-80 active:scale-[0.97]`}
+                                        style={{ fontFamily: 'var(--font-lora), serif' }}
+                                      >
+                                        <ActionIcon className="w-3 h-3" />
+                                        {action.label}
+                                      </button>
+                                    );
+                                  })}
+                                </motion.div>
+                              )}
                             </div>
                           </div>
                         </motion.div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { useGigRiderStore, PLATFORMS } from '@/lib/store';
@@ -22,6 +22,9 @@ import {
   X,
   Bike,
   Route,
+  RefreshCw,
+  Sparkles,
+  Eye,
 } from 'lucide-react';
 
 function formatTimestamp(ts: number): string {
@@ -36,6 +39,32 @@ function formatTimestamp(ts: number): string {
 
 type SortMode = 'newest' | 'oldest' | 'highest' | 'longest';
 
+// Animated counter hook
+function useAnimatedNumber(target: number, duration = 800) {
+  const [current, setCurrent] = useState(0);
+  const prevTarget = useRef(target);
+
+  useEffect(() => {
+    if (prevTarget.current === target) return;
+    prevTarget.current = target;
+    const start = current;
+    const diff = target - start;
+    const startTime = Date.now();
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      // Ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCurrent(Math.round(start + diff * eased));
+      if (progress < 1) requestAnimationFrame(animate);
+    };
+    requestAnimationFrame(animate);
+  }, [target, duration, current]);
+
+  return current;
+}
+
 export default function ActivityScreen() {
   const [filter, setFilter] = useState<'all' | 'completed' | 'in-progress' | 'cancelled'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -43,8 +72,16 @@ export default function ActivityScreen() {
   const [sortMode, setSortMode] = useState<SortMode>('newest');
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [swipedId, setSwipedId] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [currentTime, setCurrentTime] = useState(Date.now());
 
   const deliveryHistory = useGigRiderStore(s => s.deliveryHistory);
+
+  // Live clock for session timer display
+  useEffect(() => {
+    const interval = setInterval(() => setCurrentTime(Date.now()), 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const filteredDeliveries = deliveryHistory.filter((d) => {
     if (filter !== 'all' && d.status !== filter) return false;
@@ -101,6 +138,26 @@ export default function ActivityScreen() {
     : 0;
   const avgEarnings = completedToday > 0 ? Math.round(totalEarnings / deliveryHistory.filter(d => d.status === 'completed').length) : 0;
 
+  // Animated values
+  const animatedEarnings = useAnimatedNumber(totalEarnings);
+  const animatedTips = useAnimatedNumber(totalTips);
+  const animatedCompleted = useAnimatedNumber(completedToday);
+
+  // Per-platform breakdown for today
+  const platformBreakdown = useMemo(() => {
+    const today = deliveryHistory.filter(d => d.status === 'completed' && Date.now() - d.timestamp < 86400000);
+    const breakdown: Record<string, { earnings: number; count: number; color: string; letter: string }> = {};
+    today.forEach(d => {
+      const config = PLATFORMS[d.platform];
+      if (!breakdown[d.platform]) {
+        breakdown[d.platform] = { earnings: 0, count: 0, color: config?.color || '#7A7168', letter: config?.letter || d.platform[0].toUpperCase() };
+      }
+      breakdown[d.platform].earnings += d.earnings + (d.tip || 0);
+      breakdown[d.platform].count += 1;
+    });
+    return Object.entries(breakdown).sort(([, a], [, b]) => b.earnings - a.earnings);
+  }, [deliveryHistory]);
+
   const sortLabels: Record<SortMode, string> = {
     newest: 'Newest First',
     oldest: 'Oldest First',
@@ -116,28 +173,47 @@ export default function ActivityScreen() {
     }
   };
 
+  // Refresh handler
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    setTimeout(() => setIsRefreshing(false), 1200);
+  };
+
   return (
     <div className="min-h-screen bg-[#FAF7F2] pb-24">
       {/* Header */}
       <div className="sticky top-0 z-40 bg-[#FAF7F2]/90 backdrop-blur-xl border-b border-[#D5CBBF] px-4 py-3">
         <div className="flex items-center justify-between">
-          <h1
-            className="text-lg font-bold text-[#1B2A4A] tracking-wide"
-            style={{ fontFamily: 'var(--font-playfair), serif' }}
-          >
-            Activity
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1
+              className="text-lg font-bold text-[#1B2A4A] tracking-wide"
+              style={{ fontFamily: 'var(--font-playfair), serif' }}
+            >
+              Activity
+            </h1>
+            <motion.button
+              onClick={handleRefresh}
+              whileTap={{ scale: 0.85, rotate: 180 }}
+              className="p-1"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 text-[#7A7168] ${isRefreshing ? 'animate-spin' : ''}`} />
+            </motion.button>
+          </div>
           <div className="flex items-center gap-2">
             {/* Sort Button */}
             <div className="relative">
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowSortMenu(!showSortMenu)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1B2A4A]/5 rounded-lg text-[10px] font-semibold text-[#1B2A4A]"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold transition-all duration-200 ${
+                  sortMode !== 'newest'
+                    ? 'bg-[#1B2A4A] text-[#FAF7F2]'
+                    : 'bg-[#1B2A4A]/5 text-[#1B2A4A]'
+                }`}
                 style={{ fontFamily: 'var(--font-lora), serif' }}
               >
                 <ArrowUpDown className="w-3.5 h-3.5" />
-                Sort
+                {sortLabels[sortMode]}
               </motion.button>
               <AnimatePresence>
                 {showSortMenu && (
@@ -180,19 +256,28 @@ export default function ActivityScreen() {
       </div>
 
       <div className="px-4 pt-4 space-y-5">
-        {/* Today's Highlights - Enhanced */}
+        {/* Today's Highlights - Enhanced with animated counters */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h3
-            className="text-xs font-semibold text-[#7A7168] tracking-wider uppercase mb-3"
-            style={{ fontFamily: 'var(--font-lora), serif' }}
-          >
-            Today&apos;s Highlights
-          </h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3
+              className="text-xs font-semibold text-[#7A7168] tracking-wider uppercase flex items-center gap-1.5"
+              style={{ fontFamily: 'var(--font-lora), serif' }}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-[#C9A96E]" />
+              Today&apos;s Highlights
+            </h3>
+            <span
+              className="text-[10px] text-[#C9A96E] font-semibold"
+              style={{ fontFamily: 'var(--font-lora), serif' }}
+            >
+              {new Date(currentTime).toLocaleDateString('en-IN', { weekday: 'long', month: 'short', day: 'numeric' })}
+            </span>
+          </div>
           <div className="grid grid-cols-2 gap-2.5">
-            <div className="bg-white rounded-xl p-4 border border-[#D5CBBF] card-elegant col-span-1 row-span-1">
+            <div className="bg-white rounded-xl p-4 border border-[#D5CBBF] card-elegant col-span-1">
               <div className="flex items-center justify-between mb-2">
                 <div className="w-8 h-8 rounded-full bg-[#2C4A3E]/10 flex items-center justify-center">
                   <CheckCircle2 className="w-4 h-4 text-[#2C4A3E]" />
@@ -203,10 +288,10 @@ export default function ActivityScreen() {
                 </Badge>
               </div>
               <p
-                className="text-2xl font-bold text-[#1B2A4A]"
+                className="text-2xl font-bold text-[#1B2A4A] tabular-nums"
                 style={{ fontFamily: 'var(--font-playfair), serif' }}
               >
-                {completedToday}
+                {animatedCompleted}
               </p>
               <p
                 className="text-[10px] text-[#7A7168] tracking-wider uppercase mt-0.5"
@@ -228,10 +313,10 @@ export default function ActivityScreen() {
                 </span>
               </div>
               <p
-                className="text-2xl font-bold text-[#2C4A3E]"
+                className="text-2xl font-bold text-[#2C4A3E] tabular-nums"
                 style={{ fontFamily: 'var(--font-playfair), serif' }}
               >
-                ₹{totalEarnings.toLocaleString()}
+                ₹{animatedEarnings.toLocaleString()}
               </p>
               <p
                 className="text-[10px] text-[#7A7168] tracking-wider uppercase mt-0.5"
@@ -247,10 +332,10 @@ export default function ActivityScreen() {
                 </div>
               </div>
               <p
-                className="text-2xl font-bold text-[#8B5E3C]"
+                className="text-2xl font-bold text-[#8B5E3C] tabular-nums"
                 style={{ fontFamily: 'var(--font-playfair), serif' }}
               >
-                ₹{totalTips}
+                ₹{animatedTips}
               </p>
               <p
                 className="text-[10px] text-[#7A7168] tracking-wider uppercase mt-0.5"
@@ -266,7 +351,7 @@ export default function ActivityScreen() {
                 </div>
               </div>
               <p
-                className="text-2xl font-bold text-[#1B2A4A]"
+                className="text-2xl font-bold text-[#1B2A4A] tabular-nums"
                 style={{ fontFamily: 'var(--font-playfair), serif' }}
               >
                 {avgDeliveryTime}m
@@ -279,9 +364,65 @@ export default function ActivityScreen() {
               </p>
             </div>
           </div>
+
+          {/* Platform Earnings Breakdown - Mini bar chart */}
+          {platformBreakdown.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="mt-3 bg-white rounded-xl p-3 border border-[#D5CBBF] card-elegant"
+            >
+              <p
+                className="text-[9px] text-[#7A7168] tracking-wider uppercase mb-2.5"
+                style={{ fontFamily: 'var(--font-lora), serif' }}
+              >
+                Today&apos;s Platform Breakdown
+              </p>
+              <div className="space-y-2">
+                {platformBreakdown.map(([platformId, data]) => {
+                  const maxEarning = platformBreakdown[0][1].earnings || 1;
+                  const pct = (data.earnings / maxEarning) * 100;
+                  return (
+                    <div key={platformId} className="flex items-center gap-2.5">
+                      <div
+                        className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white shrink-0"
+                        style={{ backgroundColor: data.color }}
+                      >
+                        {data.letter}
+                      </div>
+                      <div className="flex-1">
+                        <div className="w-full bg-[#F0EBE4] rounded-full h-2">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${pct}%` }}
+                            transition={{ duration: 0.8, delay: 0.1 }}
+                            className="h-2 rounded-full"
+                            style={{ backgroundColor: data.color }}
+                          />
+                        </div>
+                      </div>
+                      <span
+                        className="text-[10px] text-[#1B2A4A] font-bold min-w-[48px] text-right tabular-nums"
+                        style={{ fontFamily: 'var(--font-playfair), serif' }}
+                      >
+                        ₹{data.earnings}
+                      </span>
+                      <span
+                        className="text-[9px] text-[#7A7168] min-w-[20px] text-right"
+                        style={{ fontFamily: 'var(--font-lora), serif' }}
+                      >
+                        {data.count}t
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
         </motion.div>
 
-        {/* Search - Enhanced */}
+        {/* Search - Enhanced with focus animation */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -309,7 +450,7 @@ export default function ActivityScreen() {
           )}
         </motion.div>
 
-        {/* Filter Tabs */}
+        {/* Filter Tabs - Enhanced with count badges */}
         <div className="flex items-center gap-1 bg-white rounded-lg p-1 border border-[#D5CBBF]">
           {[
             { id: 'all' as const, label: 'All', count: deliveryHistory.length },
@@ -359,25 +500,34 @@ export default function ActivityScreen() {
             const deliveries = groupedDeliveries[groupName];
             if (!deliveries || deliveries.length === 0) return null;
 
-            const groupEarnings = deliveries.filter(d => d.status === 'completed').reduce((sum, d) => sum + d.earnings, 0);
+            const groupEarnings = deliveries.filter(d => d.status === 'completed').reduce((sum, d) => sum + d.earnings + (d.tip || 0), 0);
+            const groupTips = deliveries.filter(d => d.status === 'completed' && d.tip).reduce((sum, d) => sum + (d.tip || 0), 0);
 
             return (
               <div key={groupName}>
-                {/* Date Group Header - Enhanced */}
+                {/* Date Group Header - Enhanced with earnings summary */}
                 <div className="flex items-center gap-2 mb-2.5">
-                  <Calendar className="w-3.5 h-3.5 text-[#C9A96E]" />
-                  <h3
-                    className="text-xs font-semibold text-[#1B2A4A] tracking-wide"
-                    style={{ fontFamily: 'var(--font-playfair), serif' }}
-                  >
-                    {groupName}
-                  </h3>
+                  <div className="flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-[#C9A96E]" />
+                    <h3
+                      className="text-xs font-semibold text-[#1B2A4A] tracking-wide"
+                      style={{ fontFamily: 'var(--font-playfair), serif' }}
+                    >
+                      {groupName}
+                    </h3>
+                  </div>
                   <span
                     className="text-[10px] text-[#7A7168] tracking-wider"
                     style={{ fontFamily: 'var(--font-lora), serif' }}
                   >
                     {deliveries.length} trip{deliveries.length !== 1 ? 's' : ''}
-                    {groupEarnings > 0 && ` · ₹${groupEarnings}`}
+                    {groupEarnings > 0 && (
+                      <>
+                        <span className="mx-1 text-[#D5CBBF]">·</span>
+                        <span className="text-[#2C4A3E] font-semibold">₹{groupEarnings}</span>
+                        {groupTips > 0 && <span className="text-[#8B5E3C]"> +₹{groupTips} tips</span>}
+                      </>
+                    )}
                   </span>
                   <div className="flex-1 h-px bg-gradient-to-r from-[#D5CBBF] to-transparent" />
                 </div>
@@ -396,6 +546,7 @@ export default function ActivityScreen() {
                     const isExpanded = expandedId === delivery.id;
                     const isHighlighted = delivery.tip && delivery.tip >= 20;
                     const isHighEarning = delivery.earnings >= 60;
+                    const isBestDelivery = delivery.earnings >= 80 || (delivery.tip && delivery.tip >= 25);
 
                     return (
                       <motion.div
@@ -422,7 +573,7 @@ export default function ActivityScreen() {
                         <div
                           className={`bg-white rounded-xl border border-[#D5CBBF] overflow-hidden card-elegant relative ${
                             isHighlighted ? 'ring-1 ring-[#C9A96E]/30' : ''
-                          } ${swipedId === delivery.id ? 'ring-1 ring-[#1B2A4A]/30' : ''}`}
+                          } ${isBestDelivery ? 'ring-1 ring-[#2C4A3E]/20' : ''} ${swipedId === delivery.id ? 'ring-1 ring-[#1B2A4A]/30' : ''}`}
                           style={{ borderLeftWidth: '3px', borderLeftColor: config?.color || '#7A7168' }}
                         >
                           <button
@@ -430,8 +581,14 @@ export default function ActivityScreen() {
                             className="w-full p-4 text-left"
                           >
                             {/* Highlight badges row */}
-                            {(isHighlighted || isHighEarning) && (
+                            {(isHighlighted || isHighEarning || isBestDelivery) && (
                               <div className="flex items-center gap-1.5 mb-2">
+                                {isBestDelivery && (
+                                  <Badge className="bg-[#C9A96E]/15 text-[#8B5E3C] border-[#C9A96E]/25 text-[8px] px-1.5 py-0">
+                                    <Sparkles className="w-2.5 h-2.5 mr-0.5" />
+                                    BEST
+                                  </Badge>
+                                )}
                                 {isHighEarning && (
                                   <Badge className="bg-[#2C4A3E]/8 text-[#2C4A3E] border-[#2C4A3E]/12 text-[8px] px-1.5 py-0">
                                     <TrendingUp className="w-2.5 h-2.5 mr-0.5" />

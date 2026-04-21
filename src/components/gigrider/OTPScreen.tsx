@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
-import { Shield, CheckCircle2, ArrowRight, RotateCcw } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Shield, CheckCircle2, ArrowRight, RotateCcw, Phone } from 'lucide-react';
 
 interface OTPScreenProps {
   phone: string;
@@ -17,7 +17,15 @@ export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps)
   const [error, setError] = useState('');
   const [countdown, setCountdown] = useState(30);
   const [canResend, setCanResend] = useState(false);
+  const [shakeError, setShakeError] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // Auto-focus first input on mount
+  useEffect(() => {
+    setTimeout(() => {
+      inputRefs.current[0]?.focus();
+    }, 500);
+  }, []);
 
   // Countdown timer for resend
   useEffect(() => {
@@ -104,21 +112,25 @@ export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps)
     ? `+91 ${phone.slice(0, 2)}****${phone.slice(-2)}`
     : '+91 ******00';
 
+  const filledCount = otp.filter(d => d !== '').length;
+
   return (
-    <div className="min-h-screen bg-[#FAF7F2] flex flex-col linen-texture">
+    <div className="min-h-screen bg-[#FAF7F2] flex flex-col linen-texture relative">
       {/* Decorative corners */}
       <div className="absolute top-6 left-6 w-12 h-12 border-t-2 border-l-2 border-[#C9A96E]/30" />
       <div className="absolute top-6 right-6 w-12 h-12 border-t-2 border-r-2 border-[#C9A96E]/30" />
 
       <div className="flex-1 flex flex-col justify-center px-8 max-w-md mx-auto w-full">
-        {/* Shield Icon */}
+        {/* Shield Icon - Animated */}
         <motion.div
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.6, type: 'spring', stiffness: 120 }}
           className="text-center mb-10"
         >
-          <div
+          <motion.div
+            animate={isVerified ? { scale: [1, 1.1, 1] } : {}}
+            transition={{ duration: 0.5 }}
             className={`w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center border-2 transition-all duration-500 ${
               isVerified
                 ? 'bg-[#2C4A3E]/10 border-[#2C4A3E]/30'
@@ -136,7 +148,7 @@ export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps)
             ) : (
               <Shield className="w-10 h-10 text-[#1B2A4A]" />
             )}
-          </div>
+          </motion.div>
 
           <h1
             className="text-2xl tracking-[0.05em] text-[#1B2A4A] mb-2"
@@ -145,6 +157,33 @@ export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps)
             {isVerified ? 'Verified' : 'Verify OTP'}
           </h1>
 
+          {/* Step indicator */}
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <div className="flex items-center gap-1.5">
+              <div className="w-5 h-5 rounded-full bg-[#2C4A3E]/20 flex items-center justify-center">
+                <CheckCircle2 className="w-3 h-3 text-[#2C4A3E]" />
+              </div>
+              <span className="text-[9px] text-[#2C4A3E] font-semibold tracking-wider uppercase" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                Phone
+              </span>
+            </div>
+            <div className="w-6 h-px bg-[#2C4A3E]/30" />
+            <div className="flex items-center gap-1.5">
+              <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
+                isVerified ? 'bg-[#2C4A3E]/20' : 'bg-[#1B2A4A]'
+              }`}>
+                {isVerified ? (
+                  <CheckCircle2 className="w-3 h-3 text-[#2C4A3E]" />
+                ) : (
+                  <span className="text-[8px] font-bold text-[#FAF7F2]" style={{ fontFamily: 'var(--font-lora), serif' }}>2</span>
+                )}
+              </div>
+              <span className={`text-[9px] font-semibold tracking-wider uppercase ${isVerified ? 'text-[#2C4A3E]' : 'text-[#1B2A4A]'}`} style={{ fontFamily: 'var(--font-lora), serif' }}>
+                Verify
+              </span>
+            </div>
+          </div>
+
           {/* Ornamental divider */}
           <div className="flex items-center justify-center gap-3 mb-3">
             <div className="w-8 h-px bg-gradient-to-r from-transparent to-[#C9A96E]" />
@@ -152,15 +191,18 @@ export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps)
             <div className="w-8 h-px bg-gradient-to-l from-transparent to-[#C9A96E]" />
           </div>
 
-          <p
-            className="text-xs text-[#7A7168]"
-            style={{ fontFamily: 'var(--font-lora), serif' }}
-          >
-            {isVerified
-              ? 'Identity confirmed. Welcome aboard.'
-              : `We've sent a verification code to ${maskedPhone}`
-            }
-          </p>
+          <div className="flex items-center justify-center gap-1.5">
+            <Phone className="w-3 h-3 text-[#7A7168]" />
+            <p
+              className="text-xs text-[#7A7168]"
+              style={{ fontFamily: 'var(--font-lora), serif' }}
+            >
+              {isVerified
+                ? 'Identity confirmed. Welcome aboard.'
+                : `Code sent to ${maskedPhone}`
+              }
+            </p>
+          </div>
         </motion.div>
 
         {/* OTP Input */}
@@ -177,7 +219,11 @@ export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps)
               Enter 6-Digit Code
             </label>
 
-            <div className="flex gap-2.5 justify-center mb-6">
+            <motion.div
+              animate={shakeError ? { x: [-8, 8, -6, 6, -4, 4, 0] } : {}}
+              transition={{ duration: 0.4 }}
+              className="flex gap-2.5 justify-center mb-4"
+            >
               {otp.map((digit, index) => (
                 <motion.div
                   key={index}
@@ -196,12 +242,26 @@ export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps)
                     disabled={isVerifying}
                     className={`w-11 h-14 text-center text-lg font-bold rounded-xl border-2 transition-all duration-200 outline-none ${
                       digit
-                        ? 'border-[#1B2A4A] bg-white text-[#1B2A4A]'
+                        ? 'border-[#1B2A4A] bg-white text-[#1B2A4A] shadow-sm'
                         : 'border-[#D5CBBF] bg-white text-[#2C2C2C]'
                     } ${isVerifying ? 'opacity-50' : ''} focus:border-[#1B2A4A] focus:ring-2 focus:ring-[#1B2A4A]/10`}
                     style={{ fontFamily: 'var(--font-playfair), serif' }}
                   />
                 </motion.div>
+              ))}
+            </motion.div>
+
+            {/* Progress indicator */}
+            <div className="flex items-center justify-center gap-1 mb-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ scale: 0.5 }}
+                  animate={{ scale: 1 }}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    i < filledCount ? 'bg-[#1B2A4A]' : 'bg-[#E8E0D4]'
+                  }`}
+                />
               ))}
             </div>
 
@@ -238,7 +298,7 @@ export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps)
               </motion.p>
             )}
 
-            {/* Demo hint */}
+            {/* Demo hint - Enhanced */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -256,14 +316,16 @@ export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps)
             {/* Resend */}
             <div className="text-center">
               {canResend ? (
-                <button
+                <motion.button
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
                   onClick={handleResend}
                   className="flex items-center gap-1.5 mx-auto text-xs text-[#1B2A4A] font-semibold hover:underline"
                   style={{ fontFamily: 'var(--font-lora), serif' }}
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                   Resend Code
-                </button>
+                </motion.button>
               ) : (
                 <p
                   className="text-xs text-[#7A7168]"
@@ -292,6 +354,14 @@ export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps)
               transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
               className="bg-[#2C4A3E]/10 border border-[#2C4A3E]/20 rounded-xl p-6"
             >
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 12, delay: 0.2 }}
+                className="w-12 h-12 rounded-full bg-[#2C4A3E]/20 flex items-center justify-center mx-auto mb-3"
+              >
+                <CheckCircle2 className="w-6 h-6 text-[#2C4A3E]" />
+              </motion.div>
               <p
                 className="text-sm text-[#2C4A3E] font-semibold mb-1"
                 style={{ fontFamily: 'var(--font-playfair), serif' }}
@@ -308,6 +378,29 @@ export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps)
           </motion.div>
         )}
       </div>
+
+      {/* Back button */}
+      {!isVerified && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="absolute top-12 left-6 z-10"
+        >
+          <button
+            onClick={onBack}
+            className="flex items-center gap-1.5 text-[#7A7168] hover:text-[#1B2A4A] transition-colors duration-200"
+          >
+            <ArrowRight className="w-4 h-4 rotate-180" />
+            <span
+              className="text-xs tracking-wider uppercase"
+              style={{ fontFamily: 'var(--font-lora), serif' }}
+            >
+              Back
+            </span>
+          </button>
+        </motion.div>
+      )}
 
       {/* Bottom decorative corners */}
       <div className="absolute bottom-6 left-6 w-12 h-12 border-b-2 border-l-2 border-[#C9A96E]/30" />

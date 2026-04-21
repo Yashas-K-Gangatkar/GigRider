@@ -13,6 +13,7 @@ export default function LoginScreen({ onLogin, onGoToSignup }: LoginScreenProps)
   const [phone, setPhone] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [showTermsDetail, setShowTermsDetail] = useState(false);
 
   // Format phone as XXXXX XXXXX
   const formatPhone = (value: string) => {
@@ -36,12 +37,37 @@ export default function LoginScreen({ onLogin, onGoToSignup }: LoginScreenProps)
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] flex flex-col linen-texture">
+    <div className="min-h-screen bg-[#FAF7F2] flex flex-col linen-texture relative">
       {/* Decorative gold corners */}
       <div className="absolute top-6 left-6 w-12 h-12 border-t-2 border-l-2 border-[#C9A96E]/30" />
       <div className="absolute top-6 right-6 w-12 h-12 border-t-2 border-r-2 border-[#C9A96E]/30" />
 
-      <div className="flex-1 flex flex-col justify-center px-8 max-w-md mx-auto w-full">
+      {/* Subtle floating particles */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {[0, 1, 2, 3].map((i) => (
+          <motion.div
+            key={i}
+            animate={{
+              y: [0, -20, 0],
+              opacity: [0, 0.08, 0],
+              scale: [0.8, 1, 0.8],
+            }}
+            transition={{
+              duration: 5 + i,
+              repeat: Infinity,
+              delay: i * 1.2,
+              ease: 'easeInOut',
+            }}
+            className="absolute w-6 h-6 rounded-full border border-[#C9A96E]/15"
+            style={{
+              left: `${15 + i * 20}%`,
+              top: `${30 + i * 12}%`,
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="flex-1 flex flex-col justify-center px-8 max-w-md mx-auto w-full relative z-10">
         {/* Logo */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -92,12 +118,13 @@ export default function LoginScreen({ onLogin, onGoToSignup }: LoginScreenProps)
           transition={{ duration: 0.5, delay: 0.3 }}
           className="mb-6"
         >
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-6 h-6 rounded-full bg-[#1B2A4A] flex items-center justify-center">
+          {/* Step Progress */}
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-7 h-7 rounded-full bg-[#1B2A4A] flex items-center justify-center shadow-sm">
               <span className="text-[10px] font-bold text-[#FAF7F2]" style={{ fontFamily: 'var(--font-lora), serif' }}>1</span>
             </div>
-            <div className="flex-1 h-px bg-[#D5CBBF]" />
-            <div className="w-6 h-6 rounded-full bg-[#E8E0D4] flex items-center justify-center">
+            <div className="flex-1 h-1 bg-gradient-to-r from-[#1B2A4A] to-[#D5CBBF] rounded-full" />
+            <div className="w-7 h-7 rounded-full bg-[#E8E0D4] flex items-center justify-center">
               <span className="text-[10px] font-bold text-[#7A7168]" style={{ fontFamily: 'var(--font-lora), serif' }}>2</span>
             </div>
             <span className="text-[9px] text-[#7A7168] tracking-wider uppercase" style={{ fontFamily: 'var(--font-lora), serif' }}>
@@ -151,21 +178,33 @@ export default function LoginScreen({ onLogin, onGoToSignup }: LoginScreenProps)
                 placeholder="Enter your mobile number"
                 className={`w-full pl-24 pr-10 py-4 bg-white border rounded-xl text-[#2C2C2C] text-sm placeholder:text-[#7A7168]/50 focus:outline-none transition-all duration-200 ${
                   isPhoneValid
-                    ? 'border-[#2C4A3E] focus:ring-2 focus:ring-[#2C4A3E]/10'
+                    ? 'border-[#2C4A3E] focus:ring-2 focus:ring-[#2C4A3E]/10 shadow-[0_0_0_1px_rgba(44,74,62,0.1)]'
                     : 'border-[#D5CBBF] focus:border-[#1B2A4A] focus:ring-2 focus:ring-[#1B2A4A]/10'
                 }`}
                 style={{ fontFamily: 'var(--font-lora), serif' }}
               />
-              {/* Valid checkmark */}
+              {/* Valid checkmark - animated */}
               {isPhoneValid && (
                 <motion.div
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
+                  initial={{ scale: 0, opacity: 0, rotate: -90 }}
+                  animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 15 }}
                   className="absolute right-4 top-1/2 -translate-y-1/2"
                 >
                   <CheckCircle2 className="w-5 h-5 text-[#2C4A3E]" />
                 </motion.div>
               )}
+            </div>
+            {/* Phone digit counter */}
+            <div className="flex items-center justify-between mt-1.5 px-1">
+              <span className="text-[9px] text-[#7A7168]/40" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                10-digit mobile number
+              </span>
+              <span className={`text-[9px] font-medium tabular-nums ${
+                rawPhone.length >= 10 ? 'text-[#2C4A3E]' : 'text-[#7A7168]/40'
+              }`} style={{ fontFamily: 'var(--font-lora), serif' }}>
+                {rawPhone.length}/10
+              </span>
             </div>
           </div>
 
@@ -216,7 +255,7 @@ export default function LoginScreen({ onLogin, onGoToSignup }: LoginScreenProps)
             whileTap={{ scale: 0.97 }}
             className={`w-full py-4 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-300 ${
               canProceed
-                ? 'bg-[#1B2A4A] text-[#FAF7F2] shadow-md hover:bg-[#2A3F6A]'
+                ? 'bg-[#1B2A4A] text-[#FAF7F2] shadow-md hover:bg-[#2A3F6A] hover:shadow-lg'
                 : 'bg-[#E8E0D4] text-[#7A7168] cursor-not-allowed'
             }`}
             style={{ fontFamily: 'var(--font-lora), serif' }}
@@ -268,20 +307,40 @@ export default function LoginScreen({ onLogin, onGoToSignup }: LoginScreenProps)
           </button>
         </motion.div>
 
-        {/* Security badge */}
+        {/* Trust badges */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
-          className="flex items-center justify-center gap-1.5 mt-6"
+          className="mt-6 space-y-2"
         >
-          <Shield className="w-3.5 h-3.5 text-[#2C4A3E]/50" />
-          <span
-            className="text-[10px] text-[#7A7168]/50 tracking-wider"
+          <div className="flex items-center justify-center gap-4">
+            <div className="flex items-center gap-1.5">
+              <Shield className="w-3.5 h-3.5 text-[#2C4A3E]/40" />
+              <span
+                className="text-[9px] text-[#7A7168]/50 tracking-wider"
+                style={{ fontFamily: 'var(--font-lora), serif' }}
+              >
+                256-bit Encrypted
+              </span>
+            </div>
+            <div className="w-px h-3 bg-[#D5CBBF]/50" />
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="w-3 h-3 text-[#2C4A3E]/40" />
+              <span
+                className="text-[9px] text-[#7A7168]/50 tracking-wider"
+                style={{ fontFamily: 'var(--font-lora), serif' }}
+              >
+                OTP Verified
+              </span>
+            </div>
+          </div>
+          <p
+            className="text-[8px] text-[#7A7168]/30 text-center tracking-wider"
             style={{ fontFamily: 'var(--font-lora), serif' }}
           >
-            256-bit encrypted · Your data is secure
-          </span>
+            Trusted by 50,000+ delivery partners across India
+          </p>
         </motion.div>
       </div>
 
