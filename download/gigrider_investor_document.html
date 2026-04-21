@@ -1,0 +1,1957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GigRider - Investor Document</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  @page {
+    size: 210mm 297mm;
+    margin: 0;
+  }
+
+  :root {
+    --cream: #FBF7F0;
+    --cream-dark: #F5EDE0;
+    --navy: #1B2A4A;
+    --navy-light: #2C3E6B;
+    --gold: #C9A84C;
+    --gold-light: #D4BA6A;
+    --gold-dark: #A88B35;
+    --text: #2A2A2A;
+    --text-muted: #6B6B6B;
+    --white: #FFFFFF;
+    --border: #E0D5C5;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--cream);
+    font-family: 'Lora', 'Tinos', Georgia, serif;
+    color: var(--navy);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 0;
+    margin: 0;
+    page-break-after: always;
+    position: relative;
+    background: var(--cream);
+    overflow: hidden;
+  }
+
+  .page:last-child {
+    page-break-after: auto;
+  }
+
+  /* ==================== COVER PAGE ==================== */
+  .cover-page {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+  }
+
+  .cover-page::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(ellipse at 20% 80%, rgba(201,168,76,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(27,42,74,0.04) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  .cover-ornament-top {
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    position: absolute;
+    top: 50px;
+  }
+
+  .cover-ornament-bottom {
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    position: absolute;
+    bottom: 50px;
+  }
+
+  .cover-badge {
+    display: inline-block;
+    border: 1px solid var(--gold);
+    padding: 6px 20px;
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold-dark);
+    margin-bottom: 40px;
+  }
+
+  .cover-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 64px;
+    font-weight: 800;
+    color: var(--navy);
+    letter-spacing: -1px;
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+
+  .cover-title span {
+    color: var(--gold);
+  }
+
+  .cover-subtitle {
+    font-family: 'Lora', serif;
+    font-size: 18px;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--navy-light);
+    margin-top: 16px;
+    margin-bottom: 48px;
+  }
+
+  .cover-tagline {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--navy);
+    letter-spacing: 1px;
+    margin-bottom: 48px;
+  }
+
+  .cover-divider {
+    width: 80px;
+    height: 2px;
+    background: var(--gold);
+    margin: 0 auto 40px auto;
+  }
+
+  .cover-meta {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    line-height: 2;
+  }
+
+  .cover-confidential {
+    position: absolute;
+    bottom: 70px;
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold-dark);
+    opacity: 0.7;
+  }
+
+  /* ==================== SECTION DIVIDERS ==================== */
+  .section-page {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 80px 70px;
+    position: relative;
+  }
+
+  .section-page::before {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 40%;
+    background: linear-gradient(135deg, rgba(27,42,74,0.03), rgba(201,168,76,0.03));
+    pointer-events: none;
+  }
+
+  .section-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 120px;
+    font-weight: 900;
+    color: var(--gold);
+    opacity: 0.15;
+    position: absolute;
+    top: 40px;
+    right: 60px;
+    line-height: 1;
+  }
+
+  .section-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold-dark);
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 44px;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1.2;
+    margin-bottom: 20px;
+  }
+
+  .section-subtitle {
+    font-family: 'Lora', serif;
+    font-size: 16px;
+    font-style: italic;
+    color: var(--navy-light);
+    max-width: 500px;
+    line-height: 1.7;
+  }
+
+  .section-divider-v {
+    width: 60px;
+    height: 3px;
+    background: var(--gold);
+    margin: 24px 0;
+  }
+
+  /* ==================== CONTENT PAGES ==================== */
+  .content-page {
+    padding: 50px 60px 50px 60px;
+  }
+
+  .content-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 28px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .content-header-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--gold);
+    margin-right: 16px;
+  }
+
+  .content-header-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--navy);
+  }
+
+  .content-body {
+    font-family: 'Lora', serif;
+    font-size: 11.5px;
+    line-height: 1.8;
+    color: var(--text);
+    text-align: justify;
+  }
+
+  .content-body p {
+    margin-bottom: 12px;
+  }
+
+  .content-body strong {
+    color: var(--navy);
+    font-weight: 600;
+  }
+
+  .content-body em {
+    color: var(--navy-light);
+  }
+
+  .content-body ul, .content-body ol {
+    margin: 8px 0 12px 24px;
+  }
+
+  .content-body li {
+    margin-bottom: 6px;
+  }
+
+  h3.sub-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--navy);
+    margin: 20px 0 10px 0;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ==================== TABLES ==================== */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+  }
+
+  thead th {
+    background: var(--navy);
+    color: var(--cream);
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 9.5px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  thead th:first-child {
+    border-radius: 4px 0 0 0;
+  }
+
+  thead th:last-child {
+    border-radius: 0 4px 0 0;
+  }
+
+  tbody td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: top;
+  }
+
+  tbody tr:nth-child(even) {
+    background: rgba(201,168,76,0.04);
+  }
+
+  tbody tr:hover {
+    background: rgba(201,168,76,0.08);
+  }
+
+  .total-row td {
+    background: var(--navy) !important;
+    color: var(--cream) !important;
+    font-weight: 700;
+    font-size: 10.5px;
+  }
+
+  .total-row td:first-child {
+    border-radius: 0 0 0 4px;
+  }
+
+  .total-row td:last-child {
+    border-radius: 0 0 4px 0;
+  }
+
+  /* ==================== STAT CARDS ==================== */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin: 20px 0;
+  }
+
+  .stat-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 18px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--gold);
+  }
+
+  .stat-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--navy);
+    line-height: 1;
+  }
+
+  .stat-unit {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    color: var(--gold-dark);
+    font-weight: 600;
+  }
+
+  .stat-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+
+  /* ==================== HIGHLIGHT BOX ==================== */
+  .highlight-box {
+    background: var(--navy);
+    color: var(--cream);
+    border-radius: 6px;
+    padding: 20px 24px;
+    margin: 16px 0;
+    position: relative;
+  }
+
+  .highlight-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--gold);
+    border-radius: 6px 6px 0 0;
+  }
+
+  .highlight-box h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+
+  .highlight-box p {
+    font-family: 'Lora', serif;
+    font-size: 11px;
+    line-height: 1.7;
+    color: rgba(251,247,240,0.9);
+  }
+
+  /* ==================== CALLOUT ==================== */
+  .callout {
+    border-left: 3px solid var(--gold);
+    padding: 14px 18px;
+    margin: 16px 0;
+    background: rgba(201,168,76,0.05);
+  }
+
+  .callout p {
+    font-family: 'Lora', serif;
+    font-size: 11.5px;
+    font-style: italic;
+    color: var(--navy-light);
+    line-height: 1.7;
+  }
+
+  /* ==================== FOOTER ==================== */
+  .page-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 60px;
+    border-top: 1px solid var(--border);
+    font-family: 'Inter', sans-serif;
+    font-size: 8px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .page-footer .gold-line {
+    color: var(--gold);
+  }
+
+  /* ==================== PATENT HEADER ==================== */
+  .patent-header {
+    background: var(--navy);
+    color: var(--cream);
+    padding: 24px 28px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    position: relative;
+  }
+
+  .patent-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--gold);
+    border-radius: 0 0 6px 6px;
+  }
+
+  .patent-header .patent-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+
+  .patent-header .patent-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--cream);
+    line-height: 1.4;
+  }
+
+  .patent-header .patent-meta {
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    color: rgba(251,247,240,0.6);
+    margin-top: 8px;
+    letter-spacing: 0.5px;
+  }
+
+  /* ==================== NDA STYLING ==================== */
+  .nda-section {
+    margin: 16px 0;
+  }
+
+  .nda-section h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sig-block {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-top: 24px;
+  }
+
+  .sig-field {
+    margin-bottom: 12px;
+  }
+
+  .sig-field .label {
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+
+  .sig-field .line {
+    border-bottom: 1px solid var(--navy);
+    height: 24px;
+  }
+
+  /* ==================== SLIDE GUIDE ==================== */
+  .slide-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 10px 0;
+    position: relative;
+  }
+
+  .slide-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--gold);
+    border-radius: 6px 0 0 6px;
+  }
+
+  .slide-card .slide-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gold);
+    display: inline;
+  }
+
+  .slide-card .slide-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--navy);
+    display: inline;
+    margin-left: 8px;
+  }
+
+  .slide-card .slide-desc {
+    font-family: 'Lora', serif;
+    font-size: 10.5px;
+    line-height: 1.7;
+    color: var(--text);
+    margin-top: 6px;
+  }
+
+  /* ==================== QA STYLING ==================== */
+  .qa-item {
+    margin: 14px 0;
+    padding: 14px 18px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  .qa-question {
+    font-family: 'Playfair Display', serif;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 8px;
+  }
+
+  .qa-question::before {
+    content: 'Q: ';
+    color: var(--gold);
+    font-weight: 700;
+  }
+
+  .qa-answer {
+    font-family: 'Lora', serif;
+    font-size: 10.5px;
+    line-height: 1.7;
+    color: var(--text);
+  }
+
+  /* ==================== CHECKLIST ==================== */
+  .checklist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .checklist li {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    font-family: 'Inter', sans-serif;
+    font-size: 10.5px;
+    color: var(--text);
+    display: flex;
+    align-items: flex-start;
+  }
+
+  .checklist li::before {
+    content: '';
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid var(--gold);
+    border-radius: 2px;
+    margin-right: 10px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* ==================== TOC ==================== */
+  .toc-page {
+    padding: 70px 70px;
+  }
+
+  .toc-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 8px;
+  }
+
+  .toc-divider {
+    width: 60px;
+    height: 3px;
+    background: var(--gold);
+    margin-bottom: 32px;
+  }
+
+  .toc-entry {
+    display: flex;
+    align-items: baseline;
+    padding: 10px 0;
+    border-bottom: 1px dotted var(--border);
+  }
+
+  .toc-entry .toc-part {
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold-dark);
+    min-width: 50px;
+  }
+
+  .toc-entry .toc-label {
+    font-family: 'Playfair Display', serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--navy);
+    flex: 1;
+  }
+
+  .toc-entry .toc-dots {
+    flex: 1;
+    border-bottom: 1px dotted var(--border);
+    margin: 0 12px;
+    min-width: 30px;
+  }
+
+  .toc-entry.toc-section {
+    padding: 14px 0 6px 0;
+    border-bottom: none;
+  }
+
+  .toc-entry.toc-section .toc-label {
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  /* ==================== REVENUE STREAM CARD ==================== */
+  .stream-card {
+    margin-bottom: 20px;
+  }
+
+  .stream-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  .stream-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--gold);
+    margin-right: 12px;
+    line-height: 1;
+  }
+
+  .stream-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--navy);
+  }
+
+  .stream-body {
+    font-family: 'Lora', serif;
+    font-size: 11px;
+    line-height: 1.75;
+    color: var(--text);
+    text-align: justify;
+    padding-left: 36px;
+  }
+
+  .stream-revenue {
+    display: inline-block;
+    background: var(--navy);
+    color: var(--gold);
+    font-family: 'Inter', sans-serif;
+    font-size: 9.5px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 3px;
+    margin-top: 6px;
+  }
+
+  /* ==================== DEMO FLOW ==================== */
+  .demo-step {
+    display: flex;
+    align-items: flex-start;
+    margin: 10px 0;
+  }
+
+  .demo-step-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--gold);
+    min-width: 30px;
+  }
+
+  .demo-step-content {
+    flex: 1;
+  }
+
+  .demo-step-screen {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--navy);
+    letter-spacing: 0.5px;
+  }
+
+  .demo-step-narration {
+    font-family: 'Lora', serif;
+    font-size: 10.5px;
+    font-style: italic;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  /* ==================== METRICS GRID ==================== */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 16px 0;
+  }
+
+  .metric-item {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .metric-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    max-width: 65%;
+  }
+
+  .metric-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--navy);
+  }
+
+  /* ==================== MISC ==================== */
+  .gold-text { color: var(--gold); }
+  .navy-text { color: var(--navy); }
+  .muted-text { color: var(--text-muted); }
+  .small-text { font-size: 9px; }
+  .italic { font-style: italic; }
+
+  .thin-divider {
+    width: 100%;
+    height: 1px;
+    background: var(--border);
+    margin: 16px 0;
+  }
+
+  .gold-divider {
+    width: 40px;
+    height: 2px;
+    background: var(--gold);
+    margin: 12px 0;
+  }
+
+  .indent { padding-left: 24px; }
+
+  @media print {
+    .page { page-break-after: always; }
+    .page:last-child { page-break-after: auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- PAGE 1: COVER -->
+<!-- ============================================================ -->
+<div class="page cover-page">
+  <div class="cover-ornament-top"></div>
+  <div class="cover-badge">Investor Submission</div>
+  <div class="cover-title">Gig<span>Rider</span></div>
+  <div class="cover-subtitle">One App. Every Order. More Money.</div>
+  <div class="cover-divider"></div>
+  <div class="cover-tagline">Revenue Model, Pitch Preparation<br>& Patent Specifications</div>
+  <div class="cover-meta">
+    Prepared for: Investor Presentation<br>
+    April 2026 &nbsp; | &nbsp; Confidential
+  </div>
+  <div class="cover-confidential">GigRider Technologies Private Limited</div>
+  <div class="cover-ornament-bottom"></div>
+  <div class="page-footer">
+    <span>GigRider Technologies Pvt. Ltd.</span>
+    <span class="gold-line">Confidential</span>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 2: TABLE OF CONTENTS -->
+<!-- ============================================================ -->
+<div class="page toc-page">
+  <div class="toc-title">Contents</div>
+  <div class="toc-divider"></div>
+
+  <div class="toc-entry toc-section">
+    <span class="toc-part">Part I</span>
+    <span class="toc-label">Revenue Model</span>
+  </div>
+  <div class="toc-entry">
+    <span class="toc-part"></span>
+    <span class="toc-label">1. Freemium Subscription Tiers</span>
+  </div>
+  <div class="toc-entry">
+    <span class="toc-part"></span>
+    <span class="toc-label">2. Commission Per Order</span>
+  </div>
+  <div class="toc-entry">
+    <span class="toc-part"></span>
+    <span class="toc-label">3. Financial Services (Fintech)</span>
+  </div>
+  <div class="toc-entry">
+    <span class="toc-part"></span>
+    <span class="toc-label">4. Data Monetization & Analytics</span>
+  </div>
+  <div class="toc-entry">
+    <span class="toc-part"></span>
+    <span class="toc-label">5. B2B Enterprise API & SaaS</span>
+  </div>
+  <div class="toc-entry">
+    <span class="toc-part"></span>
+    <span class="toc-label">6. White-Label Licensing</span>
+  </div>
+  <div class="toc-entry">
+    <span class="toc-part"></span>
+    <span class="toc-label">7. Advertising & Sponsored Placements</span>
+  </div>
+  <div class="toc-entry">
+    <span class="toc-part"></span>
+    <span class="toc-label">8. Rider Marketplace</span>
+  </div>
+  <div class="toc-entry">
+    <span class="toc-part"></span>
+    <span class="toc-label">9. Training & Certification</span>
+  </div>
+  <div class="toc-entry">
+    <span class="toc-part"></span>
+    <span class="toc-label">10. Referral & Partnership Revenue</span>
+  </div>
+  <div class="toc-entry">
+    <span class="toc-part"></span>
+    <span class="toc-label">Revenue Summary & Combined Projection</span>
+  </div>
+
+  <div style="height: 16px;"></div>
+
+  <div class="toc-entry toc-section">
+    <span class="toc-part">Part II</span>
+    <span class="toc-label">Pitch Preparation</span>
+  </div>
+  <div class="toc-entry">
+    <span class="toc-part"></span>
+    <span class="toc-label">1. Pitch Deck Structure (12 Slides)</span>
+  </div>
+  <div class="toc-entry">
+    <span class="toc-part"></span>
+    <span class="toc-label">2. Anticipated Investor Q&A</span>
+  </div>
+  <div class="toc-entry">
+    <span class="toc-part"></span>
+    <span class="toc-label">3. Live Demo Flow Guide</span>
+  </div>
+  <div class="toc-entry">
+    <span class="toc-part"></span>
+    <span class="toc-label">4. Key Metrics & Delivery Tips</span>
+  </div>
+
+  <div style="height: 16px;"></div>
+
+  <div class="toc-entry toc-section">
+    <span class="toc-part">Part III</span>
+    <span class="toc-label">Patent Specifications & Legal</span>
+  </div>
+  <div class="toc-entry">
+    <span class="toc-part"></span>
+    <span class="toc-label">Patent I: Multi-Platform Order Aggregation</span>
+  </div>
+  <div class="toc-entry">
+    <span class="toc-part"></span>
+    <span class="toc-label">Patent II: Gig Worker Credit Scoring (MPGCS)</span>
+  </div>
+  <div class="toc-entry">
+    <span class="toc-part"></span>
+    <span class="toc-label">Patent III: Geographic Delivery Batching</span>
+  </div>
+  <div class="toc-entry">
+    <span class="toc-part"></span>
+    <span class="toc-label">NDA Template & Filing Checklist</span>
+  </div>
+
+  <div class="page-footer">
+    <span>GigRider Technologies Pvt. Ltd.</span>
+    <span>Contents</span>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 3: PART I SECTION DIVIDER -->
+<!-- ============================================================ -->
+<div class="page section-page">
+  <div class="section-number">I</div>
+  <div class="section-label">Part I</div>
+  <div class="section-title">Revenue Model</div>
+  <div class="section-divider-v"></div>
+  <div class="section-subtitle">GigRider's multi-layered monetization engine designed to scale from modest user base to billions in annual revenue through diversified, high-margin income streams.</div>
+  <div class="page-footer">
+    <span>GigRider Technologies Pvt. Ltd.</span>
+    <span>Part I: Revenue Model</span>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 4: REVENUE OVERVIEW + STREAMS 1-2 -->
+<!-- ============================================================ -->
+<div class="page content-page">
+  <div class="content-header">
+    <div class="content-header-num">I</div>
+    <div class="content-header-title">Revenue Model — Overview & Streams 1-2</div>
+  </div>
+
+  <div class="content-body">
+    <p>GigRider is positioned as the ultimate productivity platform for gig economy delivery riders, aggregating orders from all major delivery platforms into a single, streamlined interface. The revenue model has been designed to scale from a modest user base to billions in annual revenue through diversified, high-margin income streams. Rather than relying solely on a low-cost subscription, GigRider leverages its unique position at the intersection of riders, platforms, restaurants, and financial institutions to create a multi-layered monetization engine that grows exponentially with network effects.</p>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-number">4,097</div>
+      <div class="stat-unit">Cr/year</div>
+      <div class="stat-label">Revenue at 5M Riders</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">10</div>
+      <div class="stat-unit">Streams</div>
+      <div class="stat-label">Diversified Revenue</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">85%</div>
+      <div class="stat-unit">Avg Margin</div>
+      <div class="stat-label">High-Margin Business</div>
+    </div>
+  </div>
+
+  <div class="stream-card">
+    <div class="stream-header">
+      <span class="stream-num">01</span>
+      <span class="stream-name">Freemium Subscription Tiers</span>
+    </div>
+    <div class="stream-body">
+      <p>The subscription model has been completely restructured from a single flat fee to a tiered system that captures value at every rider segment. The free tier ensures maximum adoption and network effects, while premium tiers unlock features that directly translate to higher earnings for riders. This structure creates a natural upgrade path where riders experience the value before paying, resulting in conversion rates typically 3-5x higher than forcing payment upfront. Riders who earn more through GigRider are willing to pay more, creating a virtuous cycle.</p>
+      <table>
+        <thead>
+          <tr><th>Tier</th><th>Monthly Price</th><th>Key Features</th><th>Target Segment</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Free</strong></td><td>Zero</td><td>Basic order aggregation from up to 2 platforms, manual accept/decline, basic earnings tracker</td><td>New riders, casual part-timers</td></tr>
+          <tr><td><strong>Pro</strong></td><td>Rs 299/mo</td><td>Unlimited platform connections, Auto-Rank mode, Smart Stack, countdown timers, priority support</td><td>Active riders (20+ orders/day)</td></tr>
+          <tr><td><strong>Elite</strong></td><td>Rs 799/mo</td><td>Everything in Pro + auto-accept rules, financial services access, tax filing, exclusive high-value order alerts</td><td>Full-time professional riders</td></tr>
+          <tr><td><strong>Fleet</strong></td><td>Rs 1,999/mo</td><td>Multi-rider dashboard, analytics per rider, centralized payouts, bulk financial products</td><td>Fleet operators (5+ riders)</td></tr>
+        </tbody>
+      </table>
+      <span class="stream-revenue">Rs 27.9 Crore/month at 5M riders | 85-90% Margin</span>
+    </div>
+  </div>
+
+  <div class="stream-card">
+    <div class="stream-header">
+      <span class="stream-num">02</span>
+      <span class="stream-name">Commission Per Order (Transaction Fee)</span>
+    </div>
+    <div class="stream-body">
+      <p>Every order that flows through GigRider represents a transaction that can be monetized at a small percentage. This is the highest-scale revenue stream because it grows directly with rider activity. A 2-3% commission on each order is negligible for the rider (who saves time and fuel by using the app) but generates massive aggregate revenue. This model mirrors how payment gateways and fintech platforms operate: the individual transaction fee is tiny, but at scale, it creates a revenue powerhouse.</p>
+      <p>Consider a typical Indian delivery rider completing 25 orders per day with an average order value of Rs 250. At a 2% commission, GigRider earns Rs 5 per order, or Rs 125 per rider per day. With 100,000 active riders, daily commission revenue reaches Rs 1.25 Crore, translating to Rs 37.5 Crore monthly or Rs 450 Crore annually. This stream alone justifies billion-dollar valuations at scale.</p>
+      <div class="callout">
+        <p><strong>Strategic Advantage:</strong> Unlike platforms that charge restaurants 20-30%, GigRider's 2-3% rider-side commission is entirely defensible because riders save far more than Rs 5 per order through reduced idle time, fewer missed orders, and optimized route stacking. The rider's net income increases even after the commission.</p>
+      </div>
+      <span class="stream-revenue">Rs 187.5 Crore/month at 5M riders | 70-80% Margin</span>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>GigRider Technologies Pvt. Ltd.</span>
+    <span>Part I: Revenue Model</span>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 5: STREAMS 3-4 -->
+<!-- ============================================================ -->
+<div class="page content-page">
+  <div class="content-header">
+    <div class="content-header-num">I</div>
+    <div class="content-header-title">Revenue Streams 3-4</div>
+  </div>
+
+  <div class="stream-card">
+    <div class="stream-header">
+      <span class="stream-num">03</span>
+      <span class="stream-name">Financial Services (Fintech)</span>
+    </div>
+    <div class="stream-body">
+      <p>Delivery riders are among the most underserved populations in financial services. They lack access to credit, insurance, and savings products because traditional banks consider them high-risk due to irregular income patterns. GigRider sits on a goldmine of data: real-time earnings, work patterns, platform ratings, and delivery consistency. This data enables precise credit scoring that no bank can match, opening up massive financial services revenue streams with minimal default risk.</p>
+
+      <h3 class="sub-heading">Micro-Loans and Vehicle Financing</h3>
+      <p>Riders frequently need capital for vehicle purchase, repair, or upgrade. GigRider can partner with NBFCs and banks to offer instant micro-loans based on the rider's earnings history and delivery performance. A two-wheeler loan of Rs 50,000-80,000 at 18-24% interest generates Rs 9,000-19,200 in interest per loan per year. GigRider earns a 2-5% origination fee plus a servicing commission of 1-2% annually. With 50,000 loans disbursed per year, origination revenue alone reaches Rs 5-20 Crore.</p>
+
+      <h3 class="sub-heading">Insurance Products</h3>
+      <p>Delivery riders face high accident risks but almost universally lack insurance. GigRider can offer pay-per-trip accident insurance (Rs 5-10 per day covers Rs 5 Lakh accident cover), weekly health top-ups, and vehicle insurance. Partnering with insurers, GigRider earns 15-25% commission per policy. If 200,000 riders pay Rs 200/month for insurance, premium volume reaches Rs 4 Crore/month, with GigRider retaining Rs 60 Lakh-1 Crore monthly as commission.</p>
+
+      <h3 class="sub-heading">Savings and Emergency Fund</h3>
+      <p>GigRider can auto-deduct a small percentage (2-5%) of daily earnings into a liquid mutual fund or savings wallet, earning the spread between fund returns and rider payouts (typically 1-2%). Additionally, the platform can charge a Rs 29/month fee for the savings account with benefits like instant withdrawal, goal-based saving, and financial literacy content. This creates sticky users and generates steady fee income.</p>
+
+      <span class="stream-revenue">Rs 35 Crore/month at 5M riders | 40-60% Margin</span>
+    </div>
+  </div>
+
+  <div class="stream-card">
+    <div class="stream-header">
+      <span class="stream-num">04</span>
+      <span class="stream-name">Data Monetization and Analytics</span>
+    </div>
+    <div class="stream-body">
+      <p>GigRider aggregates real-time delivery data across all platforms in every city it operates in. This data is extraordinarily valuable to multiple stakeholders. Restaurants want to know which areas have the most active riders and fastest delivery times. Dark kitchens need demand heatmaps to choose optimal locations. Urban planners require delivery traffic data for infrastructure decisions. Delivery platforms themselves lack cross-platform visibility that GigRider uniquely provides. The data monetization strategy sells aggregated, anonymized intelligence while fully protecting rider privacy.</p>
+      <p>Revenue streams include: (a) City-level delivery analytics subscriptions for restaurants and chains at Rs 5,000-25,000/month per city; (b) Demand heatmap APIs for dark kitchen operators at Rs 10,000-50,000/month; (c) Custom research reports for investors and urban planners at Rs 1-5 Lakh per report; and (d) Platform intelligence products showing cross-platform market share and rider availability at Rs 50,000-2,00,000/month. With just 500 enterprise clients averaging Rs 25,000/month, data revenue reaches Rs 1.25 Crore monthly.</p>
+      <span class="stream-revenue">Rs 12.5 Crore/month at 5M riders | 90-95% Margin</span>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>GigRider Technologies Pvt. Ltd.</span>
+    <span>Part I: Revenue Model</span>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 6: STREAMS 5-7 -->
+<!-- ============================================================ -->
+<div class="page content-page">
+  <div class="content-header">
+    <div class="content-header-num">I</div>
+    <div class="content-header-title">Revenue Streams 5-7</div>
+  </div>
+
+  <div class="stream-card">
+    <div class="stream-header">
+      <span class="stream-num">05</span>
+      <span class="stream-name">B2B Enterprise API and SaaS</span>
+    </div>
+    <div class="stream-body">
+      <p>GigRider's core aggregation technology is a valuable product in itself. Any company that needs to interact with multiple delivery platforms programmatically can benefit from GigRider's unified API. This includes restaurant chains managing orders across Swiggy, Zomato, and Uber Eats simultaneously; dark kitchens optimizing dispatch; cloud kitchen aggregators; and even new delivery platforms that want to integrate quickly with the existing ecosystem. By offering this as a B2B SaaS product, GigRider unlocks an entirely separate revenue vertical with high-margin recurring income.</p>
+      <p>Pricing models include: per-API-call fees (Rs 0.50-2.00 per call), monthly SaaS subscriptions (Rs 10,000-1,00,000/month based on volume), and custom enterprise contracts (Rs 5-20 Lakh/year). A mid-size restaurant chain making 5,000 API calls daily at Rs 1/call generates Rs 1.5 Lakh/month from a single client. With 100 enterprise clients, this stream reaches Rs 1.5 Crore monthly with near-zero marginal cost.</p>
+      <span class="stream-revenue">Rs 15 Crore/month at 5M riders | 85-95% Margin</span>
+    </div>
+  </div>
+
+  <div class="stream-card">
+    <div class="stream-header">
+      <span class="stream-num">06</span>
+      <span class="stream-name">White-Label Licensing and International Expansion</span>
+    </div>
+    <div class="stream-body">
+      <p>The delivery rider aggregation problem exists in every country. Rather than building operations in each market, GigRider can license its technology as a white-label solution to local partners who understand their market's regulatory landscape and platform ecosystem. This is the franchise model applied to technology: GigRider provides the core platform, partner customizes for local platforms and regulations, and both share revenue. This enables global scale without proportional operational cost increases.</p>
+      <p>White-label deals are structured as: Rs 20-50 Lakh one-time setup fee per market, 15-25% revenue share on all income streams in that market, and annual technology maintenance fees of Rs 5-15 Lakh. If GigRider signs 20 international partners across Southeast Asia, Middle East, Africa, and Latin America, setup fees alone generate Rs 4-10 Crore upfront, plus Rs 10-25 Crore annually in revenue share and maintenance fees. This is capital-efficient global expansion.</p>
+      <span class="stream-revenue">Rs 8 Crore/month at 5M riders | 80-90% Margin</span>
+    </div>
+  </div>
+
+  <div class="stream-card">
+    <div class="stream-header">
+      <span class="stream-num">07</span>
+      <span class="stream-name">Advertising and Sponsored Placements</span>
+    </div>
+    <div class="stream-body">
+      <p>GigRider's home screen is prime real estate viewed by riders dozens of times per day during active delivery hours. This captive audience is highly valuable for targeted advertising. Restaurants can sponsor their orders to appear first in the feed. Fuel companies, vehicle manufacturers, tyre brands, and mobile network providers want direct access to this demographic. Insurance and financial product companies will pay premium CPMs to reach riders at the moment they are earning money and thinking about their finances.</p>
+      <p>Ad revenue models include: sponsored order placement (Rs 5-20 per sponsored order shown), banner ads on the earnings screen (Rs 50,000-2,00,000/month per city), push notification partnerships (Rs 2-5 per click-through), and branded vehicle decals/sponsorships (Rs 500-1,500/month per rider). With 100,000 active riders viewing 50 screens daily, monthly impressions exceed 150 million, creating significant advertising inventory valued at Rs 50 Lakh-2 Crore monthly.</p>
+      <span class="stream-revenue">Rs 10 Crore/month at 5M riders | 75-85% Margin</span>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>GigRider Technologies Pvt. Ltd.</span>
+    <span>Part I: Revenue Model</span>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 7: STREAMS 8-10 + SUMMARY -->
+<!-- ============================================================ -->
+<div class="page content-page">
+  <div class="content-header">
+    <div class="content-header-num">I</div>
+    <div class="content-header-title">Revenue Streams 8-10 & Combined Projection</div>
+  </div>
+
+  <div class="stream-card">
+    <div class="stream-header">
+      <span class="stream-num">08</span>
+      <span class="stream-name">Rider Marketplace (Direct Restaurant Connect)</span>
+    </div>
+    <div class="stream-body">
+      <p>Many restaurants, especially small and medium establishments, want delivery riders but cannot afford the 20-30% commission charged by delivery platforms. GigRider can create a marketplace where restaurants post delivery gigs directly and riders accept them, bypassing the platform entirely. GigRider charges a 5-8% transaction fee on each direct delivery, which is far less than what platforms charge restaurants, while riders earn more per delivery.</p>
+      <p>With 10,000 restaurants posting an average of 20 deliveries daily at an average value of Rs 150, daily marketplace GMV reaches Rs 3 Crore. At 5% transaction fee, daily revenue is Rs 15 Lakh, or Rs 4.5 Crore monthly. This stream also creates powerful network effects: more restaurants attract more riders, and more riders attract more restaurants.</p>
+      <span class="stream-revenue">Rs 22.5 Crore/month at 5M riders | 60-70% Margin</span>
+    </div>
+  </div>
+
+  <div class="stream-card">
+    <div class="stream-header">
+      <span class="stream-num">09</span>
+      <span class="stream-name">Training, Certification, and Value-Added Services</span>
+    </div>
+    <div class="stream-body">
+      <p>GigRider can offer paid courses and certifications that help riders increase their earnings and professional standing. Courses include: Food Safety and Handling Certification (Rs 499), Advanced Navigation and Route Optimization (Rs 299), Customer Service Excellence (Rs 199), and Gig Economy Financial Literacy (Rs 149). This stream also includes tax filing services (Rs 499-999 per filing), GST registration assistance (Rs 1,499), and legal document services. With 100,000 course enrollments per year averaging Rs 350, this generates Rs 3.5 Crore annually with very high margins.</p>
+      <span class="stream-revenue">Rs 3 Crore/month at 5M riders | 85-90% Margin</span>
+    </div>
+  </div>
+
+  <div class="stream-card">
+    <div class="stream-header">
+      <span class="stream-num">10</span>
+      <span class="stream-name">Referral and Partnership Revenue</span>
+    </div>
+    <div class="stream-body">
+      <p>GigRider riders are a concentrated demographic with specific, predictable needs: mobile recharges, fuel, vehicle servicing, helmets, rain gear, and more. By partnering with telecom companies, petrol pumps, service centers, and equipment brands, GigRider earns referral commissions of 3-10% on every transaction routed through the platform. A rider spending Rs 3,000/month on fuel and Rs 500 on mobile recharges through GigRider partnerships generates Rs 105-350 in monthly commission per rider. With 200,000 riders using partner services, this stream reaches Rs 2.1-7 Crore monthly.</p>
+      <span class="stream-revenue">Rs 20 Crore/month at 5M riders | 70-80% Margin</span>
+    </div>
+  </div>
+
+  <div class="thin-divider"></div>
+
+  <div class="highlight-box">
+    <h4>Combined Revenue Projection at Scale</h4>
+    <table style="margin: 8px 0; font-size: 9px;">
+      <thead>
+        <tr><th style="background:rgba(251,247,240,0.15);">Revenue Stream</th><th style="background:rgba(251,247,240,0.15);">500K Riders (Monthly)</th><th style="background:rgba(251,247,240,0.15);">5M Riders (Monthly)</th><th style="background:rgba(251,247,240,0.15);">Margin</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Subscription Tiers</td><td>Rs 2.79 Cr</td><td>Rs 27.9 Cr</td><td>85-90%</td></tr>
+        <tr><td>Commission per Order (2%)</td><td>Rs 18.75 Cr</td><td>Rs 187.5 Cr</td><td>70-80%</td></tr>
+        <tr><td>Financial Services</td><td>Rs 3.5 Cr</td><td>Rs 35 Cr</td><td>40-60%</td></tr>
+        <tr><td>Data Monetization</td><td>Rs 1.25 Cr</td><td>Rs 12.5 Cr</td><td>90-95%</td></tr>
+        <tr><td>B2B Enterprise API/SaaS</td><td>Rs 1.5 Cr</td><td>Rs 15 Cr</td><td>85-95%</td></tr>
+        <tr><td>White-Label Licensing</td><td>Rs 0.5 Cr</td><td>Rs 8 Cr</td><td>80-90%</td></tr>
+        <tr><td>Advertising</td><td>Rs 1 Cr</td><td>Rs 10 Cr</td><td>75-85%</td></tr>
+        <tr><td>Rider Marketplace</td><td>Rs 2.25 Cr</td><td>Rs 22.5 Cr</td><td>60-70%</td></tr>
+        <tr><td>Training & Certification</td><td>Rs 0.3 Cr</td><td>Rs 3 Cr</td><td>85-90%</td></tr>
+        <tr><td>Referral & Partnership</td><td>Rs 2 Cr</td><td>Rs 20 Cr</td><td>70-80%</td></tr>
+        <tr class="total-row"><td>TOTAL</td><td>Rs 33.84 Cr</td><td>Rs 341.4 Cr</td><td></td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:8px;"><strong>Annual Revenue at Scale:</strong> At 500K riders: Rs 406 Crore/year (~USD 48M). At 5M riders: Rs 4,097 Crore/year (~USD 488M). With continued international expansion and white-label licensing, the Rs 5,000+ Crore (USD 600M+) annual revenue milestone is achievable within 6-7 years, supporting a multi-billion dollar valuation.</p>
+  </div>
+
+  <div class="page-footer">
+    <span>GigRider Technologies Pvt. Ltd.</span>
+    <span>Part I: Revenue Model</span>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 8: PART II SECTION DIVIDER -->
+<!-- ============================================================ -->
+<div class="page section-page">
+  <div class="section-number">II</div>
+  <div class="section-label">Part II</div>
+  <div class="section-title">Pitch Preparation</div>
+  <div class="section-divider-v"></div>
+  <div class="section-subtitle">Comprehensive preparation material for the GigRider investor presentation, including pitch narrative structure, key talking points, anticipated questions with prepared responses, competitive positioning, and a demo flow guide.</div>
+  <div class="page-footer">
+    <span>GigRider Technologies Pvt. Ltd.</span>
+    <span>Part II: Pitch Preparation</span>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 9: PITCH DECK SLIDES 1-6 -->
+<!-- ============================================================ -->
+<div class="page content-page">
+  <div class="content-header">
+    <div class="content-header-num">II</div>
+    <div class="content-header-title">Pitch Deck Structure — Slides 1-6</div>
+  </div>
+
+  <div class="slide-card">
+    <span class="slide-num">01</span>
+    <span class="slide-title">Title and Hook</span>
+    <div class="slide-desc">Open with the GigRider logo and a single powerful line: "One App. Every Order. More Money." This immediately communicates the value proposition. Below the tagline, include the presenter's name and the date. The visual should use the Old Money aesthetic: cream background, deep navy typography, gold accents. No clutter. The first impression must scream premium and confident. Investors decide in the first 30 seconds whether to pay attention.</div>
+  </div>
+
+  <div class="slide-card">
+    <span class="slide-num">02</span>
+    <span class="slide-title">The Problem</span>
+    <div class="slide-desc">Paint a vivid picture: "India has 15 million delivery riders. Each rider juggling 2-4 phones, missing orders, burning fuel between pickups, and losing Rs 200-500 daily in missed earnings." State the problem in three bullets: (1) Riders miss 30% of orders because they cannot monitor all platforms simultaneously; (2) Riders waste 45 minutes daily switching between apps and navigating separately; (3) Riders have zero financial services access despite being the backbone of a Rs 50,000 Crore industry. Make the investor feel the pain.</div>
+  </div>
+
+  <div class="slide-card">
+    <span class="slide-num">03</span>
+    <span class="slide-title">The Solution</span>
+    <div class="slide-desc">Introduce GigRider in one sentence: "GigRider aggregates every delivery platform onto one phone, so riders never miss an order and always earn more." Show a side-by-side comparison: BEFORE (multiple phones, chaos, missed orders) vs. AFTER (single phone, organized feed, auto-ranking). Highlight the three killer features: Live Order Feed with countdown timers, Auto-Rank Mode that prioritizes the best orders, and Smart Stack that batches nearby deliveries. Make the investor think: "Of course this should exist."</div>
+  </div>
+
+  <div class="slide-card">
+    <span class="slide-num">04</span>
+    <span class="slide-title">Market Size (TAM/SAM/SOM)</span>
+    <div class="slide-desc">Present a clear market sizing: Total Addressable Market (TAM) of Rs 10,00,000 Crore (USD 120B) representing the global gig delivery economy; Serviceable Addressable Market (SAM) of Rs 2,50,000 Crore (USD 30B) for India and Southeast Asia; Serviceable Obtainable Market (SOM) of Rs 25,000 Crore (USD 3B) representing the 5 million riders GigRider can realistically reach in 5 years. Use concentric circles visual. Emphasize that the market is growing 25% annually and that no existing player addresses the rider productivity gap.</div>
+  </div>
+
+  <div class="slide-card">
+    <span class="slide-num">05</span>
+    <span class="slide-title">Business Model</span>
+    <div class="slide-desc">Present the 10 revenue streams, but focus on the top 4 that drive 80% of revenue: Commission per Order (55%), Subscription Tiers (8%), Financial Services (10%), and Rider Marketplace (7%). Use a pie chart. Emphasize that the commission model aligns incentives: GigRider only earns when riders earn more. This is a fundamentally better model because everyone wins.</div>
+  </div>
+
+  <div class="slide-card">
+    <span class="slide-num">06</span>
+    <span class="slide-title">Traction and Milestones</span>
+    <div class="slide-desc">Even at prototype stage, present clear progress: (1) Product prototype built with Old Money UI and complete user flow; (2) Auth system with OTP login ready; (3) Core features functional: Live Order Feed, Auto-Rank, Smart Stack; (4) Revenue model designed and validated against industry benchmarks; (5) Legal strategy developed to operate within platform terms of service. Show a roadmap with 6-month, 12-month, and 24-month milestones. Investors fund momentum, not just ideas.</div>
+  </div>
+
+  <div class="page-footer">
+    <span>GigRider Technologies Pvt. Ltd.</span>
+    <span>Part II: Pitch Preparation</span>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 10: PITCH DECK SLIDES 7-12 -->
+<!-- ============================================================ -->
+<div class="page content-page">
+  <div class="content-header">
+    <div class="content-header-num">II</div>
+    <div class="content-header-title">Pitch Deck Structure — Slides 7-12</div>
+  </div>
+
+  <div class="slide-card">
+    <span class="slide-num">07</span>
+    <span class="slide-title">Competitive Landscape</span>
+    <div class="slide-desc">Show a 2x2 matrix with axes of "Rider Focus" (x) and "Platform Coverage" (y). GigRider occupies the top-right quadrant (high rider focus, multi-platform). Competitors like Para and Shiftie are in the top-left (rider-focused but limited platform coverage). Individual delivery apps are bottom-right (single platform, no rider focus). Show that no one else does what GigRider does at this scale. Mention that Para was acquired by DoorDash, validating the space but leaving the multi-platform opportunity open globally.</div>
+  </div>
+
+  <div class="slide-card">
+    <span class="slide-num">08</span>
+    <span class="slide-title">Go-to-Market Strategy</span>
+    <div class="slide-desc">Outline the three-phase GTM: Phase 1 (Months 1-6) focuses on 3 Indian cities (Bangalore, Mumbai, Delhi) targeting 50,000 riders through referral programs and rider community partnerships; Phase 2 (Months 7-18) expands to 15 cities and launches financial services with NBFC partnerships; Phase 3 (Months 19-36) enters international markets through white-label licensing and direct operations in Southeast Asia and Middle East. The key acquisition channel is rider-to-rider referral: every rider who earns 20% more using GigRider tells 5 others. This viral coefficient of 5 is extraordinary.</div>
+  </div>
+
+  <div class="slide-card">
+    <span class="slide-num">09</span>
+    <span class="slide-title">Team</span>
+    <div class="slide-desc">Present the founding team with clear role assignments and relevant expertise. Highlight why this team is uniquely positioned to build GigRider. Include advisors if any. If the team is small, emphasize the depth of domain knowledge, the speed of execution (prototype already built), and the strategic advisory network. Investors bet on teams, not just ideas.</div>
+  </div>
+
+  <div class="slide-card">
+    <span class="slide-num">10</span>
+    <span class="slide-title">Financial Projections</span>
+    <div class="slide-desc">Show a simple table with 5-year projections: Year 1 (Rs 8 Crore revenue, 100K riders), Year 2 (Rs 80 Crore, 500K riders), Year 3 (Rs 250 Crore, 2M riders), Year 4 (Rs 800 Crore, 4M riders), Year 5 (Rs 2,500 Crore, 7M riders including international). Note that breakeven occurs in Year 2 when subscription + commission revenue exceeds operational costs. Financial services revenue has a 12-18 month lag but becomes the highest-margin stream once established.</div>
+  </div>
+
+  <div class="slide-card">
+    <span class="slide-num">11</span>
+    <span class="slide-title">The Ask</span>
+    <div class="slide-desc">State clearly: "We are raising Rs 25 Crore (USD 3M) in seed funding for 10% equity, valuing GigRider at Rs 250 Crore (USD 30M)." Break down the use of funds: 40% engineering and product development, 25% rider acquisition and marketing, 20% financial services partnerships and regulatory, 15% operations and team. Show that this runway achieves 500K riders and Rs 80 Crore annual revenue run-rate, setting up for a strong Series A at a 5-10x valuation step-up.</div>
+  </div>
+
+  <div class="slide-card">
+    <span class="slide-num">12</span>
+    <span class="slide-title">Closing Vision</span>
+    <div class="slide-desc">End with the big vision: "GigRider will become the operating system for 50 million delivery riders worldwide. We are not just building an app; we are building the financial and productivity infrastructure for the gig economy's backbone." Close with the same Old Money aesthetic as the opening, creating a bookend effect. Leave the investor with the feeling that this is inevitable, not optional. The last line on screen: "Every rider deserves one app. Every order. More money."</div>
+  </div>
+
+  <div class="page-footer">
+    <span>GigRider Technologies Pvt. Ltd.</span>
+    <span>Part II: Pitch Preparation</span>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 11: INVESTOR Q&A -->
+<!-- ============================================================ -->
+<div class="page content-page">
+  <div class="content-header">
+    <div class="content-header-num">II</div>
+    <div class="content-header-title">Anticipated Investor Questions & Responses</div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-question">Won't delivery platforms block GigRider?</div>
+    <div class="qa-answer">GigRider is a rider productivity tool, not a competing delivery platform. We do not route orders, set prices, or interact with customers. We aggregate notifications that riders already receive on their own devices. Legally, this is equivalent to a notification manager app. Precedent exists: Para (acquired by DoorDash for USD 50M+) operated the same model in the US. Shiftie operates in the UK without platform interference. Our legal strategy positions GigRider as a personal productivity assistant, similar to how email aggregators work with multiple email providers without being blocked. Additionally, platforms benefit from riders who complete more deliveries, so there is an alignment of interests.</div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-question">How do you prevent the commission model from alienating riders?</div>
+    <div class="qa-answer">The 2% commission is transparent and voluntary: riders on the Free tier pay zero commission, while Pro and Elite riders pay commission only on orders they accept through GigRider. The key is that riders earn 15-25% more using GigRider (through reduced idle time, smarter order stacking, and fewer missed orders), so even after a 2% commission, their net income increases by 13-23%. We demonstrate this in the app with an "Earnings Boost" counter showing how much more they have earned compared to manual platform switching. Riders who see Rs 500 extra daily earnings will happily pay Rs 5 per order.</div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-question">What about competition from platforms building their own multi-app features?</div>
+    <div class="qa-answer">No delivery platform has an incentive to help riders use a competitor's platform. Swiggy will never show Zomato orders, and vice versa. This structural conflict of interest means multi-platform aggregation can only come from a neutral third party. Even if a platform tried, riders would not trust it to fairly rank orders from competitors. GigRider's neutrality is its moat. Additionally, our technology integrates at the notification level, not the API level, making it technically different from what platforms can build internally.</div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-question">How do you verify the financial projections?</div>
+    <div class="qa-answer">Our projections are benchmarked against three comparable business models: (1) Commission-based: Paytm and PhonePe proved that 1-2% transaction fees generate massive revenue at scale; (2) Fintech: BharatPe and KreditBee demonstrated that gig worker lending is profitable with proper data-driven underwriting; (3) SaaS/API: Razorpay and BillDesk showed that per-transaction API fees create billion-dollar businesses. We use conservative conversion rates (12% subscription conversion vs. industry average of 15-20%), conservative commission rates (2% vs. potential 3-5%), and conservative rider growth projections (linear vs. the exponential growth seen in ride-hailing). Every number has a precedent.</div>
+  </div>
+
+  <div class="page-footer">
+    <span>GigRider Technologies Pvt. Ltd.</span>
+    <span>Part II: Pitch Preparation</span>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 12: DEMO FLOW + METRICS -->
+<!-- ============================================================ -->
+<div class="page content-page">
+  <div class="content-header">
+    <div class="content-header-num">II</div>
+    <div class="content-header-title">Live Demo Flow & Key Metrics</div>
+  </div>
+
+  <h3 class="sub-heading">Live Demo Flow (3-4 Minutes)</h3>
+  <p style="font-family:'Lora',serif;font-size:11px;color:var(--text-muted);margin-bottom:12px;font-style:italic;">A live demo is the most powerful part of the presentation. It transforms GigRider from a concept into a tangible product. Practice at least 10 times.</p>
+
+  <div class="demo-step">
+    <div class="demo-step-num">1</div>
+    <div class="demo-step-content">
+      <div class="demo-step-screen">Splash Screen</div>
+      <div class="demo-step-narration">"This is GigRider. Let me show you how it works for a real rider."</div>
+    </div>
+  </div>
+  <div class="demo-step">
+    <div class="demo-step-num">2</div>
+    <div class="demo-step-content">
+      <div class="demo-step-screen">Login Screen</div>
+      <div class="demo-step-narration">"Riders log in with their phone number. Simple, familiar, fast."</div>
+    </div>
+  </div>
+  <div class="demo-step">
+    <div class="demo-step-num">3</div>
+    <div class="demo-step-content">
+      <div class="demo-step-screen">OTP Entry</div>
+      <div class="demo-step-narration">"Demo OTP for the presentation. In production, real OTP verification."</div>
+    </div>
+  </div>
+  <div class="demo-step">
+    <div class="demo-step-num">4</div>
+    <div class="demo-step-content">
+      <div class="demo-step-screen">Home Screen - Live Order Feed</div>
+      <div class="demo-step-narration">"Here is the magic moment: orders from Swiggy, Zomato, and Uber Eats all appearing in ONE feed. Notice the countdown timers, platform badges, and earnings displayed upfront."</div>
+    </div>
+  </div>
+  <div class="demo-step">
+    <div class="demo-step-num">5</div>
+    <div class="demo-step-content">
+      <div class="demo-step-screen">Auto-Rank Toggle</div>
+      <div class="demo-step-narration">"With one tap, Auto-Rank reorders the feed so the highest-earning, closest orders are always on top."</div>
+    </div>
+  </div>
+  <div class="demo-step">
+    <div class="demo-step-num">6</div>
+    <div class="demo-step-content">
+      <div class="demo-step-screen">Smart Stack</div>
+      <div class="demo-step-narration">"Smart Stack groups nearby deliveries together. Instead of three separate trips, the rider does one efficient loop."</div>
+    </div>
+  </div>
+  <div class="demo-step">
+    <div class="demo-step-num">7</div>
+    <div class="demo-step-content">
+      <div class="demo-step-screen">Earnings Dashboard</div>
+      <div class="demo-step-narration">"All earnings across platforms in one view. No more checking four separate apps."</div>
+    </div>
+  </div>
+  <div class="demo-step">
+    <div class="demo-step-num">8</div>
+    <div class="demo-step-content">
+      <div class="demo-step-screen">Profile & Financial Services</div>
+      <div class="demo-step-narration">"And this is where GigRider becomes more than an app. Insurance, loans, savings - all accessible because we know the rider's earnings in real-time."</div>
+    </div>
+  </div>
+
+  <div class="thin-divider"></div>
+
+  <h3 class="sub-heading">Key Metrics to Highlight</h3>
+  <div class="metrics-grid">
+    <div class="metric-item">
+      <span class="metric-label">Total delivery riders in India</span>
+      <span class="metric-value">15M</span>
+    </div>
+    <div class="metric-item">
+      <span class="metric-label">Avg orders missed per rider/day</span>
+      <span class="metric-value">30%</span>
+    </div>
+    <div class="metric-item">
+      <span class="metric-label">GigRider earnings uplift</span>
+      <span class="metric-value">+25%</span>
+    </div>
+    <div class="metric-item">
+      <span class="metric-label">Year 5 projected revenue</span>
+      <span class="metric-value">Rs 2,500 Cr</span>
+    </div>
+    <div class="metric-item">
+      <span class="metric-label">Breakeven timeline</span>
+      <span class="metric-value">18-24 mo</span>
+    </div>
+    <div class="metric-item">
+      <span class="metric-label">Rider referral viral coefficient</span>
+      <span class="metric-value">5x</span>
+    </div>
+    <div class="metric-item">
+      <span class="metric-label">Para acquisition (validation)</span>
+      <span class="metric-value">$50M+</span>
+    </div>
+    <div class="metric-item">
+      <span class="metric-label">Gig economy CAGR 2024-2030</span>
+      <span class="metric-value">25%</span>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>GigRider Technologies Pvt. Ltd.</span>
+    <span>Part II: Pitch Preparation</span>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 13: PART III SECTION DIVIDER -->
+<!-- ============================================================ -->
+<div class="page section-page">
+  <div class="section-number">III</div>
+  <div class="section-label">Part III</div>
+  <div class="section-title">Patent Specifications<br>& Legal Framework</div>
+  <div class="section-divider-v"></div>
+  <div class="section-subtitle">Three provisional patent specifications protecting GigRider's core innovations, a non-disclosure agreement template for investor discussions, and a complete filing checklist with cost summary.</div>
+  <div class="page-footer">
+    <span>GigRider Technologies Pvt. Ltd.</span>
+    <span>Part III: Patents & Legal</span>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 14: PATENT I -->
+<!-- ============================================================ -->
+<div class="page content-page">
+  <div class="patent-header">
+    <div class="patent-label">Provisional Patent Specification</div>
+    <div class="patent-title">Patent I: System and Method for Multi-Platform Delivery Order Aggregation, Prioritization, and Unified Presentation for Gig Economy Workers</div>
+    <div class="patent-meta">Applicant: GigRider Technologies Private Limited &nbsp;|&nbsp; Filing Date: April 2026 &nbsp;|&nbsp; Jurisdiction: Republic of India</div>
+  </div>
+
+  <h3 class="sub-heading">Field of the Invention</h3>
+  <div class="content-body">
+    <p>The present invention relates generally to the field of mobile computing applications and more particularly to a system and method for aggregating, prioritizing, and presenting delivery orders from multiple independent delivery platforms onto a single unified interface for gig economy delivery workers. The invention further relates to automated order ranking algorithms that optimize rider earnings and efficiency by considering multiple real-time variables across heterogeneous platform data streams.</p>
+  </div>
+
+  <h3 class="sub-heading">Background of the Invention</h3>
+  <div class="content-body">
+    <p>The gig economy delivery sector has experienced explosive growth globally, with an estimated 15 million delivery riders operating in India alone and over 50 million worldwide. These riders typically operate on multiple delivery platforms simultaneously in order to maximize their daily earnings and minimize idle time between deliveries. However, each platform operates as a closed ecosystem, requiring riders to run multiple applications simultaneously on separate devices or switch between applications on a single device.</p>
+    <p>This fragmented operational model creates several significant problems. First, riders frequently miss high-value or time-sensitive orders from one platform while engaged with another, resulting in estimated lost earnings of 30% of potential daily income. Second, riders cannot efficiently compare orders across platforms in real-time to select the most profitable combination. Third, the cognitive load of monitoring multiple applications simultaneously increases the risk of traffic accidents. Prior art solutions such as Para and Shiftie suffer from critical limitations including single-market operation and lack of intelligent cross-platform order prioritization or geographic batching.</p>
+  </div>
+
+  <h3 class="sub-heading">Summary of the Invention</h3>
+  <div class="content-body">
+    <p>The present invention provides a system and method for aggregating delivery orders from multiple independent delivery platforms into a single unified interface, automatically ranking said orders using a multi-variable prioritization algorithm, and presenting them to a gig economy delivery worker in a manner that maximizes the worker's earnings per unit of time and distance traveled.</p>
+  </div>
+
+  <h3 class="sub-heading">Core Innovation: Multi-Variable Ranking Engine (Auto-Rank)</h3>
+  <div class="content-body">
+    <p>The Priority Score is computed as:</p>
+    <p style="text-align:center;font-family:'Inter',sans-serif;font-size:11px;color:var(--navy);font-weight:600;margin:8px 0;">P = w1(Earnings/km) + w2(Earnings/min) + w3(Countdown Urgency) + w4(Pickup Proximity) + w5(Platform Reliability) + w6(Rider History)</p>
+    <p>Where w1 through w6 are configurable weight parameters, initially set to [0.25, 0.20, 0.20, 0.15, 0.10, 0.10] and dynamically adjusted through a machine learning feedback loop based on rider acceptance patterns and delivery outcomes.</p>
+  </div>
+
+  <table>
+    <thead><tr><th>Component</th><th>Computation</th><th>Range</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>EarningsPerKm</td><td>earnings / distance</td><td>0-100</td><td>Earnings efficiency per unit distance</td></tr>
+      <tr><td>EarningsPerMin</td><td>earnings / duration</td><td>0-10</td><td>Earnings efficiency per unit time</td></tr>
+      <tr><td>CountdownUrgency</td><td>1 - (remaining/max)</td><td>0-1</td><td>Orders closer to expiry score higher</td></tr>
+      <tr><td>PickupProximity</td><td>1 - (dist/maxThreshold)</td><td>0-1</td><td>Closer pickups score higher</td></tr>
+      <tr><td>PlatformReliability</td><td>historical completion rate</td><td>0-1</td><td>Reliable platforms score higher</td></tr>
+      <tr><td>RiderHistory</td><td>rider's success rate</td><td>0-1</td><td>Personalized scoring per rider</td></tr>
+    </tbody>
+  </table>
+
+  <div class="page-footer">
+    <span>GigRider Technologies Pvt. Ltd.</span>
+    <span>Part III: Patent I</span>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 15: PATENT I CONTINUED -->
+<!-- ============================================================ -->
+<div class="page content-page">
+  <div class="content-header">
+    <div class="content-header-num">I</div>
+    <div class="content-header-title">Patent I — System Architecture & Claims</div>
+  </div>
+
+  <h3 class="sub-heading">System Architecture</h3>
+  <div class="content-body">
+    <p>The system operates on a mobile computing device and comprises the following functional modules:</p>
+    <p><strong>1.1 Notification Aggregation Module:</strong> Establishes notification listeners for each delivery platform application. Operates through Android Notification Listener Service, Android Accessibility Service, Platform API Integration, and Background Service Polling as fallback. Each notification is parsed according to platform-specific extraction rules that identify: order identifier, pickup location, delivery destination, estimated earnings, countdown timer, order type, customer rating, and platform source.</p>
+    <p><strong>1.2 Data Normalization Module:</strong> Transforms all incoming order data into a Unified Order Data Structure (UODS) comprising standardized fields: orderId, platformSource, pickup/delivery coordinates, estimatedEarnings, estimatedDistance, estimatedDuration, countdownSecondsRemaining, orderCategory, customerRating, timestamp, and platformConfidenceScore. Fields not directly available are computed using geographic calculation modules.</p>
+    <p><strong>1.3 Multi-Variable Ranking Engine (Auto-Rank):</strong> The core innovation. Computes a composite Priority Score using the weighted formula described above. Weight parameters are dynamically adjusted through a machine learning feedback loop that observes rider acceptance patterns and delivery outcomes. When a rider consistently accepts orders with high EarningsPerKilometer scores, the w1 weight is incrementally increased.</p>
+    <p><strong>1.4 Unified Presentation Interface:</strong> Displays all ranked orders in a single, scrollable feed. Each order card displays the platform source, estimated earnings prominently, pickup and delivery locations, countdown timer with visual urgency indicators, estimated distance and duration, and the computed Priority Score visualized as a quality indicator.</p>
+    <p><strong>1.5 Order Acceptance Relay Module:</strong> Triggers the corresponding platform's native acceptance mechanism through programmatic tap simulation via Accessibility Service, direct API call, or notification action reply. Confirms successful acceptance by monitoring the platform application's state change.</p>
+  </div>
+
+  <h3 class="sub-heading">Auto-Accept Rules Engine</h3>
+  <div class="content-body">
+    <p>Riders can configure rules for automatic order acceptance based on: minimum earnings threshold, maximum delivery distance, platform preferences, geographic zones, and time-of-day rules. The engine evaluates incoming orders against the rider's configured rule set and automatically triggers the Order Acceptance Relay Module for matching orders.</p>
+  </div>
+
+  <h3 class="sub-heading">Smart Stack Module</h3>
+  <div class="content-body">
+    <p>Extends the Ranking Engine by identifying groups of orders that can be efficiently batched together. Computes geographic proximity between pickup locations and delivery destinations, identifies orders whose combined route distance is less than the sum of individual routes. StackScore = CombinedEarnings / CombinedRouteDistance - Sum(IndividualEarnings / IndividualDistances). A positive StackScore indicates the batched delivery is more efficient.</p>
+  </div>
+
+  <h3 class="sub-heading">Claims (Outline for Complete Specification)</h3>
+  <div class="content-body">
+    <ol style="font-size:10.5px;line-height:1.7;">
+      <li>A method for aggregating delivery orders from multiple independent delivery platforms onto a single unified interface, comprising the steps of intercepting order notifications, parsing platform-specific data, normalizing to a unified data structure, computing priority scores, and presenting ranked orders.</li>
+      <li>The method of Claim 1, wherein the priority score is computed using a weighted combination of earnings per distance, earnings per time, countdown urgency, pickup proximity, platform reliability, and rider history factors.</li>
+      <li>The method of Claim 2, wherein the weight parameters are dynamically adjusted through a machine learning feedback loop based on rider acceptance patterns.</li>
+      <li>The method of Claim 1, further comprising an auto-accept rules engine that automatically accepts orders matching rider-defined criteria.</li>
+      <li>The method of Claim 1, further comprising a smart stack module that identifies and presents geographically batchable order groups.</li>
+      <li>A non-transitory computer-readable medium storing instructions for performing the method of Claims 1-5.</li>
+      <li>A system comprising a notification aggregation module, data normalization module, multi-variable ranking engine, unified presentation interface, and order acceptance relay module.</li>
+    </ol>
+  </div>
+
+  <div class="page-footer">
+    <span>GigRider Technologies Pvt. Ltd.</span>
+    <span>Part III: Patent I</span>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 16: PATENT II -->
+<!-- ============================================================ -->
+<div class="page content-page">
+  <div class="patent-header">
+    <div class="patent-label">Provisional Patent Specification</div>
+    <div class="patent-title">Patent II: System and Method for Multi-Platform Gig Worker Credit Scoring Based on Cross-Platform Delivery Performance Data</div>
+    <div class="patent-meta">Applicant: GigRider Technologies Private Limited &nbsp;|&nbsp; Filing Date: April 2026 &nbsp;|&nbsp; Jurisdiction: Republic of India</div>
+  </div>
+
+  <h3 class="sub-heading">Field & Background</h3>
+  <div class="content-body">
+    <p>The present invention relates to the field of financial technology and credit scoring, and more particularly to a system and method for generating credit scores for gig economy workers based on their aggregated delivery performance data across multiple independent delivery platforms.</p>
+    <p>Gig economy delivery workers represent a rapidly growing segment of the global workforce (50 million worldwide), yet are systematically excluded from traditional financial services. Banks rely primarily on credit bureau data, income tax returns, and formal employment records to assess creditworthiness. Gig workers lack formal employment records, have irregular income patterns, and frequently have thin or non-existent credit files. Existing platform-specific financial products are limited to riders who operate exclusively on a single platform. No existing system aggregates delivery performance data across multiple platforms to create a comprehensive view of a rider's creditworthiness.</p>
+  </div>
+
+  <h3 class="sub-heading">Summary of the Invention</h3>
+  <div class="content-body">
+    <p>The present invention provides a system and method for generating a Multi-Platform Gig Credit Score (MPGCS) that leverages aggregated delivery performance data from multiple independent delivery platforms to assess the creditworthiness of gig economy delivery workers. The system collects, normalizes, and analyzes cross-platform delivery data including order completion rates, on-time delivery rates, customer ratings, earnings consistency, active working hours, and platform diversity metrics.</p>
+  </div>
+
+  <h3 class="sub-heading">MPGCS Score Components</h3>
+  <table>
+    <thead><tr><th>Component</th><th>Weight</th><th>Description</th><th>Data Source</th></tr></thead>
+    <tbody>
+      <tr><td>Order Completion Rate</td><td>20%</td><td>Ratio of completed orders to total received across all platforms</td><td>All connected platforms</td></tr>
+      <tr><td>On-Time Delivery Rate</td><td>15%</td><td>Percentage of deliveries completed within estimated window</td><td>All connected platforms</td></tr>
+      <tr><td>Earnings Stability Index</td><td>20%</td><td>Coefficient of variation of monthly earnings over 6 months</td><td>Aggregated</td></tr>
+      <tr><td>Platform Diversity Score</td><td>10%</td><td>Number of active platforms and distribution of earnings</td><td>Platform registration</td></tr>
+      <tr><td>Working Consistency Index</td><td>15%</td><td>Regular active hours per week with low variance</td><td>Aggregated</td></tr>
+      <tr><td>Customer Satisfaction</td><td>10%</td><td>Weighted average of ratings, adjusted for platform distributions</td><td>All connected platforms</td></tr>
+      <tr><td>Tenure and Trend Factor</td><td>10%</td><td>Length of gig work history and trend direction</td><td>Historical</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="sub-heading">Score Computation & Integration</h3>
+  <div class="content-body">
+    <p>The MPGCS is computed as a score ranging from 300 to 900, calibrated to be comparable with traditional credit bureau scores for financial institution integration. The score is recomputed on a rolling basis using the most recent 6 months of data, with an exponential decay function that weights recent performance more heavily. Performance data is normalized across platforms using platform-specific adjustment factors that account for differences in standards (e.g., a 4.5 rating on Platform A may be equivalent to a 4.2 on Platform B).</p>
+    <p>The MPGCS is made available to partnered financial institutions through a secure REST API providing: (a) the composite score, (b) component-level breakdowns for underwriting transparency, (c) trend indicators showing whether the score is improving, stable, or declining, and (d) verification of the rider's identity and platform accounts. Financial institutions use this data to automate loan origination decisions, set interest rates based on risk tiers, determine insurance premium levels, and establish credit limits.</p>
+  </div>
+
+  <h3 class="sub-heading">Claims (Outline)</h3>
+  <div class="content-body">
+    <ol style="font-size:10.5px;line-height:1.7;">
+      <li>A method for generating a credit score for a gig economy worker based on aggregated delivery performance data from multiple independent delivery platforms.</li>
+      <li>The method of Claim 1, wherein the credit score comprises weighted components including order completion rate, on-time delivery rate, earnings stability index, platform diversity score, working consistency index, customer satisfaction composite, and tenure and trend factor.</li>
+      <li>The method of Claim 1, further comprising normalizing performance data across platforms using platform-specific adjustment factors.</li>
+      <li>The method of Claim 1, further comprising providing said credit score to financial institutions through a secure API for automated loan origination and insurance underwriting.</li>
+      <li>A system for computing and distributing multi-platform gig credit scores, comprising a data aggregation module, a normalization module, a credit scoring engine, and a financial institution API module.</li>
+    </ol>
+  </div>
+
+  <div class="page-footer">
+    <span>GigRider Technologies Pvt. Ltd.</span>
+    <span>Part III: Patent II</span>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 17: PATENT III -->
+<!-- ============================================================ -->
+<div class="page content-page">
+  <div class="patent-header">
+    <div class="patent-label">Provisional Patent Specification</div>
+    <div class="patent-title">Patent III: System and Method for Geographic Delivery Batching Across Independent Delivery Platforms for Gig Economy Workers</div>
+    <div class="patent-meta">Applicant: GigRider Technologies Private Limited &nbsp;|&nbsp; Filing Date: April 2026 &nbsp;|&nbsp; Jurisdiction: Republic of India</div>
+  </div>
+
+  <h3 class="sub-heading">Field & Background</h3>
+  <div class="content-body">
+    <p>The present invention relates to the field of logistics optimization and route planning, and more particularly to a system and method for identifying and presenting geographically batchable delivery order combinations that originate from multiple independent delivery platforms, enabling gig economy delivery workers to execute multiple deliveries in a single optimized route.</p>
+    <p>Delivery workers in the gig economy frequently receive orders from multiple platforms simultaneously. Currently, there is no mechanism for a delivery worker to identify when two or more orders from different platforms can be efficiently combined into a single delivery route. As a result, workers either accept only one order at a time (leading to suboptimal earnings) or accept multiple orders without geographic awareness (leading to overlapping routes and missed delivery windows). Existing route optimization solutions operate within a single platform's ecosystem and cannot access order data from competing platforms.</p>
+  </div>
+
+  <h3 class="sub-heading">Summary of the Invention</h3>
+  <div class="content-body">
+    <p>The present invention provides a system and method for identifying delivery orders from multiple independent platforms that can be efficiently batched together based on geographic proximity of pickup and delivery locations, compatible delivery time windows, and combined route optimization. The system computes a Stack Score for each potential order combination that quantifies the efficiency gain of executing the orders as a batch compared to individually.</p>
+  </div>
+
+  <h3 class="sub-heading">1. Cross-Platform Order Proximity Detection</h3>
+  <div class="content-body">
+    <p>The system continuously monitors active orders from all connected delivery platforms and computes geographic proximity between: (a) pickup locations of different orders, (b) delivery destinations of different orders, and (c) pickup locations of one order and delivery destinations of another order. Proximity is measured using Haversine distance calculations between GPS coordinates, with configurable proximity thresholds that vary based on local geographic conditions. Orders whose pickup locations are within the pickup proximity threshold (default 2 km) and whose delivery destinations are within the delivery proximity threshold (default 3 km) are flagged as potential stack candidates.</p>
+  </div>
+
+  <h3 class="sub-heading">2. Route Optimization and Stack Scoring</h3>
+  <div class="content-body">
+    <p>For each group of flagged stack candidates, the system computes an optimized delivery route using a modified Traveling Salesman Problem (TSP) solver that considers real-time traffic data, one-way street restrictions, and mode-of-transport constraints. The Stack Score is computed as:</p>
+    <p style="text-align:center;font-family:'Inter',sans-serif;font-size:11px;color:var(--navy);font-weight:600;margin:8px 0;">StackScore = (CombinedEarnings / OptimizedRouteDistance) - Average(IndividualEarnings / IndividualDistances)</p>
+    <p>A StackScore greater than zero indicates that the batched delivery is more efficient than individual deliveries. The system also computes a Time Feasibility Score that verifies all orders in the stack can be delivered within their respective countdown and delivery windows, accounting for realistic transit times with a safety margin.</p>
+  </div>
+
+  <h3 class="sub-heading">3. Stack Presentation and Acceptance</h3>
+  <div class="content-body">
+    <p>Viable stacks with positive StackScores and passing Time Feasibility Scores are presented to the rider as stacked delivery options. Each stack card displays: the constituent orders with their platform badges, combined total earnings, optimized route visualization on a map, estimated total distance and duration compared to individual delivery totals, and the StackScore prominently displayed. The rider can accept the entire stack with a single tap, which triggers sequential acceptance of each individual order through the Order Acceptance Relay Module.</p>
+  </div>
+
+  <h3 class="sub-heading">Claims (Outline)</h3>
+  <div class="content-body">
+    <ol style="font-size:10.5px;line-height:1.7;">
+      <li>A method for identifying geographically batchable delivery orders from multiple independent delivery platforms, comprising monitoring active orders, computing geographic proximity between order locations, generating optimized delivery routes, and computing stack efficiency scores.</li>
+      <li>The method of Claim 1, wherein the stack efficiency score is computed as the difference between batched delivery efficiency and average individual delivery efficiency.</li>
+      <li>The method of Claim 1, further comprising a time feasibility analysis that verifies all orders in a stack can be delivered within their respective delivery windows.</li>
+      <li>A system for cross-platform geographic delivery batching, comprising an order proximity detection module, a route optimization engine, a stack scoring module, and a unified stack presentation interface.</li>
+    </ol>
+  </div>
+
+  <div class="page-footer">
+    <span>GigRider Technologies Pvt. Ltd.</span>
+    <span>Part III: Patent III</span>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 18: NDA TEMPLATE -->
+<!-- ============================================================ -->
+<div class="page content-page">
+  <div class="content-header">
+    <div class="content-header-num">III</div>
+    <div class="content-header-title">Non-Disclosure Agreement Template</div>
+  </div>
+
+  <div class="content-body">
+    <p style="text-align:center;font-family:'Playfair Display',serif;font-size:16px;font-weight:600;color:var(--navy);margin-bottom:4px;">Non-Disclosure Agreement</p>
+    <p style="text-align:center;font-size:10px;color:var(--text-muted);margin-bottom:16px;">This Agreement is entered into as of the date of signature below (the "Effective Date")</p>
+
+    <p><strong>Disclosing Party:</strong> GigRider Technologies Private Limited ("Company"), a company incorporated under the laws of India, having its registered office at [Registered Address]</p>
+    <p><strong>Receiving Party:</strong> [Investor/Company Name], a [entity type] incorporated under the laws of [jurisdiction], having its principal office at [Address]</p>
+  </div>
+
+  <div class="nda-section">
+    <h3>1. Definition of Confidential Information</h3>
+    <div class="content-body">
+      <p>"Confidential Information" means any and all information disclosed by the Company to the Receiving Party, whether orally, in writing, electronically, or by any other means, including but not limited to: (a) business plans, strategies, and projections; (b) technology, software, algorithms, source code, and technical specifications; (c) patent applications and intellectual property; (d) financial data, revenue models, and pricing strategies; (e) customer lists, rider data, and platform integration methods; (f) marketing plans and competitive analysis; and (g) any other information that a reasonable person would understand to be confidential or proprietary in nature.</p>
+    </div>
+  </div>
+
+  <div class="nda-section">
+    <h3>2. Obligations of Receiving Party</h3>
+    <div class="content-body">
+      <p>The Receiving Party agrees to: (a) hold all Confidential Information in strict confidence and not disclose it to any third party without prior written consent; (b) use the Confidential Information solely for the purpose of evaluating a potential investment or business relationship; (c) restrict access to employees, officers, directors, and advisors who have a genuine need to know and are bound by confidentiality obligations no less restrictive; (d) not reverse engineer, decompile, or disassemble any software or technology disclosed; and (e) not use the Confidential Information to compete with the Company or assist any third party in competing.</p>
+    </div>
+  </div>
+
+  <div class="nda-section">
+    <h3>3. Exclusions</h3>
+    <div class="content-body">
+      <p>Confidential Information does not include information that: (a) was publicly known prior to disclosure; (b) becomes publicly known through no wrongful act of the Receiving Party; (c) was already in the Receiving Party's possession prior to disclosure; (d) is independently developed without reference to the Confidential Information; or (e) is rightfully obtained from a third party without restriction on disclosure.</p>
+    </div>
+  </div>
+
+  <div class="nda-section">
+    <h3>4. Term</h3>
+    <div class="content-body">
+      <p>This Agreement shall remain in effect for a period of three (3) years from the Effective Date. The obligations of confidentiality shall survive the termination of this Agreement for a period of five (5) years from the date of termination.</p>
+    </div>
+  </div>
+
+  <div class="nda-section">
+    <h3>5. Return of Materials</h3>
+    <div class="content-body">
+      <p>Upon the written request of the Company, or upon termination of discussions between the parties, the Receiving Party shall promptly return or destroy all copies of Confidential Information and certify in writing that it has done so.</p>
+    </div>
+  </div>
+
+  <div class="nda-section">
+    <h3>6. Remedies</h3>
+    <div class="content-body">
+      <p>The Receiving Party acknowledges that any breach may cause irreparable harm for which monetary damages would be inadequate. The Company shall be entitled to seek injunctive relief in addition to all other remedies available at law or in equity.</p>
+    </div>
+  </div>
+
+  <div class="nda-section">
+    <h3>7. Governing Law</h3>
+    <div class="content-body">
+      <p>This Agreement shall be governed by and construed in accordance with the laws of India. Any disputes shall be subject to the exclusive jurisdiction of the courts of [City, India].</p>
+    </div>
+  </div>
+
+  <div class="thin-divider"></div>
+
+  <div class="sig-block">
+    <div>
+      <div class="sig-field"><div class="label">For the Company (Disclosing Party)</div><div class="line"></div></div>
+      <div class="sig-field"><div class="label">Name</div><div class="line"></div></div>
+      <div class="sig-field"><div class="label">Title</div><div class="line"></div></div>
+      <div class="sig-field"><div class="label">Date</div><div class="line"></div></div>
+    </div>
+    <div>
+      <div class="sig-field"><div class="label">For the Receiving Party</div><div class="line"></div></div>
+      <div class="sig-field"><div class="label">Name</div><div class="line"></div></div>
+      <div class="sig-field"><div class="label">Title</div><div class="line"></div></div>
+      <div class="sig-field"><div class="label">Date</div><div class="line"></div></div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>GigRider Technologies Pvt. Ltd.</span>
+    <span>Part III: NDA Template</span>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 19: FILING CHECKLIST & COST SUMMARY -->
+<!-- ============================================================ -->
+<div class="page content-page">
+  <div class="content-header">
+    <div class="content-header-num">III</div>
+    <div class="content-header-title">Patent Filing Checklist & Cost Summary</div>
+  </div>
+
+  <h3 class="sub-heading">Pre-Filing Preparation</h3>
+  <ul class="checklist">
+    <li>Finalize invention descriptions for all 3 patents (use Provisional Specifications as base)</li>
+    <li>Prepare flowchart diagrams for each patent (hand-drawn or digital acceptable for provisional)</li>
+    <li>Conduct prior art search on Google Patents and IPO website</li>
+    <li>Confirm inventor names and addresses (all contributing inventors must be listed)</li>
+    <li>Decide applicant entity (individual, startup, or company) - Startup status reduces fees by 50%</li>
+  </ul>
+
+  <h3 class="sub-heading">Filing Documents (Per Patent)</h3>
+  <table>
+    <thead><tr><th>Form</th><th>Description</th><th>Fee (Startup)</th><th>Fee (Individual)</th></tr></thead>
+    <tbody>
+      <tr><td>Form 1</td><td>Application for Grant of Patent</td><td>Rs 800</td><td>Rs 1,600</td></tr>
+      <tr><td>Form 2</td><td>Provisional Specification</td><td>Rs 800</td><td>Rs 1,600</td></tr>
+      <tr><td>Form 5</td><td>Declaration of Inventorship</td><td>No fee</td><td>No fee</td></tr>
+      <tr><td>Form 3</td><td>Statement and Undertaking</td><td>No fee</td><td>No fee</td></tr>
+      <tr><td>Form 26</td><td>Power of Attorney (if using agent)</td><td>No fee</td><td>No fee</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="sub-heading">Filing Methods</h3>
+  <div class="content-body">
+    <p><strong>Online filing (recommended):</strong> File through the Indian Patent Office e-filing portal at ipindiaonline.gov.in. Create an account, upload all forms and the provisional specification as PDF documents, and pay fees online. You receive an immediate filing receipt with your application number and filing date. Available 24/7.</p>
+    <p><strong>Offline filing:</strong> Submit physical copies at the nearest Patent Office (Kolkata, Mumbai, Delhi, or Chennai). Filing date is the date of physical submission.</p>
+  </div>
+
+  <h3 class="sub-heading">Post-Filing Actions</h3>
+  <table>
+    <thead><tr><th>Timeline</th><th>Action</th><th>Critical?</th></tr></thead>
+    <tbody>
+      <tr><td>Within 12 months</td><td>File Complete Specification with detailed claims for each patent</td><td>YES - Failure abandons the application</td></tr>
+      <tr><td>Within 12 months</td><td>File PCT international application if global protection desired</td><td>Recommended for international expansion</td></tr>
+      <tr><td>Within 12 months</td><td>Engage a registered patent attorney to draft complete claims</td><td>Strongly recommended</td></tr>
+      <tr><td>Ongoing</td><td>Mark all materials with "Patent Pending"</td><td>Important for deterrence</td></tr>
+      <tr><td>Ongoing</td><td>Maintain invention logs with dated records</td><td>Important if challenged</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="sub-heading">Cost Summary for All Three Patents</h3>
+  <table>
+    <thead><tr><th>Item</th><th>Cost per Patent</th><th>Total (3 Patents)</th></tr></thead>
+    <tbody>
+      <tr><td>Provisional filing fee (startup)</td><td>Rs 1,600</td><td>Rs 4,800</td></tr>
+      <tr><td>Provisional filing fee (individual)</td><td>Rs 3,200</td><td>Rs 9,600</td></tr>
+      <tr><td>Patent attorney (complete spec)</td><td>Rs 30,000-80,000</td><td>Rs 90,000-2,40,000</td></tr>
+      <tr><td>PCT international filing</td><td>Rs 50,000-1,00,000</td><td>Rs 1,50,000-3,00,000</td></tr>
+      <tr class="total-row"><td>Total (India only, startup)</td><td></td><td>Rs 94,800-2,44,800</td></tr>
+      <tr class="total-row"><td>Total (India + PCT, startup)</td><td></td><td>Rs 2,44,800-5,44,800</td></tr>
+    </tbody>
+  </table>
+
+  <div class="highlight-box">
+    <h4>Important Reminders</h4>
+    <p>First, file the provisional patent BEFORE making any public disclosure. India provides a 12-month grace period, but most foreign jurisdictions do not. Second, do not publish source code, algorithm details, or system architecture on any public platform before filing. Third, have every person who sees the technical details sign an NDA before disclosure. Fourth, the provisional specification must describe the invention with sufficient detail. Fifth, once filed, you can immediately and legally use the term "Patent Pending" in all presentations, marketing materials, and product descriptions.</p>
+  </div>
+
+  <div class="page-footer">
+    <span>GigRider Technologies Pvt. Ltd.</span>
+    <span>Part III: Filing Checklist</span>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 20: CLOSING PAGE -->
+<!-- ============================================================ -->
+<div class="page cover-page" style="justify-content: center;">
+  <div class="cover-ornament-top"></div>
+  <div class="cover-divider" style="margin-bottom: 32px;"></div>
+  <div style="font-family:'Playfair Display',serif;font-size:36px;font-weight:800;color:var(--navy);line-height:1.3;">
+    Every Rider Deserves<br><span style="color:var(--gold);">One App.</span>
+  </div>
+  <div style="font-family:'Lora',serif;font-size:16px;font-style:italic;color:var(--navy-light);margin-top:16px;margin-bottom:32px;">
+    Every Order. More Money.
+  </div>
+  <div class="cover-divider" style="margin-top: 0;"></div>
+  <div style="font-family:'Inter',sans-serif;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold-dark);margin-top:40px;">
+    Patent Pending
+  </div>
+  <div style="font-family:'Inter',sans-serif;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-top:16px;line-height:2;">
+    GigRider Technologies Private Limited<br>
+    April 2026 &nbsp;|&nbsp; Confidential
+  </div>
+  <div class="cover-ornament-bottom"></div>
+  <div class="page-footer">
+    <span>GigRider Technologies Pvt. Ltd.</span>
+    <span class="gold-line">Confidential</span>
+  </div>
+</div>
+
+</body>
+</html>
