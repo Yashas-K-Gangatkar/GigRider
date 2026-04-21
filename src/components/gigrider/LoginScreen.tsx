@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Phone, ArrowRight, ChevronLeft } from 'lucide-react';
+import { Phone, ArrowRight, ChevronLeft, CheckCircle2 } from 'lucide-react';
 
 interface LoginScreenProps {
   onLogin: (phone: string) => void;
@@ -13,12 +13,22 @@ export default function LoginScreen({ onLogin, onGoToSignup }: LoginScreenProps)
   const [phone, setPhone] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // Format phone as XXXXX XXXXX
+  const formatPhone = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, 10);
+    if (digits.length <= 5) return digits;
+    return `${digits.slice(0, 5)} ${digits.slice(5)}`;
+  };
+
+  const rawPhone = phone.replace(/\s/g, '');
+  const isPhoneValid = rawPhone.length >= 10;
+
   const handleSendOTP = () => {
-    if (phone.length >= 10) {
+    if (isPhoneValid) {
       setIsLoading(true);
       setTimeout(() => {
         setIsLoading(false);
-        onLogin(phone);
+        onLogin(rawPhone);
       }, 1200);
     }
   };
@@ -122,21 +132,35 @@ export default function LoginScreen({ onLogin, onGoToSignup }: LoginScreenProps)
               <input
                 type="tel"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                onChange={(e) => setPhone(formatPhone(e.target.value))}
                 placeholder="Enter your mobile number"
-                className="w-full pl-24 pr-4 py-4 bg-white border border-[#D5CBBF] rounded-xl text-[#2C2C2C] text-sm placeholder:text-[#7A7168]/50 focus:outline-none focus:border-[#1B2A4A] focus:ring-2 focus:ring-[#1B2A4A]/10 transition-all duration-200"
+                className={`w-full pl-24 pr-10 py-4 bg-white border rounded-xl text-[#2C2C2C] text-sm placeholder:text-[#7A7168]/50 focus:outline-none transition-all duration-200 ${
+                  isPhoneValid
+                    ? 'border-[#2C4A3E] focus:ring-2 focus:ring-[#2C4A3E]/10'
+                    : 'border-[#D5CBBF] focus:border-[#1B2A4A] focus:ring-2 focus:ring-[#1B2A4A]/10'
+                }`}
                 style={{ fontFamily: 'var(--font-lora), serif' }}
               />
+              {/* Valid checkmark */}
+              {isPhoneValid && (
+                <motion.div
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2"
+                >
+                  <CheckCircle2 className="w-5 h-5 text-[#2C4A3E]" />
+                </motion.div>
+              )}
             </div>
           </div>
 
           {/* Send OTP Button */}
           <motion.button
             onClick={handleSendOTP}
-            disabled={phone.length < 10 || isLoading}
+            disabled={!isPhoneValid || isLoading}
             whileTap={{ scale: 0.97 }}
             className={`w-full py-4 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-300 ${
-              phone.length >= 10
+              isPhoneValid
                 ? 'bg-[#1B2A4A] text-[#FAF7F2] shadow-md hover:bg-[#2A3F6A]'
                 : 'bg-[#E8E0D4] text-[#7A7168] cursor-not-allowed'
             }`}

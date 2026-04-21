@@ -11,6 +11,7 @@ import EarningsScreen from '@/components/gigrider/EarningsScreen';
 import PlatformsScreen from '@/components/gigrider/PlatformsScreen';
 import ActivityScreen from '@/components/gigrider/ActivityScreen';
 import ProfileScreen from '@/components/gigrider/ProfileScreen';
+import NotificationsScreen from '@/components/gigrider/NotificationsScreen';
 import BottomNav, { type ScreenType } from '@/components/gigrider/BottomNav';
 import { useGigRiderStore, type RiderProfile } from '@/lib/store';
 import { useOrderSimulation, useOnlineTimer } from '@/hooks/use-order-simulation';
@@ -98,7 +99,7 @@ export default function Home() {
   const renderAppScreen = () => {
     switch (activeScreen) {
       case 'home':
-        return <HomeScreen />;
+        return <HomeScreen onOpenNotifications={() => setActiveScreen('notifications')} />;
       case 'earnings':
         return <EarningsScreen />;
       case 'platforms':
@@ -107,6 +108,8 @@ export default function Home() {
         return <ActivityScreen />;
       case 'profile':
         return <ProfileScreen onLogout={handleLogout} />;
+      case 'notifications':
+        return <NotificationsScreen onBack={() => setActiveScreen('home')} />;
       default:
         return <HomeScreen />;
     }

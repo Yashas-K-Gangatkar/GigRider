@@ -183,15 +183,15 @@ export default function ActivityScreen() {
         {/* Filter Tabs */}
         <div className="flex items-center gap-1 bg-white rounded-lg p-1 border border-[#D5CBBF]">
           {[
-            { id: 'all' as const, label: 'All' },
-            { id: 'completed' as const, label: 'Done' },
-            { id: 'in-progress' as const, label: 'Active' },
-            { id: 'cancelled' as const, label: 'Cancelled' },
+            { id: 'all' as const, label: 'All', count: deliveryHistory.length },
+            { id: 'completed' as const, label: 'Done', count: deliveryHistory.filter(d => d.status === 'completed').length },
+            { id: 'in-progress' as const, label: 'Active', count: deliveryHistory.filter(d => d.status === 'in-progress').length },
+            { id: 'cancelled' as const, label: 'Cancelled', count: deliveryHistory.filter(d => d.status === 'cancelled').length },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setFilter(tab.id)}
-              className={`flex-1 py-2 rounded-md text-xs font-medium transition-all duration-300 ${
+              className={`flex-1 py-2 rounded-md text-xs font-medium transition-all duration-300 flex items-center justify-center gap-1 ${
                 filter === tab.id
                   ? 'bg-[#1B2A4A] text-[#FAF7F2] shadow-sm'
                   : 'text-[#7A7168] hover:text-[#2C2C2C]'
@@ -199,6 +199,15 @@ export default function ActivityScreen() {
               style={{ fontFamily: 'var(--font-lora), serif' }}
             >
               {tab.label}
+              {tab.count > 0 && (
+                <span className={`text-[9px] font-bold px-1 py-0 rounded-full ${
+                  filter === tab.id
+                    ? 'bg-[#FAF7F2]/20 text-[#FAF7F2]'
+                    : 'bg-[#D5CBBF]/60 text-[#7A7168]'
+                }`}>
+                  {tab.count}
+                </span>
+              )}
             </button>
           ))}
         </div>

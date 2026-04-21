@@ -43,7 +43,7 @@ function getTimeEmoji(): string {
   return '\uD83C\uDF19';
 }
 
-export default function HomeScreen() {
+export default function HomeScreen({ onOpenNotifications }: { onOpenNotifications?: () => void } = {}) {
   const isOnline = useGigRiderStore(s => s.isOnline);
   const smartMode = useGigRiderStore(s => s.smartMode);
   const incomingOrders = useGigRiderStore(s => s.incomingOrders);
@@ -238,6 +238,7 @@ export default function HomeScreen() {
             <motion.button
               className="relative p-1.5"
               whileTap={{ scale: 0.9 }}
+              onClick={onOpenNotifications}
               animate={
                 bellRinging
                   ? { rotate: [0, -15, 15, -10, 10, -5, 5, 0] }

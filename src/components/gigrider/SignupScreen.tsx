@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Phone, Bike, ArrowRight, ChevronLeft } from 'lucide-react';
+import { User, Phone, ArrowRight, ChevronLeft, CheckCircle2 } from 'lucide-react';
 
 interface SignupScreenProps {
   onSignup: (data: { name: string; phone: string; vehicleType: 'bicycle' | 'scooter' | 'motorcycle' | 'car' }) => void;
@@ -15,6 +15,18 @@ export default function SignupScreen({ onSignup, onGoToLogin }: SignupScreenProp
   const [vehicleType, setVehicleType] = useState<'bicycle' | 'scooter' | 'motorcycle' | 'car'>('scooter');
   const [isLoading, setIsLoading] = useState(false);
 
+  // Format phone as XXXXX XXXXX
+  const formatPhone = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, 10);
+    if (digits.length <= 5) return digits;
+    return `${digits.slice(0, 5)} ${digits.slice(5)}`;
+  };
+
+  const rawPhone = phone.replace(/\s/g, '');
+  const isPhoneValid = rawPhone.length >= 10;
+  const isNameValid = name.length >= 2;
+  const isFormValid = isNameValid && isPhoneValid;
+
   const VEHICLE_OPTIONS = [
     { id: 'bicycle' as const, label: 'Bicycle', icon: '🚲' },
     { id: 'scooter' as const, label: 'Scooter', icon: '🛵' },
@@ -23,16 +35,14 @@ export default function SignupScreen({ onSignup, onGoToLogin }: SignupScreenProp
   ];
 
   const handleSignup = () => {
-    if (name.length >= 2 && phone.length >= 10) {
+    if (isFormValid) {
       setIsLoading(true);
       setTimeout(() => {
         setIsLoading(false);
-        onSignup({ name, phone, vehicleType });
+        onSignup({ name, phone: rawPhone, vehicleType });
       }, 1200);
     }
   };
-
-  const isFormValid = name.length >= 2 && phone.length >= 10;
 
   return (
     <div className="min-h-screen bg-[#FAF7F2] flex flex-col linen-texture">
@@ -115,9 +125,22 @@ export default function SignupScreen({ onSignup, onGoToLogin }: SignupScreenProp
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Enter your full name"
-                className="w-full pl-11 pr-4 py-4 bg-white border border-[#D5CBBF] rounded-xl text-[#2C2C2C] text-sm placeholder:text-[#7A7168]/50 focus:outline-none focus:border-[#1B2A4A] focus:ring-2 focus:ring-[#1B2A4A]/10 transition-all duration-200"
+                className={`w-full pl-11 pr-10 py-4 bg-white border rounded-xl text-[#2C2C2C] text-sm placeholder:text-[#7A7168]/50 focus:outline-none transition-all duration-200 ${
+                  isNameValid
+                    ? 'border-[#2C4A3E] focus:ring-2 focus:ring-[#2C4A3E]/10'
+                    : 'border-[#D5CBBF] focus:border-[#1B2A4A] focus:ring-2 focus:ring-[#1B2A4A]/10'
+                }`}
                 style={{ fontFamily: 'var(--font-lora), serif' }}
               />
+              {isNameValid && (
+                <motion.div
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2"
+                >
+                  <CheckCircle2 className="w-5 h-5 text-[#2C4A3E]" />
+                </motion.div>
+              )}
             </div>
           </div>
 
@@ -143,11 +166,24 @@ export default function SignupScreen({ onSignup, onGoToLogin }: SignupScreenProp
               <input
                 type="tel"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                onChange={(e) => setPhone(formatPhone(e.target.value))}
                 placeholder="Enter your mobile number"
-                className="w-full pl-24 pr-4 py-4 bg-white border border-[#D5CBBF] rounded-xl text-[#2C2C2C] text-sm placeholder:text-[#7A7168]/50 focus:outline-none focus:border-[#1B2A4A] focus:ring-2 focus:ring-[#1B2A4A]/10 transition-all duration-200"
+                className={`w-full pl-24 pr-10 py-4 bg-white border rounded-xl text-[#2C2C2C] text-sm placeholder:text-[#7A7168]/50 focus:outline-none transition-all duration-200 ${
+                  isPhoneValid
+                    ? 'border-[#2C4A3E] focus:ring-2 focus:ring-[#2C4A3E]/10'
+                    : 'border-[#D5CBBF] focus:border-[#1B2A4A] focus:ring-2 focus:ring-[#1B2A4A]/10'
+                }`}
                 style={{ fontFamily: 'var(--font-lora), serif' }}
               />
+              {isPhoneValid && (
+                <motion.div
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2"
+                >
+                  <CheckCircle2 className="w-5 h-5 text-[#2C4A3E]" />
+                </motion.div>
+              )}
             </div>
           </div>
 
