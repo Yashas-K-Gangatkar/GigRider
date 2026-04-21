@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { useGigRiderStore, generateOrder, generateStack, type Order } from '@/lib/store';
 
 /**
@@ -14,7 +14,7 @@ export function useOrderSimulation() {
   const addIncomingOrder = useGigRiderStore(s => s.addIncomingOrder);
   const removeExpiredOrders = useGigRiderStore(s => s.removeExpiredOrders);
   const smartStack = useGigRiderStore(s => s.autoAcceptRules.smartStack);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cleanupRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const simulate = useCallback(() => {
@@ -55,7 +55,7 @@ export function useOrderSimulation() {
         intervalRef.current = setTimeout(() => {
           simulate();
           startInterval();
-        }, delay) as unknown as ReturnType<typeof setInterval>;
+        }, delay) as unknown as ReturnType<typeof setTimeout>;
       };
       startInterval();
 
@@ -95,19 +95,20 @@ export function useOnlineTimer() {
 /**
  * Hook that provides countdown timers for incoming orders.
  * Returns a map of orderId -> seconds remaining.
+ * Uses useState to trigger re-renders every second.
  */
-export function useOrderTimers() {
+export function useOrderTimers(): Record<string, number> {
   const incomingOrders = useGigRiderStore(s => s.incomingOrders);
   const acceptedOrderIds = useGigRiderStore(s => s.acceptedOrderIds);
   const declinedOrderIds = useGigRiderStore(s => s.declinedOrderIds);
   const timersRef = useRef<Record<string, number>>({});
-  const [, forceUpdate] = useRef(0);
+  const [tick, setTick] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
       let changed = false;
       incomingOrders.forEach(order => {
-        if (acceptedOrderIds.has(order.id) || declinedOrderIds.has(order.id)) return;
+        if (acceptedOrderIds.includes(order.id) || declinedOrderIds.includes(order.id)) return;
         if (timersRef.current[order.id] === undefined) {
           timersRef.current[order.id] = order.timer;
         } else if (timersRef.current[order.id] > 0) {
@@ -116,7 +117,7 @@ export function useOrderTimers() {
         }
       });
       if (changed) {
-        forceUpdate.current++;
+        setTick(t => t + 1);
       }
     }, 1000);
     return () => clearInterval(interval);

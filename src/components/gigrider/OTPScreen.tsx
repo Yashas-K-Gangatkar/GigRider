@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, CheckCircle2, ArrowRight, RotateCcw } from 'lucide-react';
 
@@ -29,15 +29,8 @@ export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps)
     }
   }, [countdown]);
 
-  // Auto-verify when all 6 digits entered (DEMO: any 6 digits work)
-  useEffect(() => {
-    const otpValue = otp.join('');
-    if (otpValue.length === 6) {
-      handleVerify(otpValue);
-    }
-  }, [otp]);
-
-  const handleVerify = (otpValue: string) => {
+  const handleVerify = useCallback((otpValue: string) => {
+    if (isVerifying || isVerified) return;
     setIsVerifying(true);
     setError('');
 
@@ -51,7 +44,15 @@ export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps)
         onVerified();
       }, 1500);
     }, 1500);
-  };
+  }, [isVerifying, isVerified, onVerified]);
+
+  // Auto-verify when all 6 digits entered (DEMO: any 6 digits work)
+  useEffect(() => {
+    const otpValue = otp.join('');
+    if (otpValue.length === 6) {
+      handleVerify(otpValue);
+    }
+  }, [otp, handleVerify]);
 
   const handleChange = (index: number, value: string) => {
     if (value.length > 1) {

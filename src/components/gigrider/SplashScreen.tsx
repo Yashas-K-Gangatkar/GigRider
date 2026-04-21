@@ -4,12 +4,21 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 
+const TAGLINES = [
+  'One App. Every Platform.',
+  'More Earnings.',
+  'Less Switching.',
+  'Smarter Deliveries.',
+  'Better Tips.',
+];
+
 interface SplashScreenProps {
   onComplete: () => void;
 }
 
 export default function SplashScreen({ onComplete }: SplashScreenProps) {
   const [progress, setProgress] = useState(0);
+  const [taglineIndex, setTaglineIndex] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -32,6 +41,14 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
     };
   }, [onComplete]);
 
+  // Cycle taglines
+  useEffect(() => {
+    const taglineInterval = setInterval(() => {
+      setTaglineIndex((prev) => (prev + 1) % TAGLINES.length);
+    }, 1200);
+    return () => clearInterval(taglineInterval);
+  }, []);
+
   return (
     <AnimatePresence>
       <motion.div
@@ -51,7 +68,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
 
         {/* Content */}
         <div className="relative z-10 flex flex-col items-center gap-6 px-8">
-          {/* Logo */}
+          {/* Logo with parallax effect */}
           <motion.div
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -65,6 +82,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
           >
             <motion.div
               animate={{
+                y: [0, -6, 0],
                 scale: [1, 1.04, 1],
               }}
               transition={{
@@ -83,6 +101,18 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
                 priority
               />
             </motion.div>
+            {/* Subtle parallax glow */}
+            <motion.div
+              className="absolute inset-0 rounded-full"
+              animate={{
+                boxShadow: [
+                  '0 0 20px rgba(201, 169, 110, 0.1)',
+                  '0 0 40px rgba(201, 169, 110, 0.2)',
+                  '0 0 20px rgba(201, 169, 110, 0.1)',
+                ],
+              }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+            />
           </motion.div>
 
           {/* App Name */}
@@ -106,27 +136,38 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
               <div className="w-12 h-px bg-gradient-to-l from-transparent to-[#C9A96E]" />
             </div>
 
-            <motion.p
-              initial={{ y: 16, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.9 }}
-              className="text-xs text-[#7A7168] text-center tracking-[0.2em] uppercase"
-              style={{ fontFamily: 'var(--font-lora), serif' }}
-            >
-              One App. Every Platform. More Earnings.
-            </motion.p>
+            {/* Cycling Taglines */}
+            <div className="h-5 flex items-center justify-center overflow-hidden">
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={taglineIndex}
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -20, opacity: 0 }}
+                  transition={{ duration: 0.4, ease: 'easeInOut' }}
+                  className="text-xs text-[#7A7168] text-center tracking-[0.2em] uppercase"
+                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                >
+                  {TAGLINES[taglineIndex]}
+                </motion.p>
+              </AnimatePresence>
+            </div>
           </motion.div>
 
-          {/* Loading Bar */}
+          {/* Loading Bar - elegant gold gradient */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 1.2 }}
             className="w-52 mt-6"
           >
-            <div className="h-0.5 bg-[#E8E0D4] rounded-full overflow-hidden">
+            <div className="h-1 bg-[#E8E0D4] rounded-full overflow-hidden">
               <motion.div
-                className="h-full bg-gradient-to-r from-[#C9A96E] to-[#D4BC8E] rounded-full"
+                className="h-full rounded-full"
+                style={{
+                  background: 'linear-gradient(90deg, #A88B52, #C9A96E, #D4BC8E, #C9A96E, #A88B52)',
+                  backgroundSize: '200% 100%',
+                }}
                 initial={{ width: '0%' }}
                 animate={{ width: `${Math.min(progress, 100)}%` }}
                 transition={{ duration: 0.1 }}

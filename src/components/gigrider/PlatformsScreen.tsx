@@ -18,6 +18,11 @@ import {
   Globe,
   ChevronRight,
   Star,
+  Loader2,
+  Sparkles,
+  X,
+  TrendingUp,
+  Package,
 } from 'lucide-react';
 
 export default function PlatformsScreen() {
@@ -29,11 +34,14 @@ export default function PlatformsScreen() {
   const setAllPlatformsOnline = useGigRiderStore(s => s.setAllPlatformsOnline);
   const setAllPlatformsOffline = useGigRiderStore(s => s.setAllPlatformsOffline);
   const addPlatform = useGigRiderStore(s => s.addPlatform);
+  const removePlatform = useGigRiderStore(s => s.removePlatform);
   const updateAutoAcceptRules = useGigRiderStore(s => s.updateAutoAcceptRules);
   const updateShift = useGigRiderStore(s => s.updateShift);
 
   const [showAddPlatform, setShowAddPlatform] = useState(false);
   const [connectingPlatform, setConnectingPlatform] = useState<string | null>(null);
+  const [disconnectingPlatform, setDisconnectingPlatform] = useState<string | null>(null);
+  const [connectingProgress, setConnectingProgress] = useState(0);
 
   // Derive available platforms (not connected yet)
   const availablePlatforms = useMemo(() => {
@@ -46,15 +54,42 @@ export default function PlatformsScreen() {
         letter: p.letter,
         color: p.color,
         description: p.description,
+        isRecommended: ['grubhub', 'instacart', 'deliveroo'].includes(p.id),
       }));
   }, [connectedPlatforms]);
 
+  const recommendedPlatforms = availablePlatforms.filter(p => p.isRecommended);
+  const otherPlatforms = availablePlatforms.filter(p => !p.isRecommended);
+
   const handleConnect = (platformId: string) => {
     setConnectingPlatform(platformId);
+    setConnectingProgress(0);
+    
+    // Animate progress
+    const interval = setInterval(() => {
+      setConnectingProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          return 100;
+        }
+        return prev + 5;
+      });
+    }, 100);
+
     setTimeout(() => {
+      clearInterval(interval);
       addPlatform(platformId as PlatformId);
       setConnectingPlatform(null);
+      setConnectingProgress(0);
     }, 2000);
+  };
+
+  const handleDisconnect = (platformId: string) => {
+    setDisconnectingPlatform(platformId);
+    setTimeout(() => {
+      removePlatform(platformId as PlatformId);
+      setDisconnectingPlatform(null);
+    }, 300);
   };
 
   const togglePreferred = (id: string) => {
@@ -80,29 +115,87 @@ export default function PlatformsScreen() {
             Platforms
           </h1>
           <div className="flex items-center gap-2">
-            <button
+            <motion.button
               onClick={setAllPlatformsOnline}
-              className="px-3 py-1.5 bg-[#2C4A3E]/10 text-[#2C4A3E] rounded-lg text-[11px] font-semibold hover:bg-[#2C4A3E]/15 transition-colors duration-200"
+              whileTap={{ scale: 0.95 }}
+              className="px-3.5 py-2 bg-[#2C4A3E] text-white rounded-lg text-[11px] font-semibold hover:bg-[#1A6B4A] transition-colors duration-200 shadow-sm"
               style={{ fontFamily: 'var(--font-lora), serif' }}
             >
               All Online
-            </button>
-            <button
+            </motion.button>
+            <motion.button
               onClick={setAllPlatformsOffline}
-              className="px-3 py-1.5 bg-[#F0EBE4] text-[#7A7168] rounded-lg text-[11px] font-semibold hover:bg-[#E8E0D4] transition-colors duration-200"
+              whileTap={{ scale: 0.95 }}
+              className="px-3.5 py-2 bg-[#F0EBE4] text-[#7A7168] rounded-lg text-[11px] font-semibold hover:bg-[#E8E0D4] transition-colors duration-200"
               style={{ fontFamily: 'var(--font-lora), serif' }}
             >
               All Offline
-            </button>
+            </motion.button>
           </div>
         </div>
       </div>
 
       <div className="px-4 pt-4 space-y-5">
+        {/* Platform Performance Summary */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="grid grid-cols-2 gap-3"
+        >
+          {connectedPlatforms.map((platform, index) => {
+            const config = PLATFORMS[platform.id];
+            return (
+              <motion.div
+                key={platform.id}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: index * 0.06 }}
+                className="bg-white rounded-xl p-3 border border-[#D5CBBF] card-elegant"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <div
+                    className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white border border-[#C9A96E]/20"
+                    style={{ backgroundColor: config?.color || '#7A7168' }}
+                  >
+                    {config?.letter || platform.id[0].toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-[#2C2C2C] truncate" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                      {config?.displayName || platform.id}
+                    </p>
+                    <p className="text-[9px] text-[#7A7168]" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                      {platform.isOnline ? 'Online' : 'Offline'}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-bold text-[#1B2A4A]" style={{ fontFamily: 'var(--font-playfair), serif' }}>
+                      ₹{platform.todayEarnings}
+                    </p>
+                    <p className="text-[8px] text-[#7A7168] tracking-wider uppercase" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                      Today
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-[#2C2C2C]" style={{ fontFamily: 'var(--font-playfair), serif' }}>
+                      {platform.todayOrders}
+                    </p>
+                    <p className="text-[8px] text-[#7A7168] tracking-wider uppercase" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                      Orders
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+        </motion.div>
+
         {/* Connected Platforms */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
           className="bg-white rounded-xl border border-[#D5CBBF] overflow-hidden card-elegant"
         >
           <div className="p-4 pb-3">
@@ -121,11 +214,12 @@ export default function PlatformsScreen() {
           <div className="space-y-0">
             {connectedPlatforms.map((platform, index) => {
               const config = PLATFORMS[platform.id];
+              const isDisconnecting = disconnectingPlatform === platform.id;
               return (
                 <motion.div
                   key={platform.id}
                   initial={{ opacity: 0, x: -16 }}
-                  animate={{ opacity: 1, x: 0 }}
+                  animate={{ opacity: isDisconnecting ? 0 : 1, x: isDisconnecting ? 40 : 0 }}
                   transition={{ delay: index * 0.08 }}
                   className="flex items-center justify-between px-4 py-3 border-t border-[#F0EBE4]"
                 >
@@ -180,6 +274,14 @@ export default function PlatformsScreen() {
                       onCheckedChange={() => togglePlatformOnline(platform.id)}
                       className="data-[state=checked]:bg-[#2C4A3E]"
                     />
+                    {/* Disconnect button */}
+                    <motion.button
+                      onClick={() => handleDisconnect(platform.id)}
+                      whileTap={{ scale: 0.85 }}
+                      className="p-1 rounded-full hover:bg-[#722F37]/10 transition-colors"
+                    >
+                      <X className="w-3.5 h-3.5 text-[#7A7168] hover:text-[#722F37]" />
+                    </motion.button>
                   </div>
                 </motion.div>
               );
@@ -221,48 +323,123 @@ export default function PlatformsScreen() {
                 transition={{ duration: 0.3 }}
                 className="overflow-hidden"
               >
-                <div className="px-4 pb-4 space-y-2">
-                  {availablePlatforms.length > 0 ? availablePlatforms.map((platform) => (
-                    <div
-                      key={platform.id}
-                      className="flex items-center justify-between p-3 bg-[#F5F0EB] rounded-lg"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white border border-[#C9A96E]/20"
-                          style={{ backgroundColor: platform.color }}
+                <div className="px-4 pb-4 space-y-4">
+                  {/* Recommended for You */}
+                  {recommendedPlatforms.length > 0 && (
+                    <div>
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <Sparkles className="w-3.5 h-3.5 text-[#C9A96E]" />
+                        <span
+                          className="text-[10px] font-semibold text-[#8B5E3C] tracking-wider uppercase"
+                          style={{ fontFamily: 'var(--font-lora), serif' }}
                         >
-                          {platform.letter}
-                        </div>
-                        <div>
-                          <p
-                            className="text-sm font-medium text-[#2C2C2C]"
-                            style={{ fontFamily: 'var(--font-lora), serif' }}
-                          >
-                            {platform.name}
-                          </p>
-                          <p
-                            className="text-[10px] text-[#7A7168]"
-                            style={{ fontFamily: 'var(--font-lora), serif' }}
-                          >
-                            {platform.description}
-                          </p>
-                        </div>
+                          Recommended for You
+                        </span>
                       </div>
-                      <button
-                        onClick={() => handleConnect(platform.id)}
-                        disabled={connectingPlatform === platform.id}
-                        className={`px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-200 ${
-                          connectingPlatform === platform.id
-                            ? 'bg-[#1B2A4A]/10 text-[#1B2A4A]'
-                            : 'bg-[#1B2A4A] text-[#FAF7F2] active:scale-[0.97]'
-                        }`}
+                      <div className="space-y-2">
+                        {recommendedPlatforms.map((platform) => (
+                          <div
+                            key={platform.id}
+                            className="flex items-center justify-between p-3 bg-[#C9A96E]/5 rounded-lg border border-[#C9A96E]/15"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div
+                                className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white border border-[#C9A96E]/20"
+                                style={{ backgroundColor: platform.color }}
+                              >
+                                {platform.letter}
+                              </div>
+                              <div>
+                                <p
+                                  className="text-sm font-medium text-[#2C2C2C]"
+                                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                                >
+                                  {platform.name}
+                                </p>
+                                <p
+                                  className="text-[10px] text-[#7A7168]"
+                                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                                >
+                                  {platform.description}
+                                </p>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => handleConnect(platform.id)}
+                              disabled={connectingPlatform === platform.id}
+                              className="px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-200 bg-[#1B2A4A] text-[#FAF7F2] active:scale-[0.97] disabled:opacity-70"
+                              style={{ fontFamily: 'var(--font-lora), serif' }}
+                            >
+                              {connectingPlatform === platform.id ? (
+                                <span className="flex items-center gap-1.5">
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                  {connectingProgress}%
+                                </span>
+                              ) : 'Connect'}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Other Available Platforms */}
+                  {otherPlatforms.length > 0 && (
+                    <div>
+                      <span
+                        className="text-[10px] font-semibold text-[#7A7168] tracking-wider uppercase block mb-2"
                         style={{ fontFamily: 'var(--font-lora), serif' }}
                       >
-                        {connectingPlatform === platform.id ? 'Connecting...' : 'Connect'}
-                      </button>
+                        More Platforms
+                      </span>
+                      <div className="space-y-2">
+                        {otherPlatforms.map((platform) => (
+                          <div
+                            key={platform.id}
+                            className="flex items-center justify-between p-3 bg-[#F5F0EB] rounded-lg"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div
+                                className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white border border-[#C9A96E]/20"
+                                style={{ backgroundColor: platform.color }}
+                              >
+                                {platform.letter}
+                              </div>
+                              <div>
+                                <p
+                                  className="text-sm font-medium text-[#2C2C2C]"
+                                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                                >
+                                  {platform.name}
+                                </p>
+                                <p
+                                  className="text-[10px] text-[#7A7168]"
+                                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                                >
+                                  {platform.description}
+                                </p>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => handleConnect(platform.id)}
+                              disabled={connectingPlatform === platform.id}
+                              className="px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-200 bg-[#1B2A4A] text-[#FAF7F2] active:scale-[0.97] disabled:opacity-70"
+                              style={{ fontFamily: 'var(--font-lora), serif' }}
+                            >
+                              {connectingPlatform === platform.id ? (
+                                <span className="flex items-center gap-1.5">
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                  {connectingProgress}%
+                                </span>
+                              ) : 'Connect'}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  )) : (
+                  )}
+
+                  {availablePlatforms.length === 0 && (
                     <p className="text-sm text-[#7A7168] text-center py-4" style={{ fontFamily: 'var(--font-lora), serif' }}>
                       All platforms connected!
                     </p>

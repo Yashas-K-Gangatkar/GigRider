@@ -100,6 +100,16 @@ export interface ShiftSchedule {
   active: boolean;
 }
 
+export interface Notification {
+  id: string;
+  type: 'order_accepted' | 'order_completed' | 'earnings_milestone' | 'platform_update' | 'tier_upgrade' | 'tip_received' | 'stack_order';
+  title: string;
+  description: string;
+  timestamp: number;
+  isRead: boolean;
+  icon?: string;
+}
+
 // ==================== PLATFORM CONFIGS ====================
 
 export const PLATFORMS: Record<PlatformId, PlatformConfig> = {
@@ -242,8 +252,8 @@ interface GigRiderState {
 
   // Orders
   incomingOrders: Order[];
-  acceptedOrderIds: Set<string>;
-  declinedOrderIds: Set<string>;
+  acceptedOrderIds: string[];
+  declinedOrderIds: string[];
 
   // Active delivery
   activeDelivery: ActiveDelivery | null;
@@ -269,6 +279,10 @@ interface GigRiderState {
   sessionStart: number | null;
   totalOnlineTime: number; // in seconds
 
+  // Notifications
+  notifications: Notification[];
+  unreadNotificationCount: number;
+
   // Actions
   login: (name: string, phone: string, vehicle: RiderProfile['vehicleType']) => void;
   logout: () => void;
@@ -289,6 +303,10 @@ interface GigRiderState {
   updateAutoAcceptRules: (rules: Partial<AutoAcceptRules>) => void;
   updateShift: (index: number, shift: Partial<ShiftSchedule>) => void;
   tickOnlineTime: () => void;
+  addNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'isRead'>) => void;
+  markNotificationRead: (id: string) => void;
+  markAllNotificationsRead: () => void;
+  clearNotifications: () => void;
   reset: () => void;
 }
 
@@ -334,8 +352,8 @@ export const useGigRiderStore = create<GigRiderState>()(
 
       // Orders
       incomingOrders: [],
-      acceptedOrderIds: new Set<string>(),
-      declinedOrderIds: new Set<string>(),
+      acceptedOrderIds: [],
+      declinedOrderIds: [],
 
       // Active delivery
       activeDelivery: null,
@@ -368,6 +386,17 @@ export const useGigRiderStore = create<GigRiderState>()(
       sessionStart: null,
       totalOnlineTime: 15980, // ~4h 23m in seconds
 
+      // Notifications
+      notifications: [
+        { id: 'n1', type: 'order_completed', title: 'Delivery Completed', description: 'Royal Biryani House delivery done. Earned ₹65 + ₹15 tip!', timestamp: Date.now() - 1800000, isRead: false },
+        { id: 'n2', type: 'earnings_milestone', title: 'Earnings Milestone', description: 'You\'ve crossed ₹8,000 this week! Keep it up.', timestamp: Date.now() - 7200000, isRead: false },
+        { id: 'n3', type: 'platform_update', title: 'Swiggy Update', description: 'New surge pricing areas near Koramangala. Go online to benefit.', timestamp: Date.now() - 14400000, isRead: false },
+        { id: 'n4', type: 'order_accepted', title: 'Auto-Accepted Order', description: 'Zomato order from The Spice Heritage auto-accepted (₹52).', timestamp: Date.now() - 28800000, isRead: true },
+        { id: 'n5', type: 'tip_received', title: 'Tip Received!', description: 'A happy customer tipped you ₹20 for fast delivery.', timestamp: Date.now() - 86400000, isRead: true },
+        { id: 'n6', type: 'stack_order', title: 'Smart Stack Match', description: '2 orders on the same route. Combined earnings: ₹95.', timestamp: Date.now() - 172800000, isRead: true },
+      ],
+      unreadNotificationCount: 3,
+
       // ---- ACTIONS ----
 
       login: (name, phone, vehicle) => set({
@@ -391,8 +420,8 @@ export const useGigRiderStore = create<GigRiderState>()(
         rider: null,
         isOnline: true,
         incomingOrders: [],
-        acceptedOrderIds: new Set(),
-        declinedOrderIds: new Set(),
+        acceptedOrderIds: [],
+        declinedOrderIds: [],
         activeDelivery: null,
         sessionStart: null,
       }),
@@ -448,8 +477,8 @@ export const useGigRiderStore = create<GigRiderState>()(
               order.distance <= rules.maxDistance &&
               rules.preferredPlatforms[order.platform]) {
             // Auto-accept
-            const newAccepted = new Set(state.acceptedOrderIds);
-            newAccepted.add(order.id);
+            const newAccepted = [...state.acceptedOrderIds];
+            if (!newAccepted.includes(order.id)) newAccepted.push(order.id);
             return {
               incomingOrders: [order, ...state.incomingOrders],
               acceptedOrderIds: newAccepted,
@@ -460,7 +489,7 @@ export const useGigRiderStore = create<GigRiderState>()(
       }),
 
       addIncomingOrders: (orders) => set((state) => {
-        const newAccepted = new Set(state.acceptedOrderIds);
+        const newAccepted = [...state.acceptedOrderIds];
         const processedOrders = orders.map(order => {
           if (state.autoAcceptRules.enabled) {
             const rules = state.autoAcceptRules;
@@ -469,7 +498,7 @@ export const useGigRiderStore = create<GigRiderState>()(
                 order.earnings >= rules.minPayout &&
                 order.distance <= rules.maxDistance &&
                 rules.preferredPlatforms[order.platform]) {
-              newAccepted.add(order.id);
+              if (!newAccepted.includes(order.id)) newAccepted.push(order.id);
             }
           }
           return order;
@@ -481,8 +510,8 @@ export const useGigRiderStore = create<GigRiderState>()(
       }),
 
       acceptOrder: (orderId) => set((state) => {
-        const newAccepted = new Set(state.acceptedOrderIds);
-        newAccepted.add(orderId);
+        const newAccepted = [...state.acceptedOrderIds];
+        if (!newAccepted.includes(orderId)) newAccepted.push(orderId);
 
         const order = state.incomingOrders.find(o => o.id === orderId);
         // If no active delivery, start one
@@ -506,8 +535,8 @@ export const useGigRiderStore = create<GigRiderState>()(
       }),
 
       declineOrder: (orderId) => set((state) => {
-        const newDeclined = new Set(state.declinedOrderIds);
-        newDeclined.add(orderId);
+        const newDeclined = [...state.declinedOrderIds];
+        if (!newDeclined.includes(orderId)) newDeclined.push(orderId);
         return { declinedOrderIds: newDeclined };
       }),
 
@@ -515,8 +544,7 @@ export const useGigRiderStore = create<GigRiderState>()(
         const now = Date.now();
         const active = state.incomingOrders.filter(o => {
           const elapsed = (now - o.createdAt) / 1000;
-          const accepted = state.acceptedOrderIds.has(o.id);
-          const declined = state.declinedOrderIds.has(o.id);
+          const declined = state.declinedOrderIds.includes(o.id);
           return elapsed < 40 && !declined;
         });
         return { incomingOrders: active };
@@ -593,19 +621,49 @@ export const useGigRiderStore = create<GigRiderState>()(
         totalOnlineTime: state.totalOnlineTime + 1,
       })),
 
+      addNotification: (notification) => set((state) => {
+        const newNotification: Notification = {
+          ...notification,
+          id: `notif-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          timestamp: Date.now(),
+          isRead: false,
+        };
+        return {
+          notifications: [newNotification, ...state.notifications],
+          unreadNotificationCount: state.unreadNotificationCount + 1,
+        };
+      }),
+
+      markNotificationRead: (id) => set((state) => ({
+        notifications: state.notifications.map(n => n.id === id ? { ...n, isRead: true } : n),
+        unreadNotificationCount: Math.max(0, state.unreadNotificationCount - (state.notifications.find(n => n.id === id && !n.isRead) ? 1 : 0)),
+      })),
+
+      markAllNotificationsRead: () => set((state) => ({
+        notifications: state.notifications.map(n => ({ ...n, isRead: true })),
+        unreadNotificationCount: 0,
+      })),
+
+      clearNotifications: () => set({
+        notifications: [],
+        unreadNotificationCount: 0,
+      }),
+
       reset: () => set({
         isAuthenticated: false,
         rider: null,
         isOnline: true,
         incomingOrders: [],
-        acceptedOrderIds: new Set(),
-        declinedOrderIds: new Set(),
+        acceptedOrderIds: [],
+        declinedOrderIds: [],
         activeDelivery: null,
         deliveryHistory: [],
         todayEarnings: 0,
         todayOrders: 0,
         sessionStart: null,
         totalOnlineTime: 0,
+        notifications: [],
+        unreadNotificationCount: 0,
       }),
     }),
     {
@@ -624,6 +682,8 @@ export const useGigRiderStore = create<GigRiderState>()(
         tipsThisWeek: state.tipsThisWeek,
         shifts: state.shifts,
         totalOnlineTime: state.totalOnlineTime,
+        notifications: state.notifications,
+        unreadNotificationCount: state.unreadNotificationCount,
       }),
     }
   )

@@ -5,18 +5,23 @@ import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useGigRiderStore, PLATFORMS } from '@/lib/store';
+import { useToast } from '@/hooks/use-toast';
 import {
-  BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid,
+  ComposedChart, Bar, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid, Cell,
 } from 'recharts';
 import {
   TrendingUp,
   ArrowUpRight,
+  ArrowDownRight,
   Wallet,
   Gift,
   Calendar,
   Banknote,
   Sparkles,
   ChevronRight,
+  Target,
+  Clock,
+  Crown,
 } from 'lucide-react';
 
 function AnimatedCounter({ target, prefix = '₹', duration = 1500 }: { target: number; prefix?: string; duration?: number }) {
@@ -59,21 +64,41 @@ export default function EarningsScreen() {
   const tipsThisWeek = useGigRiderStore(s => s.tipsThisWeek);
   const todayEarnings = useGigRiderStore(s => s.todayEarnings);
 
-  const totalEarnings = period === 'week' ? weekEarnings : monthEarnings;
-  const comparedPercent = period === 'week' ? 12 : 8;
+  const { toast } = useToast();
 
-  // Build platform earnings dynamically from connected platforms
-  const totalPlatformEarnings = connectedPlatforms.reduce((sum, p) => sum + p.todayEarnings, 0) || 1;
-  const platformEarnings = connectedPlatforms.map(p => {
+  const totalEarnings = period === 'week' ? weekEarnings : monthEarnings;
+  const lastWeekEarnings = Math.round(weekEarnings * 0.87);
+  const comparedPercent = period === 'week'
+    ? Math.round(((weekEarnings - lastWeekEarnings) / lastWeekEarnings) * 100)
+    : 8;
+  const isUp = comparedPercent > 0;
+
+  // Earnings Goal
+  const weeklyGoal = 10000;
+  const goalProgress = Math.min((weekEarnings / weeklyGoal) * 100, 100);
+
+  // Build platform earnings dynamically — weekly estimates from todayEarnings
+  const totalPlatformEarningsWeekly = connectedPlatforms.reduce((sum, p) => sum + Math.round(p.todayEarnings * 6.5), 0) || 1;
+  const platformEarningsWeekly = connectedPlatforms.map(p => {
     const config = PLATFORMS[p.id];
+    const weeklyAmount = Math.round(p.todayEarnings * 6.5);
     return {
       platform: config?.displayName || p.id,
-      amount: p.todayEarnings,
+      amount: weeklyAmount,
       color: config?.color || '#7A7168',
       letter: config?.letter || p.id[0].toUpperCase(),
-      percentage: Math.round((p.todayEarnings / totalPlatformEarnings) * 100),
+      percentage: Math.round((weeklyAmount / totalPlatformEarningsWeekly) * 100),
     };
   });
+
+  // Best Platform (weekly)
+  const bestPlatform = platformEarningsWeekly.reduce((best, curr) => curr.amount > best.amount ? curr : best, platformEarningsWeekly[0]);
+
+  // Peak hours — mock data per requirements
+  const peakHoursData = [
+    { label: '12pm-1pm', earnings: 1850, highlight: true },
+    { label: '7pm-9pm', earnings: 3530, highlight: true },
+  ];
 
   // Map delivery history to transactions
   const transactions = deliveryHistory.slice(0, 8).map(d => {
@@ -89,7 +114,6 @@ export default function EarningsScreen() {
     };
   });
 
-  // Calculate payout balance as a portion of today's earnings
   const payoutBalance = Math.round(todayEarnings * 0.7);
 
   return (
@@ -145,14 +169,129 @@ export default function EarningsScreen() {
           </div>
 
           <div className="flex items-center justify-center gap-1">
-            <ArrowUpRight className="w-3.5 h-3.5 text-[#2C4A3E]" />
+            {isUp ? (
+              <ArrowUpRight className="w-3.5 h-3.5 text-[#2C4A3E]" />
+            ) : (
+              <ArrowDownRight className="w-3.5 h-3.5 text-[#722F37]" />
+            )}
             <span
-              className="text-sm font-semibold text-[#2C4A3E]"
+              className={`text-sm font-semibold ${isUp ? 'text-[#2C4A3E]' : 'text-[#722F37]'}`}
               style={{ fontFamily: 'var(--font-lora), serif' }}
             >
-              {comparedPercent}% from last {period === 'week' ? 'week' : 'month'}
+              {isUp ? '+' : ''}{comparedPercent}% from last {period === 'week' ? 'week' : 'month'}
             </span>
           </div>
+        </motion.div>
+
+        {/* This Week vs Last Week Comparison */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="bg-white rounded-xl p-4 border border-[#D5CBBF] card-elegant"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <h3
+              className="text-sm font-semibold text-[#2C2C2C] flex items-center gap-2"
+              style={{ fontFamily: 'var(--font-playfair), serif' }}
+            >
+              <TrendingUp className="w-4 h-4 text-[#1B2A4A]" />
+              This Week vs Last Week
+            </h3>
+            <Badge
+              className={`text-[10px] px-2 py-0.5 ${
+                isUp
+                  ? 'bg-[#2C4A3E]/10 text-[#2C4A3E] border-[#2C4A3E]/15'
+                  : 'bg-[#722F37]/10 text-[#722F37] border-[#722F37]/15'
+              }`}
+            >
+              {isUp ? '+' : ''}{comparedPercent}%
+            </Badge>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] text-[#7A7168] tracking-wider uppercase" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                  This Week
+                </span>
+                <span className="text-sm font-bold text-[#1B2A4A]" style={{ fontFamily: 'var(--font-playfair), serif' }}>
+                  ₹{weekEarnings.toLocaleString()}
+                </span>
+              </div>
+              <div className="w-full bg-[#F0EBE4] rounded-full h-3">
+                <motion.div
+                  className="h-3 rounded-full bg-gradient-to-r from-[#1B2A4A] to-[#2A3F6A]"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${(weekEarnings / Math.max(weekEarnings, lastWeekEarnings)) * 100}%` }}
+                  transition={{ duration: 1, ease: 'easeOut' }}
+                />
+              </div>
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] text-[#7A7168] tracking-wider uppercase" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                  Last Week
+                </span>
+                <span className="text-sm font-bold text-[#7A7168]" style={{ fontFamily: 'var(--font-playfair), serif' }}>
+                  ₹{lastWeekEarnings.toLocaleString()}
+                </span>
+              </div>
+              <div className="w-full bg-[#F0EBE4] rounded-full h-3">
+                <motion.div
+                  className="h-3 rounded-full bg-[#D5CBBF]"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${(lastWeekEarnings / Math.max(weekEarnings, lastWeekEarnings)) * 100}%` }}
+                  transition={{ duration: 1, ease: 'easeOut', delay: 0.2 }}
+                />
+              </div>
+            </div>
+          </div>
+          <div className="mt-3 flex items-center gap-1 justify-center">
+            {isUp ? (
+              <ArrowUpRight className="w-3 h-3 text-[#2C4A3E]" />
+            ) : (
+              <ArrowDownRight className="w-3 h-3 text-[#722F37]" />
+            )}
+            <span className={`text-xs font-semibold ${isUp ? 'text-[#2C4A3E]' : 'text-[#722F37]'}`} style={{ fontFamily: 'var(--font-lora), serif' }}>
+              ₹{Math.abs(weekEarnings - lastWeekEarnings).toLocaleString()} {isUp ? 'more' : 'less'} than last week
+            </span>
+          </div>
+        </motion.div>
+
+        {/* Earnings Goal Progress */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.08 }}
+          className="bg-gradient-to-r from-[#C9A96E]/8 to-[#1B2A4A]/5 rounded-xl p-4 border border-[#C9A96E]/20"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Target className="w-4 h-4 text-[#C9A96E]" />
+              <h3 className="text-sm font-semibold text-[#8B5E3C]" style={{ fontFamily: 'var(--font-playfair), serif' }}>
+                Weekly Goal
+              </h3>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge className="text-[10px] px-2 py-0.5 bg-[#C9A96E]/15 text-[#8B5E3C] border-[#C9A96E]/25">
+                {Math.round(goalProgress)}%
+              </Badge>
+              <span className="text-xs text-[#7A7168]" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                ₹{weekEarnings.toLocaleString()} / ₹{weeklyGoal.toLocaleString()}
+              </span>
+            </div>
+          </div>
+          <div className="w-full bg-[#F0EBE4] rounded-full h-3">
+            <motion.div
+              className="h-3 rounded-full bg-gradient-to-r from-[#C9A96E] to-[#D4BC8E]"
+              initial={{ width: 0 }}
+              animate={{ width: `${goalProgress}%` }}
+              transition={{ duration: 1.2, ease: 'easeOut' }}
+            />
+          </div>
+          <p className="text-xs text-[#7A7168] mt-2" style={{ fontFamily: 'var(--font-lora), serif' }}>
+            {goalProgress >= 100 ? '🎉 Goal achieved! Set a higher target.' : `₹${(weeklyGoal - weekEarnings).toLocaleString()} more to reach your goal`}
+          </p>
         </motion.div>
 
         {/* Platform Breakdown */}
@@ -171,7 +310,7 @@ export default function EarningsScreen() {
           </h3>
 
           <div className="space-y-3">
-            {platformEarnings.map((item, index) => (
+            {platformEarningsWeekly.map((item, index) => (
               <motion.div
                 key={item.platform}
                 initial={{ opacity: 0, x: -16 }}
@@ -223,7 +362,88 @@ export default function EarningsScreen() {
           </div>
         </motion.div>
 
-        {/* Daily Earnings Chart */}
+        {/* Insights Section Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.13 }}
+          className="flex items-center gap-2 pt-1"
+        >
+          <Sparkles className="w-4 h-4 text-[#C9A96E]" />
+          <h2
+            className="text-sm font-bold text-[#1B2A4A] tracking-wide"
+            style={{ fontFamily: 'var(--font-playfair), serif' }}
+          >
+            Insights
+          </h2>
+        </motion.div>
+
+        {/* Best Platform + Peak Hours Insight Cards */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* Best Platform */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="bg-white rounded-xl p-4 border border-[#D5CBBF] card-elegant"
+          >
+            <div className="flex items-center gap-1.5 mb-2">
+              <Crown className="w-3.5 h-3.5 text-[#C9A96E]" />
+              <span className="text-[9px] text-[#7A7168] tracking-wider uppercase" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                Best Platform
+              </span>
+            </div>
+            <div className="flex items-center gap-2 mb-1">
+              <div
+                className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
+                style={{ backgroundColor: bestPlatform?.color || '#7A7168' }}
+              >
+                {bestPlatform?.letter || '?'}
+              </div>
+              <span className="text-sm font-bold text-[#1B2A4A]" style={{ fontFamily: 'var(--font-playfair), serif' }}>
+                {bestPlatform?.platform || '-'}
+              </span>
+            </div>
+            <p className="text-lg font-bold text-[#2C4A3E]" style={{ fontFamily: 'var(--font-playfair), serif' }}>
+              ₹{bestPlatform?.amount.toLocaleString() || 0}
+            </p>
+            <p className="text-[9px] text-[#7A7168]" style={{ fontFamily: 'var(--font-lora), serif' }}>
+              this week
+            </p>
+          </motion.div>
+
+          {/* Peak Hours */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-white rounded-xl p-4 border border-[#D5CBBF] card-elegant"
+          >
+            <div className="flex items-center gap-1.5 mb-2">
+              <Clock className="w-3.5 h-3.5 text-[#8B5E3C]" />
+              <span className="text-[9px] text-[#7A7168] tracking-wider uppercase" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                Peak Hours
+              </span>
+            </div>
+            <div className="space-y-1.5">
+              {peakHoursData.map((ph) => (
+                <div key={ph.label} className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#1B2A4A]" style={{ fontFamily: 'var(--font-playfair), serif' }}>
+                    {ph.label}
+                  </span>
+                  <span className="text-[10px] font-semibold text-[#8B5E3C]" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                    ₹{ph.earnings.toLocaleString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <p className="text-[9px] text-[#7A7168] mt-2" style={{ fontFamily: 'var(--font-lora), serif' }}>
+              highest earning windows
+            </p>
+          </motion.div>
+        </div>
+
+        {/* Daily Earnings Chart with Gradient Area Fill */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -240,7 +460,22 @@ export default function EarningsScreen() {
 
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={dailyEarnings} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+              <ComposedChart data={dailyEarnings} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+                <defs>
+                  <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#1B2A4A" stopOpacity={1} />
+                    <stop offset="100%" stopColor="#2A3F6A" stopOpacity={0.7} />
+                  </linearGradient>
+                  <linearGradient id="bestBarGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#C9A96E" stopOpacity={1} />
+                    <stop offset="100%" stopColor="#A88B52" stopOpacity={0.8} />
+                  </linearGradient>
+                  <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#C9A96E" stopOpacity={0.25} />
+                    <stop offset="50%" stopColor="#C9A96E" stopOpacity={0.08} />
+                    <stop offset="100%" stopColor="#C9A96E" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#F0EBE4" vertical={false} />
                 <XAxis
                   dataKey="day"
@@ -266,13 +501,26 @@ export default function EarningsScreen() {
                   formatter={(value: number) => [`₹${value.toLocaleString()}`, 'Earnings']}
                   cursor={{ fill: 'rgba(201, 169, 110, 0.08)' }}
                 />
+                <Area
+                  type="monotone"
+                  dataKey="amount"
+                  fill="url(#areaGradient)"
+                  stroke="none"
+                  animationDuration={1200}
+                />
                 <Bar
                   dataKey="amount"
-                  fill="#1B2A4A"
                   radius={[4, 4, 0, 0]}
                   maxBarSize={32}
-                />
-              </BarChart>
+                >
+                  {dailyEarnings.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={entry.isBest ? 'url(#bestBarGradient)' : 'url(#barGradient)'}
+                    />
+                  ))}
+                </Bar>
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
 
@@ -389,15 +637,13 @@ export default function EarningsScreen() {
               >
                 Current Balance
               </p>
-              <p
-                className="text-2xl font-bold text-[#1B2A4A]"
-                style={{ fontFamily: 'var(--font-playfair), serif' }}
-              >
-                ₹{payoutBalance.toLocaleString()}
+              <p className="text-2xl font-bold text-[#1B2A4A]" style={{ fontFamily: 'var(--font-playfair), serif' }}>
+                <AnimatedCounter target={payoutBalance} />
               </p>
             </div>
             <button
-              className="px-4 py-2 bg-[#1B2A4A] rounded-lg text-sm font-semibold text-[#FAF7F2] active:scale-[0.97] transition-all duration-200 shadow-sm"
+              onClick={() => toast({ title: 'Coming soon!', description: 'Withdrawal feature is under development.' })}
+              className="px-4 py-2 bg-[#1B2A4A] rounded-lg text-sm font-semibold text-[#FAF7F2] active:scale-[0.97] transition-all duration-200 shadow-sm hover:bg-[#2A3F6A]"
               style={{ fontFamily: 'var(--font-lora), serif' }}
             >
               Withdraw

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -23,6 +23,15 @@ import {
   Package,
   Settings,
   LogOut,
+  Pencil,
+  Shield,
+  FileText,
+  Users,
+  Gauge,
+  Share2,
+  CheckCircle2,
+  Clock,
+  ArrowUpRight,
 } from 'lucide-react';
 
 interface Achievement {
@@ -32,18 +41,10 @@ interface Achievement {
   icon: string;
   unlocked: boolean;
   color: string;
+  progress?: number;
+  progressLabel?: string;
+  targetValue?: number;
 }
-
-const ACHIEVEMENTS: Achievement[] = [
-  { id: 'century', title: 'Century Club', description: '100 deliveries in a week', icon: '🏆', unlocked: true, color: '#C9A96E' },
-  { id: 'speed', title: 'Speed Demon', description: 'Fastest delivery 3 times', icon: '⚡', unlocked: true, color: '#1B2A4A' },
-  { id: 'night', title: 'Night Rider', description: '50 night deliveries', icon: '🌙', unlocked: true, color: '#2A3F6A' },
-  { id: 'fivestar', title: '5-Star Monarch', description: 'Maintained 4.8+ for 30 days', icon: '👑', unlocked: true, color: '#C9A96E' },
-  { id: 'multi', title: 'Multi-Platform Master', description: 'Active on 4+ platforms', icon: '🔥', unlocked: true, color: '#A84020' },
-  { id: 'marathon', title: 'Marathon Runner', description: '5,000 total deliveries', icon: '🏃', unlocked: false, color: '#2C4A3E' },
-  { id: 'diamond', title: 'Diamond Rider', description: 'Earn 10L+ lifetime', icon: '💎', unlocked: false, color: '#1B2A4A' },
-  { id: 'legend', title: 'Legendary Status', description: 'Maintain 5.0 for 90 days', icon: '🌟', unlocked: false, color: '#C9A96E' },
-];
 
 const SETTINGS_ITEMS = [
   { id: 'vehicle', icon: Bike, label: 'Vehicle Type', value: 'Scooter' },
@@ -61,6 +62,12 @@ const VEHICLE_LABELS: Record<string, string> = {
   car: 'Car',
 };
 
+const DOCUMENTS = [
+  { id: 'dl', label: 'Driving License', status: 'verified' as const, icon: FileText },
+  { id: 'rc', label: 'Vehicle RC', status: 'verified' as const, icon: Bike },
+  { id: 'insurance', label: 'Insurance', status: 'pending' as const, icon: Shield },
+];
+
 interface ProfileScreenProps {
   onLogout?: () => void;
 }
@@ -71,10 +78,6 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
   const rider = useGigRiderStore(s => s.rider);
   const connectedPlatforms = useGigRiderStore(s => s.connectedPlatforms);
   const logout = useGigRiderStore(s => s.logout);
-
-  const visibleAchievements = showAllAchievements
-    ? ACHIEVEMENTS
-    : ACHIEVEMENTS.slice(0, 5);
 
   // Derive profile data from store
   const profileName = rider?.name || 'Rider';
@@ -91,6 +94,51 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
     elite: 'Elite Rider',
     fleet: 'Fleet Manager',
   };
+
+  // MPGCS Score
+  const mpgcsScore = 742;
+  const mpgcsMax = 900;
+  const mpgcsPercent = mpgcsScore / mpgcsMax;
+
+  // Build achievements with dynamic progress from store data
+  const ACHIEVEMENTS: Achievement[] = useMemo(() => {
+    const marathonProgress = Math.min(100, Math.round((profileTotalDeliveries / 5000) * 100));
+    const diamondProgress = Math.min(100, Math.round((profileTotalEarnings / 1000000) * 100));
+    return [
+      { id: 'century', title: 'Century Club', description: '100 deliveries in a week', icon: '\uD83C\uDFC6', unlocked: true, color: '#C9A96E', progress: 100 },
+      { id: 'speed', title: 'Speed Demon', description: 'Fastest delivery 3 times', icon: '\u26A1', unlocked: true, color: '#1B2A4A', progress: 100 },
+      { id: 'night', title: 'Night Rider', description: '50 night deliveries', icon: '\uD83C\uDF19', unlocked: true, color: '#2A3F6A', progress: 100 },
+      { id: 'fivestar', title: '5-Star Monarch', description: 'Maintained 4.8+ for 30 days', icon: '\uD83D\uDC51', unlocked: true, color: '#C9A96E', progress: 100 },
+      { id: 'multi', title: 'Multi-Platform Master', description: 'Active on 4+ platforms', icon: '\uD83D\uDD25', unlocked: true, color: '#A84020', progress: 100 },
+      {
+        id: 'marathon',
+        title: 'Marathon Runner',
+        description: '5,000 total deliveries',
+        icon: '\uD83C\uDFC3',
+        unlocked: profileTotalDeliveries >= 5000,
+        color: '#2C4A3E',
+        progress: marathonProgress,
+        progressLabel: `${profileTotalDeliveries.toLocaleString()}/5,000`,
+        targetValue: 5000,
+      },
+      {
+        id: 'diamond',
+        title: 'Diamond Rider',
+        description: 'Earn ₹10L+ lifetime',
+        icon: '\uD83D\uDC8E',
+        unlocked: profileTotalEarnings >= 1000000,
+        color: '#1B2A4A',
+        progress: diamondProgress,
+        progressLabel: `₹${(profileTotalEarnings / 100000).toFixed(1)}L/₹10L`,
+        targetValue: 1000000,
+      },
+      { id: 'legend', title: 'Legendary Status', description: 'Maintain 5.0 for 90 days', icon: '\uD83C\uDF1F', unlocked: false, color: '#C9A96E', progress: 22, progressLabel: '22/90 days' },
+    ];
+  }, [profileTotalDeliveries, profileTotalEarnings]);
+
+  const visibleAchievements = showAllAchievements
+    ? ACHIEVEMENTS
+    : ACHIEVEMENTS.slice(0, 5);
 
   // Platform ratings from connected platforms
   const platformRatings = connectedPlatforms
@@ -117,6 +165,12 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
     if (onLogout) onLogout();
   };
 
+  // Circular gauge SVG parameters
+  const gaugeRadius = 62;
+  const gaugeStroke = 10;
+  const gaugeCircumference = 2 * Math.PI * gaugeRadius;
+  const gaugeOffset = gaugeCircumference * (1 - mpgcsPercent);
+
   return (
     <div className="min-h-screen bg-[#FAF7F2] pb-24">
       {/* Header */}
@@ -130,11 +184,11 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
       </div>
 
       <div className="px-4 pt-4 space-y-5">
-        {/* Rider Profile Card */}
+        {/* ─── Rider Profile Card ─── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-br from-white to-[#F5F0EB] rounded-xl p-5 border border-[#D5CBBF] card-elegant"
+          className="bg-gradient-to-br from-white to-[#F5F0EB] rounded-xl p-5 border border-[#D5CBBF] card-elegant relative"
         >
           <div className="flex items-center gap-4">
             <div
@@ -143,15 +197,24 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
             >
               {rider?.avatar || profileName.charAt(0).toUpperCase()}
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <h2
-                  className="text-xl font-bold text-[#2C2C2C]"
+                  className="text-xl font-bold text-[#2C2C2C] truncate"
                   style={{ fontFamily: 'var(--font-playfair), serif' }}
                 >
                   {profileName}
                 </h2>
-                <Badge className="bg-[#C9A96E]/15 text-[#8B5E3C] border-[#C9A96E]/25 text-[9px]">
+                {/* Edit Profile Pencil Icon Button - next to the name */}
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  whileHover={{ scale: 1.1 }}
+                  className="flex items-center justify-center w-7 h-7 rounded-full bg-[#1B2A4A]/8 hover:bg-[#1B2A4A]/15 transition-colors shrink-0"
+                  aria-label="Edit profile"
+                >
+                  <Pencil className="w-3.5 h-3.5 text-[#1B2A4A]/70" />
+                </motion.button>
+                <Badge className="bg-[#C9A96E]/15 text-[#8B5E3C] border-[#C9A96E]/25 text-[9px] shrink-0">
                   <Award className="w-2.5 h-2.5 mr-0.5" />
                   {tierLabels[profileTier] || 'Rider'}
                 </Badge>
@@ -181,7 +244,201 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
           </div>
         </motion.div>
 
-        {/* Performance Stats Grid */}
+        {/* ─── Tier Upgrade CTA Card ─── */}
+        {profileTier !== 'elite' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="bg-gradient-to-br from-[#1B2A4A] to-[#2A3F6A] rounded-xl p-5 text-[#FAF7F2] relative overflow-hidden"
+          >
+            {/* Decorative pattern */}
+            <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.06]">
+              <Crown className="w-full h-full" />
+            </div>
+
+            <div className="flex items-center gap-2 mb-3 relative z-10">
+              <div className="w-8 h-8 rounded-lg bg-[#C9A96E]/20 flex items-center justify-center">
+                <Crown className="w-4.5 h-4.5 text-[#C9A96E]" />
+              </div>
+              <div>
+                <h3
+                  className="text-sm font-bold"
+                  style={{ fontFamily: 'var(--font-playfair), serif' }}
+                >
+                  Upgrade to Elite Rider
+                </h3>
+                <p
+                  className="text-[10px] text-[#FAF7F2]/50"
+                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                >
+                  Unlock premium benefits
+                </p>
+              </div>
+            </div>
+
+            {/* Benefits list */}
+            <div className="space-y-2 mb-4 relative z-10">
+              {[
+                { label: 'Priority Support', desc: 'Get dedicated 24/7 assistance' },
+                { label: 'Higher Earnings', desc: 'Up to 2x earnings boosts on peak orders' },
+                { label: 'Exclusive Badges', desc: 'Stand out with Elite Rider badge & perks' },
+              ].map((benefit) => (
+                <div key={benefit.label} className="flex items-start gap-2">
+                  <div className="mt-0.5 w-4 h-4 rounded-full bg-[#C9A96E]/20 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-3 h-3 text-[#C9A96E]" />
+                  </div>
+                  <div>
+                    <p
+                      className="text-xs font-semibold text-[#FAF7F2]"
+                      style={{ fontFamily: 'var(--font-lora), serif' }}
+                    >
+                      {benefit.label}
+                    </p>
+                    <p
+                      className="text-[10px] text-[#FAF7F2]/50"
+                      style={{ fontFamily: 'var(--font-lora), serif' }}
+                    >
+                      {benefit.desc}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              whileHover={{ scale: 1.01 }}
+              className="w-full py-3 bg-[#C9A96E] rounded-lg text-sm font-bold text-[#1B2A4A] flex items-center justify-center gap-2 relative z-10"
+              style={{ fontFamily: 'var(--font-lora), serif' }}
+            >
+              Upgrade
+              <ArrowUpRight className="w-4 h-4" />
+            </motion.button>
+          </motion.div>
+        )}
+
+        {/* ─── MPGCS (Multi-Platform Gig Credit Score) Card ─── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.08 }}
+          className="bg-white rounded-xl p-5 border border-[#D5CBBF] card-elegant"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-[#1B2A4A]/8 flex items-center justify-center">
+                <Gauge className="w-4 h-4 text-[#1B2A4A]" />
+              </div>
+              <div>
+                <h3
+                  className="text-sm font-semibold text-[#2C2C2C]"
+                  style={{ fontFamily: 'var(--font-playfair), serif' }}
+                >
+                  MPGCS Score
+                </h3>
+                <p
+                  className="text-[9px] text-[#7A7168]"
+                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                >
+                  Multi-Platform Gig Credit Score
+                </p>
+              </div>
+            </div>
+            <Badge className="bg-[#2C4A3E]/10 text-[#2C4A3E] border-[#2C4A3E]/15 text-[10px] font-semibold">
+              Excellent
+            </Badge>
+          </div>
+
+          {/* Circular Gauge Visualization */}
+          <div className="relative flex items-center justify-center py-4">
+            <svg width="160" height="160" viewBox="0 0 160 160" className="transform -rotate-90">
+              {/* Background circle */}
+              <circle
+                cx="80"
+                cy="80"
+                r={gaugeRadius}
+                fill="none"
+                stroke="#F0EBE4"
+                strokeWidth={gaugeStroke}
+              />
+              {/* Score arc - animated */}
+              <motion.circle
+                cx="80"
+                cy="80"
+                r={gaugeRadius}
+                fill="none"
+                stroke="url(#mpgcsGradient)"
+                strokeWidth={gaugeStroke}
+                strokeLinecap="round"
+                strokeDasharray={gaugeCircumference}
+                initial={{ strokeDashoffset: gaugeCircumference }}
+                animate={{ strokeDashoffset: gaugeOffset }}
+                transition={{ duration: 1.8, ease: 'easeOut' }}
+              />
+              {/* Gradient definition */}
+              <defs>
+                <linearGradient id="mpgcsGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#C9A96E" />
+                  <stop offset="100%" stopColor="#D4B87A" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <p
+                className="text-4xl font-bold text-[#1B2A4A]"
+                style={{ fontFamily: 'var(--font-playfair), serif' }}
+              >
+                {mpgcsScore}
+              </p>
+              <p
+                className="text-[10px] text-[#7A7168] tracking-wider"
+                style={{ fontFamily: 'var(--font-lora), serif' }}
+              >
+                out of {mpgcsMax}
+              </p>
+            </div>
+          </div>
+
+          {/* Score breakdown */}
+          <div className="flex items-center justify-between text-[10px] text-[#7A7168] px-1" style={{ fontFamily: 'var(--font-lora), serif' }}>
+            <span>Based on rating, acceptance rate & completion</span>
+          </div>
+
+          {/* Mini score factors */}
+          <div className="grid grid-cols-3 gap-2 mt-3">
+            {[
+              { label: 'Rating', value: '92', pct: 92 },
+              { label: 'Acceptance', value: '88', pct: 88 },
+              { label: 'Completion', value: '97', pct: 97 },
+            ].map((factor) => (
+              <div key={factor.label} className="text-center">
+                <p
+                  className="text-xs font-bold text-[#1B2A4A]"
+                  style={{ fontFamily: 'var(--font-playfair), serif' }}
+                >
+                  {factor.value}%
+                </p>
+                <div className="w-full bg-[#F0EBE4] rounded-full h-1 mt-1">
+                  <motion.div
+                    className="h-1 rounded-full bg-[#C9A96E]"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${factor.pct}%` }}
+                    transition={{ duration: 1, delay: 0.8 }}
+                  />
+                </div>
+                <p
+                  className="text-[8px] text-[#7A7168] mt-0.5 uppercase tracking-wider"
+                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                >
+                  {factor.label}
+                </p>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* ─── Performance Stats Grid ─── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -218,12 +475,125 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
           ))}
         </motion.div>
 
-        {/* Platform-wise Ratings */}
+        {/* ─── Invite Friends Referral Card ─── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.12 }}
+          className="bg-gradient-to-r from-[#C9A96E]/10 to-[#C9A96E]/5 rounded-xl p-5 border border-[#C9A96E]/25"
+        >
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#C9A96E]/20 flex items-center justify-center shrink-0">
+              <Share2 className="w-5 h-5 text-[#C9A96E]" />
+            </div>
+            <div className="flex-1">
+              <h3
+                className="text-sm font-bold text-[#8B5E3C]"
+                style={{ fontFamily: 'var(--font-playfair), serif' }}
+              >
+                Invite Friends
+              </h3>
+              <p
+                className="text-xs text-[#7A7168] mt-0.5"
+                style={{ fontFamily: 'var(--font-lora), serif' }}
+              >
+                Earn <span className="font-bold text-[#C9A96E]">₹500</span> per referral — your friends get ₹100 too!
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 mt-3">
+            <div
+              className="flex-1 px-3 py-2.5 bg-white rounded-lg border border-[#D5CBBF] text-sm font-bold text-[#1B2A4A] tracking-wider text-center"
+              style={{ fontFamily: 'var(--font-playfair), serif' }}
+            >
+              GIGRIDE500
+            </div>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.02 }}
+              className="px-5 py-2.5 bg-[#C9A96E] rounded-lg text-xs font-bold text-[#1B2A4A] flex items-center gap-1.5 shrink-0"
+              style={{ fontFamily: 'var(--font-lora), serif' }}
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              Share Invite
+            </motion.button>
+          </div>
+        </motion.div>
+
+        {/* ─── Documents Section ─── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="bg-white rounded-xl p-5 border border-[#D5CBBF] card-elegant"
+        >
+          <h3
+            className="text-sm font-semibold text-[#2C2C2C] mb-3 flex items-center gap-2"
+            style={{ fontFamily: 'var(--font-playfair), serif' }}
+          >
+            <FileText className="w-4 h-4 text-[#1B2A4A]" />
+            Documents
+          </h3>
+          <div className="grid grid-cols-3 gap-2">
+            {DOCUMENTS.map((doc) => {
+              const isVerified = doc.status === 'verified';
+              return (
+                <motion.div
+                  key={doc.id}
+                  whileHover={{ scale: 1.02 }}
+                  className={`p-3 rounded-xl border text-center transition-colors ${
+                    isVerified
+                      ? 'bg-[#2C4A3E]/5 border-[#2C4A3E]/15'
+                      : 'bg-[#8B5E3C]/5 border-[#8B5E3C]/15'
+                  }`}
+                >
+                  <div
+                    className={`w-8 h-8 rounded-full mx-auto mb-2 flex items-center justify-center ${
+                      isVerified ? 'bg-[#2C4A3E]/10' : 'bg-[#8B5E3C]/10'
+                    }`}
+                  >
+                    <doc.icon
+                      className={`w-4 h-4 ${isVerified ? 'text-[#2C4A3E]' : 'text-[#8B5E3C]'}`}
+                    />
+                  </div>
+                  <p
+                    className="text-[10px] font-semibold text-[#2C2C2C] leading-tight mb-1.5"
+                    style={{ fontFamily: 'var(--font-lora), serif' }}
+                  >
+                    {doc.label}
+                  </p>
+                  <div
+                    className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-bold ${
+                      isVerified
+                        ? 'bg-[#2C4A3E]/10 text-[#2C4A3E]'
+                        : 'bg-[#8B5E3C]/10 text-[#8B5E3C]'
+                    }`}
+                  >
+                    {isVerified ? (
+                      <>
+                        <CheckCircle2 className="w-2.5 h-2.5" />
+                        Verified
+                      </>
+                    ) : (
+                      <>
+                        <Clock className="w-2.5 h-2.5" />
+                        Pending
+                      </>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.div>
+
+        {/* ─── Platform-wise Ratings ─── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-white rounded-xl p-4 border border-[#D5CBBF] card-elegant"
+          className="bg-white rounded-xl p-5 border border-[#D5CBBF] card-elegant"
         >
           <h3
             className="text-sm font-semibold text-[#2C2C2C] mb-3 flex items-center gap-2"
@@ -279,12 +649,12 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
           </div>
         </motion.div>
 
-        {/* Achievements */}
+        {/* ─── Achievements ─── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-white rounded-xl p-4 border border-[#D5CBBF] card-elegant"
+          className="bg-white rounded-xl p-5 border border-[#D5CBBF] card-elegant"
         >
           <h3
             className="text-sm font-semibold text-[#2C2C2C] mb-3 flex items-center gap-2"
@@ -307,7 +677,7 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
                 className={`p-3 rounded-lg border transition-all duration-200 ${
                   achievement.unlocked
                     ? 'bg-[#F5F0EB] border-[#D5CBBF]'
-                    : 'bg-[#FAF7F2] border-[#E8E0D4] opacity-40'
+                    : 'bg-[#FAF7F2] border-[#E8E0D4] opacity-70'
                 }`}
               >
                 <div className="flex items-center gap-2 mb-1.5">
@@ -326,6 +696,34 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
                 >
                   {achievement.description}
                 </p>
+                {/* Progress bar for locked achievements */}
+                {!achievement.unlocked && achievement.progress !== undefined && (
+                  <div className="mt-2">
+                    <div className="w-full bg-[#E8E0D4] rounded-full h-1.5 overflow-hidden">
+                      <motion.div
+                        className="h-1.5 rounded-full"
+                        style={{ backgroundColor: achievement.color }}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${achievement.progress}%` }}
+                        transition={{ duration: 1.2, delay: 0.5 }}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between mt-1">
+                      <p
+                        className="text-[8px] text-[#7A7168]"
+                        style={{ fontFamily: 'var(--font-lora), serif' }}
+                      >
+                        {achievement.progressLabel || `${achievement.progress}%`}
+                      </p>
+                      <p
+                        className="text-[8px] font-bold"
+                        style={{ fontFamily: 'var(--font-lora), serif', color: achievement.color }}
+                      >
+                        {achievement.progress}%
+                      </p>
+                    </div>
+                  </div>
+                )}
               </motion.div>
             ))}
           </div>
@@ -350,7 +748,7 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
           )}
         </motion.div>
 
-        {/* Settings */}
+        {/* ─── Settings ─── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
