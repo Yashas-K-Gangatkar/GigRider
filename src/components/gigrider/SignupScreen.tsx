@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { User, Phone, Bike, ArrowRight, ChevronLeft } from 'lucide-react';
 
 interface SignupScreenProps {
-  onSignup: (data: { name: string; phone: string }) => void;
+  onSignup: (data: { name: string; phone: string; vehicleType: 'bicycle' | 'scooter' | 'motorcycle' | 'car' }) => void;
   onGoToLogin: () => void;
 }
 
@@ -27,7 +27,7 @@ export default function SignupScreen({ onSignup, onGoToLogin }: SignupScreenProp
       setIsLoading(true);
       setTimeout(() => {
         setIsLoading(false);
-        onSignup({ name, phone });
+        onSignup({ name, phone, vehicleType });
       }, 1200);
     }
   };

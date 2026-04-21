@@ -4,6 +4,10 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useGigRiderStore, PLATFORMS } from '@/lib/store';
+import {
+  BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid,
+} from 'recharts';
 import {
   TrendingUp,
   ArrowUpRight,
@@ -14,34 +18,6 @@ import {
   Sparkles,
   ChevronRight,
 } from 'lucide-react';
-
-const PLATFORM_EARNINGS = [
-  { platform: 'Food Delivery S', amount: 3200, color: '#B87333', percentage: 38 },
-  { platform: 'Food Delivery Z', amount: 2800, color: '#943540', percentage: 33 },
-  { platform: 'Meal Delivery U', amount: 1450, color: '#2C7A5F', percentage: 17 },
-  { platform: 'Delivery D', amount: 1000, color: '#A84020', percentage: 12 },
-];
-
-const DAILY_EARNINGS = [
-  { day: 'Mon', amount: 1120, isBest: false },
-  { day: 'Tue', amount: 1450, isBest: false },
-  { day: 'Wed', amount: 980, isBest: false },
-  { day: 'Thu', amount: 1680, isBest: true },
-  { day: 'Fri', amount: 1320, isBest: false },
-  { day: 'Sat', amount: 1100, isBest: false },
-  { day: 'Sun', amount: 800, isBest: false },
-];
-
-const TRANSACTIONS = [
-  { date: 'Today', platform: 'Food Delivery S', restaurant: 'The Grand Kitchens', amount: 45, status: 'completed' as const },
-  { date: 'Today', platform: 'Food Delivery Z', restaurant: 'The Truffle Club', amount: 55, status: 'completed' as const },
-  { date: 'Today', platform: 'Meal Delivery U', restaurant: 'McKinley\'s Grill', amount: 38, status: 'in-progress' as const },
-  { date: 'Yesterday', platform: 'Food Delivery S', restaurant: 'Royal Biryani House', amount: 48, status: 'completed' as const },
-  { date: 'Yesterday', platform: 'Delivery D', restaurant: 'The Spice Heritage', amount: 65, status: 'completed' as const },
-  { date: 'Yesterday', platform: 'Food Delivery Z', restaurant: 'Dominique\'s', amount: 52, status: 'completed' as const },
-  { date: '2 days ago', platform: 'Food Delivery S', restaurant: 'Colonel\'s Kitchen', amount: 42, status: 'completed' as const },
-  { date: '2 days ago', platform: 'Meal Delivery U', restaurant: 'The Garden Table', amount: 35, status: 'completed' as const },
-];
 
 function AnimatedCounter({ target, prefix = '₹', duration = 1500 }: { target: number; prefix?: string; duration?: number }) {
   const [count, setCount] = useState(0);
@@ -72,18 +48,49 @@ function AnimatedCounter({ target, prefix = '₹', duration = 1500 }: { target: 
   );
 }
 
-const PLATFORM_COLORS: Record<string, string> = {
-  'Food Delivery S': '#B87333',
-  'Food Delivery Z': '#943540',
-  'Meal Delivery U': '#2C7A5F',
-  'Delivery D': '#A84020',
-};
-
 export default function EarningsScreen() {
   const [period, setPeriod] = useState<'week' | 'month'>('week');
 
-  const totalEarnings = period === 'week' ? 8450 : 32450;
+  const weekEarnings = useGigRiderStore(s => s.weekEarnings);
+  const monthEarnings = useGigRiderStore(s => s.monthEarnings);
+  const connectedPlatforms = useGigRiderStore(s => s.connectedPlatforms);
+  const deliveryHistory = useGigRiderStore(s => s.deliveryHistory);
+  const dailyEarnings = useGigRiderStore(s => s.dailyEarnings);
+  const tipsThisWeek = useGigRiderStore(s => s.tipsThisWeek);
+  const todayEarnings = useGigRiderStore(s => s.todayEarnings);
+
+  const totalEarnings = period === 'week' ? weekEarnings : monthEarnings;
   const comparedPercent = period === 'week' ? 12 : 8;
+
+  // Build platform earnings dynamically from connected platforms
+  const totalPlatformEarnings = connectedPlatforms.reduce((sum, p) => sum + p.todayEarnings, 0) || 1;
+  const platformEarnings = connectedPlatforms.map(p => {
+    const config = PLATFORMS[p.id];
+    return {
+      platform: config?.displayName || p.id,
+      amount: p.todayEarnings,
+      color: config?.color || '#7A7168',
+      letter: config?.letter || p.id[0].toUpperCase(),
+      percentage: Math.round((p.todayEarnings / totalPlatformEarnings) * 100),
+    };
+  });
+
+  // Map delivery history to transactions
+  const transactions = deliveryHistory.slice(0, 8).map(d => {
+    const config = PLATFORMS[d.platform];
+    return {
+      date: d.time,
+      platform: config?.displayName || d.platform,
+      restaurant: d.restaurant,
+      amount: d.earnings,
+      status: d.status as 'completed' | 'in-progress' | 'cancelled',
+      color: config?.color || '#7A7168',
+      letter: config?.letter || d.platform[0].toUpperCase(),
+    };
+  });
+
+  // Calculate payout balance as a portion of today's earnings
+  const payoutBalance = Math.round(todayEarnings * 0.7);
 
   return (
     <div className="min-h-screen bg-[#FAF7F2] pb-24">
@@ -164,7 +171,7 @@ export default function EarningsScreen() {
           </h3>
 
           <div className="space-y-3">
-            {PLATFORM_EARNINGS.map((item, index) => (
+            {platformEarnings.map((item, index) => (
               <motion.div
                 key={item.platform}
                 initial={{ opacity: 0, x: -16 }}
@@ -178,7 +185,7 @@ export default function EarningsScreen() {
                       className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white border border-[#C9A96E]/20"
                       style={{ backgroundColor: item.color }}
                     >
-                      {item.platform.split(' ').pop()}
+                      {item.letter}
                     </div>
                     <span
                       className="text-sm text-[#2C2C2C] font-medium"
@@ -216,7 +223,7 @@ export default function EarningsScreen() {
           </div>
         </motion.div>
 
-        {/* Daily Earnings Calendar */}
+        {/* Daily Earnings Chart */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -231,40 +238,56 @@ export default function EarningsScreen() {
             Daily Earnings
           </h3>
 
-          <div className="grid grid-cols-7 gap-2">
-            {DAILY_EARNINGS.map((day) => (
-              <div key={day.day} className="flex flex-col items-center gap-1.5">
-                <span
-                  className="text-[10px] text-[#7A7168]"
-                  style={{ fontFamily: 'var(--font-lora), serif' }}
-                >
-                  {day.day}
-                </span>
-                <div
-                  className={`w-full aspect-square rounded-lg flex items-center justify-center text-[11px] font-bold ${
-                    day.isBest
-                      ? 'bg-[#1B2A4A]/10 text-[#1B2A4A] border border-[#1B2A4A]/20'
-                      : 'bg-[#F5F0EB] text-[#2C2C2C]'
-                  }`}
-                  style={{ fontFamily: 'var(--font-playfair), serif' }}
-                >
-                  {(day.amount / 100).toFixed(0)}h
-                </div>
-                <span
-                  className={`text-[9px] ${day.isBest ? 'text-[#1B2A4A] font-semibold' : 'text-[#7A7168]'}`}
-                  style={{ fontFamily: 'var(--font-lora), serif' }}
-                >
-                  ₹{(day.amount / 100).toFixed(0)}h
-                </span>
-              </div>
-            ))}
+          <div className="h-48">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={dailyEarnings} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#F0EBE4" vertical={false} />
+                <XAxis
+                  dataKey="day"
+                  tick={{ fontSize: 10, fill: '#7A7168', fontFamily: 'var(--font-lora)' }}
+                  axisLine={{ stroke: '#D5CBBF' }}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 9, fill: '#7A7168' }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={(v) => `₹${(v/1000).toFixed(0)}k`}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#1B2A4A',
+                    border: '1px solid #C9A96E',
+                    borderRadius: '8px',
+                    color: '#FAF7F2',
+                    fontSize: '12px',
+                    fontFamily: 'var(--font-lora)',
+                  }}
+                  formatter={(value: number) => [`₹${value.toLocaleString()}`, 'Earnings']}
+                  cursor={{ fill: 'rgba(201, 169, 110, 0.08)' }}
+                />
+                <Bar
+                  dataKey="amount"
+                  fill="#1B2A4A"
+                  radius={[4, 4, 0, 0]}
+                  maxBarSize={32}
+                />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
-          <p
-            className="text-[10px] text-[#7A7168]/60 mt-2 text-center"
-            style={{ fontFamily: 'var(--font-lora), serif' }}
-          >
-            Values shown as hundreds (₹11 = ₹1,100)
-          </p>
+
+          {/* Best Day Callout */}
+          {dailyEarnings.filter(d => d.isBest).map(d => (
+            <div key={d.day} className="mt-3 flex items-center gap-2 bg-[#1B2A4A]/5 rounded-lg p-2.5">
+              <TrendingUp className="w-4 h-4 text-[#C9A96E]" />
+              <span
+                className="text-xs text-[#1B2A4A] font-medium"
+                style={{ fontFamily: 'var(--font-lora), serif' }}
+              >
+                Best day: <strong>{d.day}</strong> — ₹{d.amount.toLocaleString()} ({d.orders} orders)
+              </span>
+            </div>
+          ))}
         </motion.div>
 
         {/* Recent Transactions */}
@@ -285,7 +308,7 @@ export default function EarningsScreen() {
           </div>
 
           <div className="max-h-64 overflow-y-auto">
-            {TRANSACTIONS.map((tx, index) => (
+            {transactions.length > 0 ? transactions.map((tx, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, x: -10 }}
@@ -296,9 +319,9 @@ export default function EarningsScreen() {
                 <div className="flex items-center gap-3">
                   <div
                     className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white border border-[#C9A96E]/20"
-                    style={{ backgroundColor: PLATFORM_COLORS[tx.platform] || '#7A7168' }}
+                    style={{ backgroundColor: tx.color }}
                   >
-                    {tx.platform.split(' ').pop()}
+                    {tx.letter}
                   </div>
                   <div>
                     <p
@@ -333,7 +356,13 @@ export default function EarningsScreen() {
                   </Badge>
                 </div>
               </motion.div>
-            ))}
+            )) : (
+              <div className="px-4 py-6 text-center">
+                <p className="text-sm text-[#7A7168]" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                  No transactions yet
+                </p>
+              </div>
+            )}
           </div>
         </motion.div>
 
@@ -364,7 +393,7 @@ export default function EarningsScreen() {
                 className="text-2xl font-bold text-[#1B2A4A]"
                 style={{ fontFamily: 'var(--font-playfair), serif' }}
               >
-                ₹2,450
+                ₹{payoutBalance.toLocaleString()}
               </p>
             </div>
             <button
@@ -419,7 +448,7 @@ export default function EarningsScreen() {
             className="text-2xl font-bold text-[#1B2A4A] mb-1"
             style={{ fontFamily: 'var(--font-playfair), serif' }}
           >
-            ₹<AnimatedCounter target={680} prefix="" />
+            ₹<AnimatedCounter target={tipsThisWeek} prefix="" />
           </p>
           <p
             className="text-xs text-[#7A7168]"

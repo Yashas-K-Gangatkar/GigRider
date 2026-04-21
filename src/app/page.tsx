@@ -12,15 +12,25 @@ import PlatformsScreen from '@/components/gigrider/PlatformsScreen';
 import ActivityScreen from '@/components/gigrider/ActivityScreen';
 import ProfileScreen from '@/components/gigrider/ProfileScreen';
 import BottomNav, { type ScreenType } from '@/components/gigrider/BottomNav';
+import { useGigRiderStore, type RiderProfile } from '@/lib/store';
+import { useOrderSimulation, useOnlineTimer } from '@/hooks/use-order-simulation';
 
 type AuthState = 'splash' | 'login' | 'signup' | 'otp';
 
 export default function Home() {
   const [authState, setAuthState] = useState<AuthState>('splash');
   const [activeScreen, setActiveScreen] = useState<ScreenType>('home');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [otpPhone, setOtpPhone] = useState('');
-  const [userName, setUserName] = useState('');
+  const [otpName, setOtpName] = useState('');
+  const [otpVehicle, setOtpVehicle] = useState<RiderProfile['vehicleType']>('scooter');
+
+  const isAuthenticated = useGigRiderStore(s => s.isAuthenticated);
+  const login = useGigRiderStore(s => s.login);
+  const logout = useGigRiderStore(s => s.logout);
+
+  // Hooks for order simulation and online timer
+  useOrderSimulation();
+  useOnlineTimer();
 
   const handleSplashComplete = useCallback(() => {
     setAuthState('login');
@@ -28,25 +38,29 @@ export default function Home() {
 
   const handleLoginRequest = useCallback((phone: string) => {
     setOtpPhone(phone);
+    setOtpName('');
+    setOtpVehicle('scooter');
     setAuthState('otp');
   }, []);
 
-  const handleSignupRequest = useCallback((data: { name: string; phone: string }) => {
-    setUserName(data.name);
+  const handleSignupRequest = useCallback((data: { name: string; phone: string; vehicleType?: RiderProfile['vehicleType'] }) => {
+    setOtpName(data.name);
     setOtpPhone(data.phone);
+    setOtpVehicle(data.vehicleType || 'scooter');
     setAuthState('otp');
   }, []);
 
   const handleOTPVerified = useCallback(() => {
-    setIsAuthenticated(true);
-  }, []);
+    const name = otpName || 'Rider';
+    login(name, otpPhone, otpVehicle);
+  }, [otpName, otpPhone, otpVehicle, login]);
 
   const handleLogout = useCallback(() => {
-    setIsAuthenticated(false);
+    logout();
     setAuthState('login');
     setOtpPhone('');
-    setUserName('');
-  }, []);
+    setOtpName('');
+  }, [logout]);
 
   const handleScreenChange = useCallback((screen: ScreenType) => {
     setActiveScreen(screen);

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
+import { useGigRiderStore, PLATFORMS } from '@/lib/store';
 import {
   CheckCircle2,
   Clock,
@@ -14,51 +15,19 @@ import {
   TrendingUp,
 } from 'lucide-react';
 
-interface DeliveryRecord {
-  id: string;
-  platform: 'swiggy' | 'zomato' | 'ubereats' | 'doordash';
-  restaurant: string;
-  customer: string;
-  earnings: number;
-  distance: number;
-  duration: number;
-  status: 'completed' | 'in-progress' | 'cancelled';
-  time: string;
-  rating?: number;
-  tip?: number;
-}
-
-const PLATFORM_CONFIG = {
-  swiggy: { name: 'FOOD DELIVERY S', color: '#B87333', letter: 'S' },
-  zomato: { name: 'FOOD DELIVERY Z', color: '#943540', letter: 'Z' },
-  ubereats: { name: 'MEAL DELIVERY U', color: '#2C7A5F', letter: 'U' },
-  doordash: { name: 'DELIVERY D', color: '#A84020', letter: 'D' },
-};
-
-const DELIVERIES: DeliveryRecord[] = [
-  { id: 'd1', platform: 'zomato', restaurant: 'The Truffle Club', customer: 'St. Mark\'s Road', earnings: 55, distance: 3.2, duration: 22, status: 'in-progress', time: '2 min ago' },
-  { id: 'd2', platform: 'swiggy', restaurant: 'The Grand Kitchens', customer: 'Koramangala', earnings: 45, distance: 2.3, duration: 18, status: 'completed', time: '35 min ago', rating: 5, tip: 10 },
-  { id: 'd3', platform: 'ubereats', restaurant: 'McKinley\'s Grill', customer: 'ITPL Area', earnings: 38, distance: 1.8, duration: 15, status: 'completed', time: '1 hr ago', rating: 4 },
-  { id: 'd4', platform: 'swiggy', restaurant: 'Royal Biryani House', customer: 'HSR Layout', earnings: 48, distance: 2.0, duration: 16, status: 'completed', time: '1.5 hrs ago', rating: 5, tip: 20 },
-  { id: 'd5', platform: 'doordash', restaurant: 'The Spice Heritage', customer: 'BTM Layout', earnings: 65, distance: 4.5, duration: 28, status: 'cancelled', time: '2 hrs ago' },
-  { id: 'd6', platform: 'zomato', restaurant: 'Dominique\'s Pizzeria', customer: 'HSR Sector 2', earnings: 52, distance: 3.1, duration: 20, status: 'completed', time: '2.5 hrs ago', rating: 5, tip: 15 },
-  { id: 'd7', platform: 'swiggy', restaurant: 'Colonel\'s Kitchen', customer: 'Marathahalli', earnings: 42, distance: 2.8, duration: 19, status: 'completed', time: '3 hrs ago', rating: 4 },
-  { id: 'd8', platform: 'ubereats', restaurant: 'The Garden Table', customer: 'Whitefield', earnings: 35, distance: 1.5, duration: 12, status: 'completed', time: '3.5 hrs ago', rating: 5 },
-  { id: 'd9', platform: 'zomato', restaurant: 'Barbeque Heritage', customer: 'Indiranagar', earnings: 72, distance: 5.1, duration: 32, status: 'completed', time: '4 hrs ago', rating: 5, tip: 50 },
-  { id: 'd10', platform: 'doordash', restaurant: 'Meghana Estates', customer: 'Jayanagar', earnings: 58, distance: 3.8, duration: 25, status: 'completed', time: '5 hrs ago', rating: 4 },
-];
-
 export default function ActivityScreen() {
   const [filter, setFilter] = useState<'all' | 'completed' | 'in-progress' | 'cancelled'>('all');
 
-  const filteredDeliveries = DELIVERIES.filter((d) => {
+  const deliveryHistory = useGigRiderStore(s => s.deliveryHistory);
+
+  const filteredDeliveries = deliveryHistory.filter((d) => {
     if (filter === 'all') return true;
     return d.status === filter;
   });
 
-  const completedToday = DELIVERIES.filter((d) => d.status === 'completed').length;
-  const totalEarnings = DELIVERIES.filter((d) => d.status === 'completed').reduce((sum, d) => sum + d.earnings, 0);
-  const totalTips = DELIVERIES.filter((d) => d.status === 'completed' && d.tip).reduce((sum, d) => sum + (d.tip || 0), 0);
+  const completedToday = deliveryHistory.filter((d) => d.status === 'completed').length;
+  const totalEarnings = deliveryHistory.filter((d) => d.status === 'completed').reduce((sum, d) => sum + d.earnings, 0);
+  const totalTips = deliveryHistory.filter((d) => d.status === 'completed' && d.tip).reduce((sum, d) => sum + (d.tip || 0), 0);
 
   return (
     <div className="min-h-screen bg-[#FAF7F2] pb-24">
@@ -152,7 +121,7 @@ export default function ActivityScreen() {
         {/* Delivery List */}
         <div className="space-y-2">
           {filteredDeliveries.map((delivery, index) => {
-            const config = PLATFORM_CONFIG[delivery.platform];
+            const config = PLATFORMS[delivery.platform];
             const statusConfig = {
               completed: { icon: CheckCircle2, color: 'text-[#2C4A3E]', bg: 'bg-[#2C4A3E]/10', label: 'Done' },
               'in-progress': { icon: Clock, color: 'text-[#8B5E3C]', bg: 'bg-[#8B5E3C]/10', label: 'Active' },
@@ -168,15 +137,15 @@ export default function ActivityScreen() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
                 className="bg-white rounded-xl p-4 border border-[#D5CBBF] card-elegant"
-                style={{ borderLeftWidth: '3px', borderLeftColor: config.color }}
+                style={{ borderLeftWidth: '3px', borderLeftColor: config?.color || '#7A7168' }}
               >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <div
                       className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white border border-[#C9A96E]/20"
-                      style={{ backgroundColor: config.color }}
+                      style={{ backgroundColor: config?.color || '#7A7168' }}
                     >
-                      {config.letter}
+                      {config?.letter || delivery.platform[0].toUpperCase()}
                     </div>
                     <div>
                       <p
@@ -261,7 +230,7 @@ export default function ActivityScreen() {
               No deliveries found
             </p>
             <p className="text-[#7A7168]/60 text-xs mt-1" style={{ fontFamily: 'var(--font-lora), serif' }}>
-              Try a different filter
+              {deliveryHistory.length === 0 ? 'Complete deliveries to see activity' : 'Try a different filter'}
             </p>
           </div>
         )}

@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,20 +7,93 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Rider {
+  id              String   @id @default(cuid())
+  phone           String   @unique
+  name            String
+  vehicleType     String   @default("motorcycle") // bicycle, scooter, motorcycle, car
+  rating          Float    @default(0.0)
+  totalDeliveries Int      @default(0)
+  totalEarnings   Int      @default(0) // in paisa (1/100 INR)
+  tier            String   @default("free") // free, pro, elite, fleet
+  isActive        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  platforms       RiderPlatform[]
+  deliveries      Delivery[]
+  earnings        Earning[]
+  shifts          Shift[]
 }
 
-model Post {
+model RiderPlatform {
+  id            String   @id @default(cuid())
+  riderId       String
+  platformId    String   // swiggy, zomato, ubereats, doordash, etc.
+  isOnline      Boolean  @default(false)
+  rating        Float    @default(0.0)
+  totalOrders   Int      @default(0)
+  totalEarnings Int      @default(0) // in paisa
+  lastOrderAt   DateTime?
+  connectedAt   DateTime @default(now())
+  rider         Rider    @relation(fields: [riderId], references: [id], onDelete: Cascade)
+
+  @@unique([riderId, platformId])
+}
+
+model Delivery {
+  id            String   @id @default(cuid())
+  riderId       String
+  platformId    String
+  orderId       String?  // platform's order ID
+  restaurant    String
+  customer      String
+  pickup        String
+  dropoff       String
+  earnings      Int      @default(0) // in paisa
+  distance      Float    @default(0.0) // in km
+  duration      Int      @default(0) // in minutes
+  tip           Int      @default(0) // in paisa
+  rating        Float?
+  status        String   @default("pending") // pending, accepted, in_progress, completed, cancelled
+  stackId       String?  // for Smart Stack grouping
+  acceptedAt    DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime @default(now())
+  rider         Rider    @relation(fields: [riderId], references: [id], onDelete: Cascade)
+}
+
+model Earning {
+  id          String   @id @default(cuid())
+  riderId     String
+  platformId  String
+  amount      Int      // in paisa
+  type        String   // delivery, tip, bonus, referral
+  deliveryId  String?
+  createdAt   DateTime @default(now())
+  rider       Rider    @relation(fields: [riderId], references: [id], onDelete: Cascade)
+}
+
+model Shift {
   id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  riderId   String
+  dayOfWeek Int      // 0=Sun, 1=Mon, ..., 6=Sat
+  startTime String   // "09:00"
+  endTime   String   // "21:00"
+  isActive  Boolean  @default(false)
+  rider     Rider    @relation(fields: [riderId], references: [id], onDelete: Cascade)
+
+  @@unique([riderId, dayOfWeek])
+}
+
+model AutoAcceptRule {
+  id                  String   @id @default(cuid())
+  riderId             String   @unique
+  enabled             Boolean  @default(false)
+  minPayout           Int      @default(3500) // in paisa (₹35)
+  maxDistance          Float    @default(5.0) // in km
+  peakBoost           Boolean  @default(true)
+  smartStack          Boolean  @default(false)
+  preferredPlatforms  String   @default("{}") // JSON map
+  updatedAt           DateTime @updatedAt
 }

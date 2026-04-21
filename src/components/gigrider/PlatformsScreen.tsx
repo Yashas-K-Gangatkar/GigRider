@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useGigRiderStore, PLATFORMS, type PlatformId } from '@/lib/store';
 import {
   Link2,
   Plus,
@@ -19,72 +20,53 @@ import {
   Star,
 } from 'lucide-react';
 
-interface ConnectedPlatform {
-  id: string;
-  name: string;
-  letter: string;
-  color: string;
-  isOnline: boolean;
-  lastOrder: string;
-  todayEarnings: number;
-}
-
-interface AvailablePlatform {
-  id: string;
-  name: string;
-  letter: string;
-  color: string;
-  description: string;
-}
-
-const CONNECTED_PLATFORMS: ConnectedPlatform[] = [
-  { id: 'swiggy', name: 'Food Delivery S', letter: 'S', color: '#B87333', isOnline: true, lastOrder: '12 min ago', todayEarnings: 320 },
-  { id: 'zomato', name: 'Food Delivery Z', letter: 'Z', color: '#943540', isOnline: true, lastOrder: '25 min ago', todayEarnings: 280 },
-  { id: 'ubereats', name: 'Meal Delivery U', letter: 'U', color: '#2C7A5F', isOnline: false, lastOrder: '2 hrs ago', todayEarnings: 145 },
-  { id: 'doordash', name: 'Delivery D', letter: 'D', color: '#A84020', isOnline: true, lastOrder: '45 min ago', todayEarnings: 100 },
-];
-
-const AVAILABLE_PLATFORMS: AvailablePlatform[] = [
-  { id: 'grubhub', name: 'Food Delivery G', letter: 'G', color: '#9E6B2F', description: 'Food delivery across US cities' },
-  { id: 'instacart', name: 'Grocery Delivery I', letter: 'I', color: '#3A7A3A', description: 'Grocery delivery & pickup' },
-  { id: 'postmates', name: 'On-Demand P', letter: 'P', color: '#8A8A3A', description: 'On-demand delivery anything' },
-  { id: 'deliveroo', name: 'Premium Delivery R', letter: 'R', color: '#2A8A8A', description: 'Premium food delivery in UK & EU' },
-];
-
 export default function PlatformsScreen() {
-  const [platforms, setPlatforms] = useState(CONNECTED_PLATFORMS);
-  const [autoAcceptEnabled, setAutoAcceptEnabled] = useState(false);
-  const [minPayout, setMinPayout] = useState([35]);
-  const [maxDistance, setMaxDistance] = useState([5]);
-  const [preferredPlatforms, setPreferredPlatforms] = useState<Record<string, boolean>>({
-    swiggy: true,
-    zomato: true,
-    ubereats: false,
-    doordash: true,
-  });
-  const [peakBoost, setPeakBoost] = useState(true);
-  const [smartStack, setSmartStack] = useState(false);
+  const connectedPlatforms = useGigRiderStore(s => s.connectedPlatforms);
+  const autoAcceptRules = useGigRiderStore(s => s.autoAcceptRules);
+  const shifts = useGigRiderStore(s => s.shifts);
+
+  const togglePlatformOnline = useGigRiderStore(s => s.togglePlatformOnline);
+  const setAllPlatformsOnline = useGigRiderStore(s => s.setAllPlatformsOnline);
+  const setAllPlatformsOffline = useGigRiderStore(s => s.setAllPlatformsOffline);
+  const addPlatform = useGigRiderStore(s => s.addPlatform);
+  const updateAutoAcceptRules = useGigRiderStore(s => s.updateAutoAcceptRules);
+  const updateShift = useGigRiderStore(s => s.updateShift);
+
   const [showAddPlatform, setShowAddPlatform] = useState(false);
   const [connectingPlatform, setConnectingPlatform] = useState<string | null>(null);
 
-  const togglePlatformOnline = (id: string) => {
-    setPlatforms((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, isOnline: !p.isOnline } : p))
-    );
-  };
+  // Derive available platforms (not connected yet)
+  const availablePlatforms = useMemo(() => {
+    const connectedIds = new Set(connectedPlatforms.map(p => p.id));
+    return Object.values(PLATFORMS)
+      .filter(p => !connectedIds.has(p.id))
+      .map(p => ({
+        id: p.id,
+        name: p.displayName,
+        letter: p.letter,
+        color: p.color,
+        description: p.description,
+      }));
+  }, [connectedPlatforms]);
 
   const handleConnect = (platformId: string) => {
     setConnectingPlatform(platformId);
     setTimeout(() => {
+      addPlatform(platformId as PlatformId);
       setConnectingPlatform(null);
     }, 2000);
   };
 
   const togglePreferred = (id: string) => {
-    setPreferredPlatforms((prev) => ({ ...prev, [id]: !prev[id] }));
+    updateAutoAcceptRules({
+      preferredPlatforms: {
+        ...autoAcceptRules.preferredPlatforms,
+        [id]: !autoAcceptRules.preferredPlatforms[id],
+      },
+    });
   };
 
-  const onlineCount = platforms.filter((p) => p.isOnline).length;
+  const onlineCount = connectedPlatforms.filter(p => p.isOnline).length;
 
   return (
     <div className="min-h-screen bg-[#FAF7F2] pb-24">
@@ -99,22 +81,14 @@ export default function PlatformsScreen() {
           </h1>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => {
-                setPlatforms((prev) =>
-                  prev.map((p) => ({ ...p, isOnline: true }))
-                );
-              }}
+              onClick={setAllPlatformsOnline}
               className="px-3 py-1.5 bg-[#2C4A3E]/10 text-[#2C4A3E] rounded-lg text-[11px] font-semibold hover:bg-[#2C4A3E]/15 transition-colors duration-200"
               style={{ fontFamily: 'var(--font-lora), serif' }}
             >
               All Online
             </button>
             <button
-              onClick={() => {
-                setPlatforms((prev) =>
-                  prev.map((p) => ({ ...p, isOnline: false }))
-                );
-              }}
+              onClick={setAllPlatformsOffline}
               className="px-3 py-1.5 bg-[#F0EBE4] text-[#7A7168] rounded-lg text-[11px] font-semibold hover:bg-[#E8E0D4] transition-colors duration-200"
               style={{ fontFamily: 'var(--font-lora), serif' }}
             >
@@ -139,74 +113,77 @@ export default function PlatformsScreen() {
               <Link2 className="w-4 h-4 text-[#1B2A4A]" />
               Connected Platforms
               <Badge className="bg-[#2C4A3E]/10 text-[#2C4A3E] border-[#2C4A3E]/15 text-[9px] ml-1">
-                {onlineCount}/{platforms.length} Online
+                {onlineCount}/{connectedPlatforms.length} Online
               </Badge>
             </h3>
           </div>
 
           <div className="space-y-0">
-            {platforms.map((platform, index) => (
-              <motion.div
-                key={platform.id}
-                initial={{ opacity: 0, x: -16 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.08 }}
-                className="flex items-center justify-between px-4 py-3 border-t border-[#F0EBE4]"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white border border-[#C9A96E]/20"
-                      style={{ backgroundColor: platform.color }}
-                    >
-                      {platform.letter}
+            {connectedPlatforms.map((platform, index) => {
+              const config = PLATFORMS[platform.id];
+              return (
+                <motion.div
+                  key={platform.id}
+                  initial={{ opacity: 0, x: -16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.08 }}
+                  className="flex items-center justify-between px-4 py-3 border-t border-[#F0EBE4]"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <div
+                        className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white border border-[#C9A96E]/20"
+                        style={{ backgroundColor: config?.color || '#7A7168' }}
+                      >
+                        {config?.letter || platform.id[0].toUpperCase()}
+                      </div>
+                      {platform.isOnline && (
+                        <span className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#1A6B4A] opacity-75" />
+                          <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-[#2C4A3E] border-2 border-white" />
+                        </span>
+                      )}
                     </div>
-                    {platform.isOnline && (
-                      <span className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#1A6B4A] opacity-75" />
-                        <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-[#2C4A3E] border-2 border-white" />
-                      </span>
-                    )}
+                    <div>
+                      <p
+                        className="text-sm font-semibold text-[#2C2C2C]"
+                        style={{ fontFamily: 'var(--font-lora), serif' }}
+                      >
+                        {config?.displayName || platform.id}
+                      </p>
+                      <p
+                        className="text-[10px] text-[#7A7168]"
+                        style={{ fontFamily: 'var(--font-lora), serif' }}
+                      >
+                        Last order: {platform.lastOrder}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p
-                      className="text-sm font-semibold text-[#2C2C2C]"
-                      style={{ fontFamily: 'var(--font-lora), serif' }}
-                    >
-                      {platform.name}
-                    </p>
-                    <p
-                      className="text-[10px] text-[#7A7168]"
-                      style={{ fontFamily: 'var(--font-lora), serif' }}
-                    >
-                      Last order: {platform.lastOrder}
-                    </p>
-                  </div>
-                </div>
 
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
-                    <p
-                      className="text-sm font-bold text-[#1B2A4A]"
-                      style={{ fontFamily: 'var(--font-playfair), serif' }}
-                    >
-                      ₹{platform.todayEarnings}
-                    </p>
-                    <p
-                      className="text-[9px] text-[#7A7168] tracking-wider uppercase"
-                      style={{ fontFamily: 'var(--font-lora), serif' }}
-                    >
-                      today
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <p
+                        className="text-sm font-bold text-[#1B2A4A]"
+                        style={{ fontFamily: 'var(--font-playfair), serif' }}
+                      >
+                        ₹{platform.todayEarnings}
+                      </p>
+                      <p
+                        className="text-[9px] text-[#7A7168] tracking-wider uppercase"
+                        style={{ fontFamily: 'var(--font-lora), serif' }}
+                      >
+                        today
+                      </p>
+                    </div>
+                    <Switch
+                      checked={platform.isOnline}
+                      onCheckedChange={() => togglePlatformOnline(platform.id)}
+                      className="data-[state=checked]:bg-[#2C4A3E]"
+                    />
                   </div>
-                  <Switch
-                    checked={platform.isOnline}
-                    onCheckedChange={() => togglePlatformOnline(platform.id)}
-                    className="data-[state=checked]:bg-[#2C4A3E]"
-                  />
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
           </div>
         </motion.div>
 
@@ -245,7 +222,7 @@ export default function PlatformsScreen() {
                 className="overflow-hidden"
               >
                 <div className="px-4 pb-4 space-y-2">
-                  {AVAILABLE_PLATFORMS.map((platform) => (
+                  {availablePlatforms.length > 0 ? availablePlatforms.map((platform) => (
                     <div
                       key={platform.id}
                       className="flex items-center justify-between p-3 bg-[#F5F0EB] rounded-lg"
@@ -285,7 +262,11 @@ export default function PlatformsScreen() {
                         {connectingPlatform === platform.id ? 'Connecting...' : 'Connect'}
                       </button>
                     </div>
-                  ))}
+                  )) : (
+                    <p className="text-sm text-[#7A7168] text-center py-4" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                      All platforms connected!
+                    </p>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -298,7 +279,7 @@ export default function PlatformsScreen() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
           className={`rounded-xl border overflow-hidden transition-all duration-300 card-elegant ${
-            autoAcceptEnabled
+            autoAcceptRules.enabled
               ? 'bg-[#1B2A4A]/[0.03] border-[#1B2A4A]/20'
               : 'bg-white border-[#D5CBBF]'
           }`}
@@ -309,23 +290,23 @@ export default function PlatformsScreen() {
                 className="text-sm font-semibold text-[#2C2C2C] flex items-center gap-2"
                 style={{ fontFamily: 'var(--font-playfair), serif' }}
               >
-                <Zap className={`w-4 h-4 ${autoAcceptEnabled ? 'text-[#1B2A4A]' : 'text-[#7A7168]'}`} />
+                <Zap className={`w-4 h-4 ${autoAcceptRules.enabled ? 'text-[#1B2A4A]' : 'text-[#7A7168]'}`} />
                 Auto-Accept Rules
-                {autoAcceptEnabled && (
+                {autoAcceptRules.enabled && (
                   <Badge className="bg-[#2C4A3E]/10 text-[#2C4A3E] border-[#2C4A3E]/15 text-[9px] ml-1">
                     ACTIVE
                   </Badge>
                 )}
               </h3>
               <Switch
-                checked={autoAcceptEnabled}
-                onCheckedChange={setAutoAcceptEnabled}
+                checked={autoAcceptRules.enabled}
+                onCheckedChange={(checked) => updateAutoAcceptRules({ enabled: checked })}
                 className="data-[state=checked]:bg-[#2C4A3E]"
               />
             </div>
 
             <AnimatePresence>
-              {autoAcceptEnabled && (
+              {autoAcceptRules.enabled && (
                 <motion.div
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
@@ -347,12 +328,12 @@ export default function PlatformsScreen() {
                         className="text-sm font-bold text-[#1B2A4A]"
                         style={{ fontFamily: 'var(--font-playfair), serif' }}
                       >
-                        ₹{minPayout[0]}
+                        ₹{autoAcceptRules.minPayout}
                       </span>
                     </div>
                     <Slider
-                      value={minPayout}
-                      onValueChange={setMinPayout}
+                      value={[autoAcceptRules.minPayout]}
+                      onValueChange={(v) => updateAutoAcceptRules({ minPayout: v[0] })}
                       max={100}
                       min={10}
                       step={5}
@@ -381,12 +362,12 @@ export default function PlatformsScreen() {
                         className="text-sm font-bold text-[#1B2A4A]"
                         style={{ fontFamily: 'var(--font-playfair), serif' }}
                       >
-                        {maxDistance[0]} km
+                        {autoAcceptRules.maxDistance} km
                       </span>
                     </div>
                     <Slider
-                      value={maxDistance}
-                      onValueChange={setMaxDistance}
+                      value={[autoAcceptRules.maxDistance]}
+                      onValueChange={(v) => updateAutoAcceptRules({ maxDistance: v[0] })}
                       max={15}
                       min={1}
                       step={0.5}
@@ -411,35 +392,38 @@ export default function PlatformsScreen() {
                       Preferred Platforms
                     </label>
                     <div className="grid grid-cols-2 gap-2">
-                      {platforms.map((p) => (
-                        <div
-                          key={p.id}
-                          onClick={() => togglePreferred(p.id)}
-                          className={`flex items-center gap-2 p-2.5 rounded-lg cursor-pointer transition-all duration-200 ${
-                            preferredPlatforms[p.id]
-                              ? 'bg-[#1B2A4A]/8 border border-[#1B2A4A]/20'
-                              : 'bg-[#F5F0EB] border border-[#D5CBBF]'
-                          }`}
-                        >
+                      {connectedPlatforms.map((p) => {
+                        const config = PLATFORMS[p.id];
+                        return (
                           <div
-                            className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white"
-                            style={{ backgroundColor: p.color }}
+                            key={p.id}
+                            onClick={() => togglePreferred(p.id)}
+                            className={`flex items-center gap-2 p-2.5 rounded-lg cursor-pointer transition-all duration-200 ${
+                              autoAcceptRules.preferredPlatforms[p.id]
+                                ? 'bg-[#1B2A4A]/8 border border-[#1B2A4A]/20'
+                                : 'bg-[#F5F0EB] border border-[#D5CBBF]'
+                            }`}
                           >
-                            {p.letter}
+                            <div
+                              className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white"
+                              style={{ backgroundColor: config?.color || '#7A7168' }}
+                            >
+                              {config?.letter || p.id[0].toUpperCase()}
+                            </div>
+                            <span
+                              className="text-xs text-[#2C2C2C] font-medium"
+                              style={{ fontFamily: 'var(--font-lora), serif' }}
+                            >
+                              {config?.displayName || p.id}
+                            </span>
+                            <Checkbox
+                              checked={!!autoAcceptRules.preferredPlatforms[p.id]}
+                              onCheckedChange={() => togglePreferred(p.id)}
+                              className="ml-auto h-3.5 w-3.5 data-[state=checked]:bg-[#1B2A4A] data-[state=checked]:border-[#1B2A4A]"
+                            />
                           </div>
-                          <span
-                            className="text-xs text-[#2C2C2C] font-medium"
-                            style={{ fontFamily: 'var(--font-lora), serif' }}
-                          >
-                            {p.name}
-                          </span>
-                          <Checkbox
-                            checked={preferredPlatforms[p.id]}
-                            onCheckedChange={() => togglePreferred(p.id)}
-                            className="ml-auto h-3.5 w-3.5 data-[state=checked]:bg-[#1B2A4A] data-[state=checked]:border-[#1B2A4A]"
-                          />
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -463,8 +447,8 @@ export default function PlatformsScreen() {
                       </div>
                     </div>
                     <Switch
-                      checked={peakBoost}
-                      onCheckedChange={setPeakBoost}
+                      checked={autoAcceptRules.peakBoost}
+                      onCheckedChange={(checked) => updateAutoAcceptRules({ peakBoost: checked })}
                       className="data-[state=checked]:bg-[#8B5E3C]"
                     />
                   </div>
@@ -489,8 +473,8 @@ export default function PlatformsScreen() {
                       </div>
                     </div>
                     <Switch
-                      checked={smartStack}
-                      onCheckedChange={setSmartStack}
+                      checked={autoAcceptRules.smartStack}
+                      onCheckedChange={(checked) => updateAutoAcceptRules({ smartStack: checked })}
                       className="data-[state=checked]:bg-[#1B2A4A]"
                     />
                   </div>
@@ -516,12 +500,7 @@ export default function PlatformsScreen() {
           </h3>
 
           <div className="space-y-2">
-            {[
-              { day: 'Today', time: '10:00 AM - 10:00 PM', active: true },
-              { day: 'Tomorrow', time: '9:00 AM - 9:00 PM', active: true },
-              { day: 'Wednesday', time: 'Not scheduled', active: false },
-              { day: 'Thursday', time: 'Not scheduled', active: false },
-            ].map((shift) => (
+            {shifts.map((shift, index) => (
               <div
                 key={shift.day}
                 className="flex items-center justify-between p-3 bg-[#F5F0EB] rounded-lg"
@@ -541,6 +520,7 @@ export default function PlatformsScreen() {
                   </p>
                 </div>
                 <button
+                  onClick={() => updateShift(index, { active: !shift.active })}
                   className={`px-2.5 py-1 rounded text-[10px] font-semibold ${
                     shift.active
                       ? 'bg-[#2C4A3E]/10 text-[#2C4A3E]'

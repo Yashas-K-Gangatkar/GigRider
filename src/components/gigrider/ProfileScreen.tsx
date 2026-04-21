@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { useGigRiderStore, PLATFORMS } from '@/lib/store';
 import {
   Star,
   Trophy,
@@ -53,6 +54,13 @@ const SETTINGS_ITEMS = [
   { id: 'about', icon: Info, label: 'About GigRider', value: 'v2.1.0' },
 ];
 
+const VEHICLE_LABELS: Record<string, string> = {
+  bicycle: 'Bicycle',
+  scooter: 'Scooter',
+  motorcycle: 'Motorcycle',
+  car: 'Car',
+};
+
 interface ProfileScreenProps {
   onLogout?: () => void;
 }
@@ -60,9 +68,54 @@ interface ProfileScreenProps {
 export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
   const [showAllAchievements, setShowAllAchievements] = useState(false);
 
+  const rider = useGigRiderStore(s => s.rider);
+  const connectedPlatforms = useGigRiderStore(s => s.connectedPlatforms);
+  const logout = useGigRiderStore(s => s.logout);
+
   const visibleAchievements = showAllAchievements
     ? ACHIEVEMENTS
     : ACHIEVEMENTS.slice(0, 5);
+
+  // Derive profile data from store
+  const profileName = rider?.name || 'Rider';
+  const profileRating = rider?.rating || 4.8;
+  const profileTotalDeliveries = rider?.totalDeliveries || 0;
+  const profileTotalEarnings = rider?.totalEarnings || 0;
+  const profileTier = rider?.tier || 'free';
+  const profileVehicle = rider?.vehicleType || 'scooter';
+  const profileMemberSince = rider?.memberSince || 'Recently';
+
+  const tierLabels: Record<string, string> = {
+    free: 'Rider',
+    pro: 'Pro Rider',
+    elite: 'Elite Rider',
+    fleet: 'Fleet Manager',
+  };
+
+  // Platform ratings from connected platforms
+  const platformRatings = connectedPlatforms
+    .filter(p => p.rating > 0)
+    .map(p => {
+      const config = PLATFORMS[p.id];
+      return {
+        name: config?.displayName || p.id,
+        rating: p.rating,
+        color: config?.color || '#7A7168',
+      };
+    });
+
+  // Update settings items with dynamic vehicle type
+  const settingsWithDynamic = SETTINGS_ITEMS.map(item => {
+    if (item.id === 'vehicle') {
+      return { ...item, value: VEHICLE_LABELS[profileVehicle] || profileVehicle };
+    }
+    return item;
+  });
+
+  const handleLogout = () => {
+    logout();
+    if (onLogout) onLogout();
+  };
 
   return (
     <div className="min-h-screen bg-[#FAF7F2] pb-24">
@@ -88,7 +141,7 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
               className="w-16 h-16 rounded-full bg-[#1B2A4A]/10 flex items-center justify-center text-2xl border-2 border-[#C9A96E]/40"
               style={{ fontFamily: 'var(--font-playfair), serif' }}
             >
-              🪖
+              {rider?.avatar || profileName.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2">
@@ -96,11 +149,11 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
                   className="text-xl font-bold text-[#2C2C2C]"
                   style={{ fontFamily: 'var(--font-playfair), serif' }}
                 >
-                  Rajesh K.
+                  {profileName}
                 </h2>
                 <Badge className="bg-[#C9A96E]/15 text-[#8B5E3C] border-[#C9A96E]/25 text-[9px]">
                   <Award className="w-2.5 h-2.5 mr-0.5" />
-                  Pro Rider
+                  {tierLabels[profileTier] || 'Rider'}
                 </Badge>
               </div>
               <div className="flex items-center gap-1 mt-1">
@@ -109,7 +162,7 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
                   className="text-sm font-bold text-[#C9A96E]"
                   style={{ fontFamily: 'var(--font-playfair), serif' }}
                 >
-                  4.8
+                  {profileRating}
                 </span>
                 <span
                   className="text-xs text-[#7A7168]"
@@ -122,7 +175,7 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
                 className="text-[10px] text-[#7A7168] mt-0.5"
                 style={{ fontFamily: 'var(--font-lora), serif' }}
               >
-                Member since March 2023
+                Member since {profileMemberSince}
               </p>
             </div>
           </div>
@@ -136,9 +189,9 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
           className="grid grid-cols-2 gap-3"
         >
           {[
-            { icon: Package, label: 'Total Deliveries', value: '3,247', color: 'text-[#1B2A4A]' },
-            { icon: TrendingUp, label: 'Total Earnings', value: '₹4,85,000', color: 'text-[#8B5E3C]' },
-            { icon: Star, label: 'Average Rating', value: '4.8', color: 'text-[#C9A96E]' },
+            { icon: Package, label: 'Total Deliveries', value: profileTotalDeliveries.toLocaleString(), color: 'text-[#1B2A4A]' },
+            { icon: TrendingUp, label: 'Total Earnings', value: `₹${profileTotalEarnings.toLocaleString()}`, color: 'text-[#8B5E3C]' },
+            { icon: Star, label: 'Average Rating', value: profileRating.toString(), color: 'text-[#C9A96E]' },
             { icon: Zap, label: 'Completion Rate', value: '97%', color: 'text-[#2C4A3E]' },
           ].map((stat, index) => (
             <motion.div
@@ -181,11 +234,7 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
           </h3>
 
           <div className="space-y-3">
-            {[
-              { name: 'Food Delivery S', rating: 4.9, color: '#B87333' },
-              { name: 'Food Delivery Z', rating: 4.7, color: '#943540' },
-              { name: 'Meal Delivery U', rating: 4.8, color: '#2C7A5F' },
-            ].map((platform) => (
+            {platformRatings.length > 0 ? platformRatings.map((platform) => (
               <div key={platform.name} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div
@@ -222,7 +271,11 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
                   </span>
                 </div>
               </div>
-            ))}
+            )) : (
+              <p className="text-sm text-[#7A7168]" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                Connect platforms to see ratings
+              </p>
+            )}
           </div>
         </motion.div>
 
@@ -314,7 +367,7 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
             </h3>
           </div>
 
-          {SETTINGS_ITEMS.map((item, index) => (
+          {settingsWithDynamic.map((item, index) => (
             <motion.div
               key={item.id}
               initial={{ opacity: 0, x: -10 }}
@@ -343,7 +396,7 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
                   <ChevronRight className="w-4 h-4 text-[#7A7168]" />
                 </div>
               </button>
-              {index < SETTINGS_ITEMS.length - 1 && <Separator className="bg-[#F0EBE4]" />}
+              {index < settingsWithDynamic.length - 1 && <Separator className="bg-[#F0EBE4]" />}
             </motion.div>
           ))}
         </motion.div>
@@ -356,7 +409,7 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
             transition={{ delay: 0.5 }}
           >
             <button
-              onClick={onLogout}
+              onClick={handleLogout}
               className="w-full py-4 rounded-xl border-2 border-[#722F37]/30 text-[#722F37] font-semibold flex items-center justify-center gap-2 hover:bg-[#722F37]/5 transition-all duration-200"
               style={{ fontFamily: 'var(--font-lora), serif' }}
             >

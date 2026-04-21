@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { useGigRiderStore, PLATFORMS, type PlatformId } from '@/lib/store';
+import { useOrderTimers, formatOnlineTime } from '@/hooks/use-order-simulation';
 import {
   Bell,
   MapPin,
@@ -20,7 +22,7 @@ import {
 
 interface Order {
   id: string;
-  platform: 'swiggy' | 'zomato' | 'ubereats' | 'doordash' | 'grubhub';
+  platform: PlatformId;
   restaurant: string;
   distance: number;
   pickup: string;
@@ -32,138 +34,46 @@ interface Order {
   isNew: boolean;
 }
 
-interface ActiveDelivery {
-  id: string;
-  platform: 'swiggy' | 'zomato' | 'ubereats' | 'doordash';
-  restaurant: string;
-  customer: string;
-  eta: number;
-  earnings: number;
-}
-
-const PLATFORM_CONFIG = {
-  swiggy: { name: 'FOOD DELIVERY S', color: '#B87333', bg: 'bg-[#B87333]', letter: 'S' },
-  zomato: { name: 'FOOD DELIVERY Z', color: '#943540', bg: 'bg-[#943540]', letter: 'Z' },
-  ubereats: { name: 'MEAL DELIVERY U', color: '#2C7A5F', bg: 'bg-[#2C7A5F]', letter: 'U' },
-  doordash: { name: 'DELIVERY D', color: '#A84020', bg: 'bg-[#A84020]', letter: 'D' },
-  grubhub: { name: 'FOOD G', color: '#9E6B2F', bg: 'bg-[#9E6B2F]', letter: 'G' },
-};
-
-const MOCK_ORDERS: Order[] = [
-  {
-    id: 'ord-1',
-    platform: 'swiggy',
-    restaurant: 'The Grand Kitchens',
-    distance: 2.3,
-    pickup: 'MG Road Metro Station',
-    drop: 'Koramangala 5th Block',
-    earnings: 45,
-    estimatedTime: 15,
-    rank: 1,
-    timer: 30,
-    isNew: true,
-  },
-  {
-    id: 'ord-2',
-    platform: 'zomato',
-    restaurant: 'Dominique\'s Pizzeria',
-    distance: 3.1,
-    pickup: 'Indiranagar 100ft Road',
-    drop: 'HSR Layout Sector 2',
-    earnings: 52,
-    estimatedTime: 20,
-    rank: 2,
-    timer: 25,
-    isNew: true,
-  },
-  {
-    id: 'ord-3',
-    platform: 'ubereats',
-    restaurant: 'McKinley\'s Grill',
-    distance: 1.8,
-    pickup: 'Whitefield Main Rd',
-    drop: 'ITPL Back Gate',
-    earnings: 38,
-    estimatedTime: 12,
-    rank: 3,
-    timer: 22,
-    isNew: false,
-  },
-  {
-    id: 'ord-4',
-    platform: 'doordash',
-    restaurant: 'The Spice Heritage',
-    distance: 4.5,
-    pickup: 'Jayanagar 4th Block',
-    drop: 'BTM 2nd Stage',
-    earnings: 65,
-    estimatedTime: 25,
-    timer: 18,
-    isNew: false,
-  },
-  {
-    id: 'ord-5',
-    platform: 'swiggy',
-    restaurant: 'Royal Biryani House',
-    distance: 2.0,
-    pickup: 'HSR BDA Complex',
-    drop: 'Bellandur Outer Ring Rd',
-    earnings: 48,
-    estimatedTime: 14,
-    timer: 28,
-    isNew: true,
-  },
-];
-
-const ACTIVE_DELIVERY: ActiveDelivery = {
-  id: 'act-1',
-  platform: 'zomato',
-  restaurant: 'The Truffle Club',
-  customer: 'St. Mark\'s Road',
-  eta: 8,
-  earnings: 55,
-};
+const PLATFORM_CONFIG: Record<string, { name: string; color: string; bg: string; letter: string }> = {};
+Object.entries(PLATFORMS).forEach(([id, p]) => {
+  PLATFORM_CONFIG[id] = { name: p.name, color: p.color, bg: `bg-[${p.color}]`, letter: p.letter };
+});
 
 export default function HomeScreen() {
-  const [isOnline, setIsOnline] = useState(true);
-  const [smartMode, setSmartMode] = useState<'auto-rank' | 'first-come'>('auto-rank');
-  const [orders, setOrders] = useState<Order[]>(MOCK_ORDERS);
-  const [acceptedOrders, setAcceptedOrders] = useState<Set<string>>(new Set());
-  const [declinedOrders, setDeclinedOrders] = useState<Set<string>>(new Set());
+  const isOnline = useGigRiderStore(s => s.isOnline);
+  const smartMode = useGigRiderStore(s => s.smartMode);
+  const incomingOrders = useGigRiderStore(s => s.incomingOrders);
+  const acceptedOrderIds = useGigRiderStore(s => s.acceptedOrderIds);
+  const declinedOrderIds = useGigRiderStore(s => s.declinedOrderIds);
+  const activeDelivery = useGigRiderStore(s => s.activeDelivery);
+  const connectedPlatforms = useGigRiderStore(s => s.connectedPlatforms);
+  const todayEarnings = useGigRiderStore(s => s.todayEarnings);
+  const todayOrders = useGigRiderStore(s => s.todayOrders);
+  const totalOnlineTime = useGigRiderStore(s => s.totalOnlineTime);
+
+  const setOnline = useGigRiderStore(s => s.setOnline);
+  const setSmartMode = useGigRiderStore(s => s.setSmartMode);
+  const acceptOrder = useGigRiderStore(s => s.acceptOrder);
+  const declineOrder = useGigRiderStore(s => s.declineOrder);
+  const completeActiveDelivery = useGigRiderStore(s => s.completeActiveDelivery);
+
+  const timers = useOrderTimers();
   const [showStats, setShowStats] = useState(false);
-  const initialTimers: Record<string, number> = {};
-  MOCK_ORDERS.forEach((order) => {
-    initialTimers[order.id] = order.timer;
-  });
-  const [timers, setTimers] = useState<Record<string, number>>(initialTimers);
-  const [activeDelivery] = useState<ActiveDelivery | null>(ACTIVE_DELIVERY);
   const [notificationCount] = useState(3);
 
-  // Countdown timers
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimers((prev) => {
-        const next = { ...prev };
-        Object.keys(next).forEach((id) => {
-          if (next[id] > 0 && !acceptedOrders.has(id) && !declinedOrders.has(id)) {
-            next[id] -= 1;
-          }
-        });
-        return next;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [acceptedOrders, declinedOrders]);
+  const handleAccept = (orderId: string) => {
+    acceptOrder(orderId);
+  };
 
-  const handleAccept = useCallback((orderId: string) => {
-    setAcceptedOrders((prev) => new Set(prev).add(orderId));
-  }, []);
+  const handleDecline = (orderId: string) => {
+    declineOrder(orderId);
+  };
 
-  const handleDecline = useCallback((orderId: string) => {
-    setDeclinedOrders((prev) => new Set(prev).add(orderId));
-  }, []);
+  const handleDelivered = () => {
+    completeActiveDelivery();
+  };
 
-  const activePlatforms = ['swiggy', 'zomato', 'ubereats', 'doordash'];
+  const activePlatforms = connectedPlatforms.map(p => p.id);
 
   return (
     <div className="min-h-screen bg-[#FAF7F2] pb-24">
@@ -202,7 +112,7 @@ export default function HomeScreen() {
               )}
               <Switch
                 checked={isOnline}
-                onCheckedChange={setIsOnline}
+                onCheckedChange={setOnline}
                 className={`${isOnline ? 'bg-[#2C4A3E]' : 'bg-[#D5CBBF]'} data-[state=checked]:bg-[#2C4A3E]`}
               />
             </div>
@@ -222,14 +132,14 @@ export default function HomeScreen() {
         {/* Active Platforms Bar */}
         <div className="flex items-center gap-3 px-4 pb-2.5 overflow-x-auto no-scrollbar">
           {activePlatforms.map((p) => {
-            const config = PLATFORM_CONFIG[p as keyof typeof PLATFORM_CONFIG];
+            const config = PLATFORM_CONFIG[p];
             return (
               <div key={p} className="flex items-center gap-1.5 shrink-0">
                 <div
                   className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white border border-[#C9A96E]/30"
-                  style={{ backgroundColor: config.color }}
+                  style={{ backgroundColor: config?.color || '#7A7168' }}
                 >
-                  {config.letter}
+                  {config?.letter || p[0].toUpperCase()}
                 </div>
                 <span className="relative flex h-2 w-2">
                   {isOnline && (
@@ -289,15 +199,15 @@ export default function HomeScreen() {
               <div className="flex items-center gap-2">
                 <div
                   className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white border border-[#C9A96E]/30"
-                  style={{ backgroundColor: PLATFORM_CONFIG[activeDelivery.platform].color }}
+                  style={{ backgroundColor: PLATFORM_CONFIG[activeDelivery.platform]?.color || '#7A7168' }}
                 >
-                  {PLATFORM_CONFIG[activeDelivery.platform].letter}
+                  {PLATFORM_CONFIG[activeDelivery.platform]?.letter || '?'}
                 </div>
                 <span
                   className="text-[10px] font-bold tracking-[0.12em] text-[#7A7168] uppercase"
                   style={{ fontFamily: 'var(--font-lora), serif' }}
                 >
-                  {PLATFORM_CONFIG[activeDelivery.platform].name}
+                  {PLATFORM_CONFIG[activeDelivery.platform]?.name || activeDelivery.platform}
                 </span>
               </div>
               <Badge className="bg-[#2C4A3E]/10 text-[#2C4A3E] border-[#2C4A3E]/20 text-[10px]">
@@ -367,6 +277,7 @@ export default function HomeScreen() {
                 Navigate
               </button>
               <button
+                onClick={handleDelivered}
                 className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-white border border-[#1B2A4A]/30 rounded-lg text-sm font-semibold text-[#1B2A4A] active:scale-[0.97] transition-all duration-200"
                 style={{ fontFamily: 'var(--font-lora), serif' }}
               >
@@ -422,8 +333,8 @@ export default function HomeScreen() {
         )}
 
         <AnimatePresence>
-          {isOnline && orders
-            .filter((o) => !declinedOrders.has(o.id) && !acceptedOrders.has(o.id))
+          {isOnline && incomingOrders
+            .filter((o) => !declinedOrderIds.has(o.id) && !acceptedOrderIds.has(o.id))
             .sort((a, b) => {
               if (smartMode === 'auto-rank') {
                 return (a.rank ?? 99) - (b.rank ?? 99);
@@ -452,7 +363,7 @@ export default function HomeScreen() {
                     className={`rounded-xl bg-white overflow-hidden card-elegant ${
                       order.isNew ? 'animate-navy-pulse' : ''
                     }`}
-                    style={{ borderLeft: `4px solid ${config.color}` }}
+                    style={{ borderLeft: `4px solid ${config?.color || '#7A7168'}` }}
                   >
                     <div className="p-4">
                       {/* Platform + Timer Row */}
@@ -460,15 +371,15 @@ export default function HomeScreen() {
                         <div className="flex items-center gap-2">
                           <div
                             className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white border border-[#C9A96E]/20"
-                            style={{ backgroundColor: config.color }}
+                            style={{ backgroundColor: config?.color || '#7A7168' }}
                           >
-                            {config.letter}
+                            {config?.letter || order.platform[0].toUpperCase()}
                           </div>
                           <span
                             className="text-[11px] font-semibold tracking-[0.1em]"
-                            style={{ color: config.color, fontFamily: 'var(--font-lora), serif' }}
+                            style={{ color: config?.color || '#7A7168', fontFamily: 'var(--font-lora), serif' }}
                           >
-                            {config.name}
+                            {config?.name || order.platform}
                           </span>
                           {order.rank && order.rank <= 3 && (
                             <Badge className="bg-[#1B2A4A]/8 text-[#1B2A4A] border-[#1B2A4A]/15 text-[9px] px-1.5 py-0">
@@ -575,7 +486,7 @@ export default function HomeScreen() {
         </AnimatePresence>
 
         {/* Accepted Orders Summary */}
-        {acceptedOrders.size > 0 && (
+        {acceptedOrderIds.size > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -587,7 +498,7 @@ export default function HomeScreen() {
                 className="text-sm font-semibold text-[#2C4A3E]"
                 style={{ fontFamily: 'var(--font-lora), serif' }}
               >
-                {acceptedOrders.size} order{acceptedOrders.size > 1 ? 's' : ''} accepted
+                {acceptedOrderIds.size} order{acceptedOrderIds.size > 1 ? 's' : ''} accepted
               </span>
             </div>
           </motion.div>
@@ -610,7 +521,7 @@ export default function HomeScreen() {
                   className="text-[#1B2A4A] font-bold text-sm"
                   style={{ fontFamily: 'var(--font-playfair), serif' }}
                 >
-                  ₹1,247
+                  ₹{todayEarnings.toLocaleString()}
                 </span>
                 <span
                   className="text-[10px] text-[#7A7168] tracking-wider uppercase"
@@ -624,7 +535,7 @@ export default function HomeScreen() {
                   className="text-[#2C2C2C] font-bold text-sm"
                   style={{ fontFamily: 'var(--font-playfair), serif' }}
                 >
-                  8
+                  {todayOrders}
                 </span>
                 <span
                   className="text-[10px] text-[#7A7168] tracking-wider uppercase"
@@ -638,7 +549,7 @@ export default function HomeScreen() {
                   className="text-[#2C2C2C] font-bold text-sm"
                   style={{ fontFamily: 'var(--font-playfair), serif' }}
                 >
-                  4h 23m
+                  {formatOnlineTime(totalOnlineTime)}
                 </span>
                 <span
                   className="text-[10px] text-[#7A7168] tracking-wider uppercase"
