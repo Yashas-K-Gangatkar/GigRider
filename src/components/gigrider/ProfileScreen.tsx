@@ -8,9 +8,7 @@ import {
   Star,
   Trophy,
   Zap,
-  Moon,
   Crown,
-  Flame,
   Lock,
   Bike,
   MapPin,
@@ -23,6 +21,7 @@ import {
   TrendingUp,
   Package,
   Settings,
+  LogOut,
 } from 'lucide-react';
 
 interface Achievement {
@@ -35,14 +34,14 @@ interface Achievement {
 }
 
 const ACHIEVEMENTS: Achievement[] = [
-  { id: 'century', title: 'Century Club', description: '100 deliveries in a week', icon: '🏆', unlocked: true, color: '#F59E0B' },
-  { id: 'speed', title: 'Speed Demon', description: 'Fastest delivery 3 times', icon: '⚡', unlocked: true, color: '#3B82F6' },
-  { id: 'night', title: 'Night Rider', description: '50 night deliveries', icon: '🌙', unlocked: true, color: '#8B5CF6' },
-  { id: 'fivestar', title: '5-Star King', description: 'Maintained 4.8+ for 30 days', icon: '👑', unlocked: true, color: '#F59E0B' },
-  { id: 'multi', title: 'Multi-Platform Master', description: 'Active on 4+ platforms', icon: '🔥', unlocked: true, color: '#EF4444' },
-  { id: 'marathon', title: 'Marathon Runner', description: '5,000 total deliveries', icon: '🏃', unlocked: false, color: '#22C55E' },
-  { id: 'diamond', title: 'Diamond Rider', description: 'Earn ₹10L+ lifetime', icon: '💎', unlocked: false, color: '#06B6D4' },
-  { id: 'legend', title: 'Legendary Status', description: 'Maintain 5.0 for 90 days', icon: '🌟', unlocked: false, color: '#F59E0B' },
+  { id: 'century', title: 'Century Club', description: '100 deliveries in a week', icon: '🏆', unlocked: true, color: '#C9A96E' },
+  { id: 'speed', title: 'Speed Demon', description: 'Fastest delivery 3 times', icon: '⚡', unlocked: true, color: '#1B2A4A' },
+  { id: 'night', title: 'Night Rider', description: '50 night deliveries', icon: '🌙', unlocked: true, color: '#2A3F6A' },
+  { id: 'fivestar', title: '5-Star Monarch', description: 'Maintained 4.8+ for 30 days', icon: '👑', unlocked: true, color: '#C9A96E' },
+  { id: 'multi', title: 'Multi-Platform Master', description: 'Active on 4+ platforms', icon: '🔥', unlocked: true, color: '#A84020' },
+  { id: 'marathon', title: 'Marathon Runner', description: '5,000 total deliveries', icon: '🏃', unlocked: false, color: '#2C4A3E' },
+  { id: 'diamond', title: 'Diamond Rider', description: 'Earn 10L+ lifetime', icon: '💎', unlocked: false, color: '#1B2A4A' },
+  { id: 'legend', title: 'Legendary Status', description: 'Maintain 5.0 for 90 days', icon: '🌟', unlocked: false, color: '#C9A96E' },
 ];
 
 const SETTINGS_ITEMS = [
@@ -54,7 +53,11 @@ const SETTINGS_ITEMS = [
   { id: 'about', icon: Info, label: 'About GigRider', value: 'v2.1.0' },
 ];
 
-export default function ProfileScreen() {
+interface ProfileScreenProps {
+  onLogout?: () => void;
+}
+
+export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
   const [showAllAchievements, setShowAllAchievements] = useState(false);
 
   const visibleAchievements = showAllAchievements
@@ -62,10 +65,15 @@ export default function ProfileScreen() {
     : ACHIEVEMENTS.slice(0, 5);
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] pb-24">
+    <div className="min-h-screen bg-[#FAF7F2] pb-24">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-[#0A0A0A]/90 backdrop-blur-xl border-b border-[#222222] px-4 py-3">
-        <h1 className="text-lg font-bold text-white">Profile</h1>
+      <div className="sticky top-0 z-40 bg-[#FAF7F2]/90 backdrop-blur-xl border-b border-[#D5CBBF] px-4 py-3">
+        <h1
+          className="text-lg font-bold text-[#1B2A4A] tracking-wide"
+          style={{ fontFamily: 'var(--font-playfair), serif' }}
+        >
+          Profile
+        </h1>
       </div>
 
       <div className="px-4 pt-4 space-y-5">
@@ -73,26 +81,49 @@ export default function ProfileScreen() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-br from-[#141414] to-[#1E1E1E] rounded-xl p-5 border border-[#222222]"
+          className="bg-gradient-to-br from-white to-[#F5F0EB] rounded-xl p-5 border border-[#D5CBBF] card-elegant"
         >
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center text-3xl border-2 border-green-500/40">
+            <div
+              className="w-16 h-16 rounded-full bg-[#1B2A4A]/10 flex items-center justify-center text-2xl border-2 border-[#C9A96E]/40"
+              style={{ fontFamily: 'var(--font-playfair), serif' }}
+            >
               🪖
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <h2 className="text-xl font-bold text-white">Rajesh K.</h2>
-                <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[9px]">
+                <h2
+                  className="text-xl font-bold text-[#2C2C2C]"
+                  style={{ fontFamily: 'var(--font-playfair), serif' }}
+                >
+                  Rajesh K.
+                </h2>
+                <Badge className="bg-[#C9A96E]/15 text-[#8B5E3C] border-[#C9A96E]/25 text-[9px]">
                   <Award className="w-2.5 h-2.5 mr-0.5" />
                   Pro Rider
                 </Badge>
               </div>
               <div className="flex items-center gap-1 mt-1">
-                <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                <span className="text-sm font-bold text-amber-400">4.8</span>
-                <span className="text-xs text-zinc-500">Rating</span>
+                <Star className="w-4 h-4 text-[#C9A96E] fill-[#C9A96E]" />
+                <span
+                  className="text-sm font-bold text-[#C9A96E]"
+                  style={{ fontFamily: 'var(--font-playfair), serif' }}
+                >
+                  4.8
+                </span>
+                <span
+                  className="text-xs text-[#7A7168]"
+                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                >
+                  Rating
+                </span>
               </div>
-              <p className="text-[10px] text-zinc-500 mt-0.5">Member since Mar 2023</p>
+              <p
+                className="text-[10px] text-[#7A7168] mt-0.5"
+                style={{ fontFamily: 'var(--font-lora), serif' }}
+              >
+                Member since March 2023
+              </p>
             </div>
           </div>
         </motion.div>
@@ -105,21 +136,31 @@ export default function ProfileScreen() {
           className="grid grid-cols-2 gap-3"
         >
           {[
-            { icon: Package, label: 'Total Deliveries', value: '3,247', color: 'text-green-400' },
-            { icon: TrendingUp, label: 'Total Earnings', value: '₹4,85,000', color: 'text-amber-400' },
-            { icon: Star, label: 'Average Rating', value: '4.8', color: 'text-amber-400' },
-            { icon: Zap, label: 'Completion Rate', value: '97%', color: 'text-green-400' },
+            { icon: Package, label: 'Total Deliveries', value: '3,247', color: 'text-[#1B2A4A]' },
+            { icon: TrendingUp, label: 'Total Earnings', value: '₹4,85,000', color: 'text-[#8B5E3C]' },
+            { icon: Star, label: 'Average Rating', value: '4.8', color: 'text-[#C9A96E]' },
+            { icon: Zap, label: 'Completion Rate', value: '97%', color: 'text-[#2C4A3E]' },
           ].map((stat, index) => (
             <motion.div
               key={stat.label}
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.1 + index * 0.08 }}
-              className="bg-[#141414] rounded-xl p-4 border border-[#222222]"
+              className="bg-white rounded-xl p-4 border border-[#D5CBBF] card-elegant"
             >
               <stat.icon className={`w-5 h-5 ${stat.color} mb-2`} />
-              <p className="text-lg font-bold text-white">{stat.value}</p>
-              <p className="text-[10px] text-zinc-500">{stat.label}</p>
+              <p
+                className="text-lg font-bold text-[#1B2A4A]"
+                style={{ fontFamily: 'var(--font-playfair), serif' }}
+              >
+                {stat.value}
+              </p>
+              <p
+                className="text-[10px] text-[#7A7168] tracking-wider uppercase"
+                style={{ fontFamily: 'var(--font-lora), serif' }}
+              >
+                {stat.label}
+              </p>
             </motion.div>
           ))}
         </motion.div>
@@ -129,28 +170,36 @@ export default function ProfileScreen() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-[#141414] rounded-xl p-4 border border-[#222222]"
+          className="bg-white rounded-xl p-4 border border-[#D5CBBF] card-elegant"
         >
-          <h3 className="text-sm font-bold text-zinc-300 mb-3 flex items-center gap-2">
-            <Star className="w-4 h-4 text-amber-400" />
+          <h3
+            className="text-sm font-semibold text-[#2C2C2C] mb-3 flex items-center gap-2"
+            style={{ fontFamily: 'var(--font-playfair), serif' }}
+          >
+            <Star className="w-4 h-4 text-[#C9A96E]" />
             Platform Ratings
           </h3>
 
           <div className="space-y-3">
             {[
-              { name: 'Swiggy', rating: 4.9, color: '#FC8019' },
-              { name: 'Zomato', rating: 4.7, color: '#E23744' },
-              { name: 'Uber Eats', rating: 4.8, color: '#06C167' },
+              { name: 'Food Delivery S', rating: 4.9, color: '#B87333' },
+              { name: 'Food Delivery Z', rating: 4.7, color: '#943540' },
+              { name: 'Meal Delivery U', rating: 4.8, color: '#2C7A5F' },
             ].map((platform) => (
               <div key={platform.name} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white"
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white border border-[#C9A96E]/20"
                     style={{ backgroundColor: platform.color }}
                   >
-                    {platform.name[0]}
+                    {platform.name.split(' ').pop()}
                   </div>
-                  <span className="text-sm text-white font-medium">{platform.name}</span>
+                  <span
+                    className="text-sm text-[#2C2C2C] font-medium"
+                    style={{ fontFamily: 'var(--font-lora), serif' }}
+                  >
+                    {platform.name}
+                  </span>
                 </div>
                 <div className="flex items-center gap-1">
                   {Array.from({ length: 5 }).map((_, i) => (
@@ -158,14 +207,19 @@ export default function ProfileScreen() {
                       key={i}
                       className={`w-3.5 h-3.5 ${
                         i < Math.floor(platform.rating)
-                          ? 'text-amber-400 fill-amber-400'
+                          ? 'text-[#C9A96E] fill-[#C9A96E]'
                           : i < platform.rating
-                          ? 'text-amber-400 fill-amber-400/50'
-                          : 'text-zinc-700'
+                          ? 'text-[#C9A96E] fill-[#C9A96E]/50'
+                          : 'text-[#D5CBBF]'
                       }`}
                     />
                   ))}
-                  <span className="text-sm font-bold text-amber-400 ml-1">{platform.rating}</span>
+                  <span
+                    className="text-sm font-bold text-[#C9A96E] ml-1"
+                    style={{ fontFamily: 'var(--font-playfair), serif' }}
+                  >
+                    {platform.rating}
+                  </span>
                 </div>
               </div>
             ))}
@@ -177,12 +231,15 @@ export default function ProfileScreen() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-[#141414] rounded-xl p-4 border border-[#222222]"
+          className="bg-white rounded-xl p-4 border border-[#D5CBBF] card-elegant"
         >
-          <h3 className="text-sm font-bold text-zinc-300 mb-3 flex items-center gap-2">
-            <Trophy className="w-4 h-4 text-amber-400" />
+          <h3
+            className="text-sm font-semibold text-[#2C2C2C] mb-3 flex items-center gap-2"
+            style={{ fontFamily: 'var(--font-playfair), serif' }}
+          >
+            <Trophy className="w-4 h-4 text-[#C9A96E]" />
             Achievements
-            <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[9px]">
+            <Badge className="bg-[#C9A96E]/15 text-[#8B5E3C] border-[#C9A96E]/25 text-[9px]">
               {ACHIEVEMENTS.filter((a) => a.unlocked).length}/{ACHIEVEMENTS.length}
             </Badge>
           </h3>
@@ -191,23 +248,31 @@ export default function ProfileScreen() {
             {visibleAchievements.map((achievement, index) => (
               <motion.div
                 key={achievement.id}
-                initial={{ opacity: 0, scale: 0.8 }}
+                initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.3 + index * 0.06, type: 'spring', stiffness: 200 }}
-                className={`p-3 rounded-lg border ${
+                className={`p-3 rounded-lg border transition-all duration-200 ${
                   achievement.unlocked
-                    ? 'bg-[#1E1E1E] border-[#222222]'
-                    : 'bg-[#0A0A0A] border-[#1E1E1E] opacity-50'
+                    ? 'bg-[#F5F0EB] border-[#D5CBBF]'
+                    : 'bg-[#FAF7F2] border-[#E8E0D4] opacity-40'
                 }`}
               >
                 <div className="flex items-center gap-2 mb-1.5">
                   <span className="text-lg">{achievement.icon}</span>
-                  {achievement.unlocked ? null : <Lock className="w-3 h-3 text-zinc-600 ml-auto" />}
+                  {achievement.unlocked ? null : <Lock className="w-3 h-3 text-[#7A7168] ml-auto" />}
                 </div>
-                <p className={`text-xs font-bold ${achievement.unlocked ? 'text-white' : 'text-zinc-600'}`}>
+                <p
+                  className={`text-xs font-bold ${achievement.unlocked ? 'text-[#2C2C2C]' : 'text-[#7A7168]'}`}
+                  style={{ fontFamily: 'var(--font-playfair), serif' }}
+                >
                   {achievement.title}
                 </p>
-                <p className="text-[9px] text-zinc-500 mt-0.5">{achievement.description}</p>
+                <p
+                  className="text-[9px] text-[#7A7168] mt-0.5"
+                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                >
+                  {achievement.description}
+                </p>
               </motion.div>
             ))}
           </div>
@@ -215,7 +280,8 @@ export default function ProfileScreen() {
           {!showAllAchievements && ACHIEVEMENTS.length > 5 && (
             <button
               onClick={() => setShowAllAchievements(true)}
-              className="w-full mt-3 py-2 text-xs text-green-400 font-semibold hover:text-green-300 transition-colors"
+              className="w-full mt-3 py-2 text-xs text-[#1B2A4A] font-semibold hover:underline transition-colors duration-200"
+              style={{ fontFamily: 'var(--font-lora), serif' }}
             >
               View All Achievements
             </button>
@@ -223,7 +289,8 @@ export default function ProfileScreen() {
           {showAllAchievements && (
             <button
               onClick={() => setShowAllAchievements(false)}
-              className="w-full mt-3 py-2 text-xs text-zinc-400 font-semibold hover:text-zinc-300 transition-colors"
+              className="w-full mt-3 py-2 text-xs text-[#7A7168] font-semibold hover:text-[#2C2C2C] transition-colors duration-200"
+              style={{ fontFamily: 'var(--font-lora), serif' }}
             >
               Show Less
             </button>
@@ -235,11 +302,14 @@ export default function ProfileScreen() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="bg-[#141414] rounded-xl border border-[#222222] overflow-hidden"
+          className="bg-white rounded-xl border border-[#D5CBBF] overflow-hidden card-elegant"
         >
           <div className="p-4 pb-2">
-            <h3 className="text-sm font-bold text-zinc-300 flex items-center gap-2">
-              <Settings className="w-4 h-4 text-green-400" />
+            <h3
+              className="text-sm font-semibold text-[#2C2C2C] flex items-center gap-2"
+              style={{ fontFamily: 'var(--font-playfair), serif' }}
+            >
+              <Settings className="w-4 h-4 text-[#1B2A4A]" />
               Settings
             </h3>
           </div>
@@ -251,32 +321,70 @@ export default function ProfileScreen() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 + index * 0.05 }}
             >
-              <button className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-[#1E1E1E] transition-colors">
+              <button className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-[#F5F0EB] transition-colors duration-200">
                 <div className="flex items-center gap-3">
-                  <item.icon className="w-4 h-4 text-zinc-500" />
-                  <span className="text-sm text-white font-medium">{item.label}</span>
+                  <item.icon className="w-4 h-4 text-[#7A7168]" />
+                  <span
+                    className="text-sm text-[#2C2C2C] font-medium"
+                    style={{ fontFamily: 'var(--font-lora), serif' }}
+                  >
+                    {item.label}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   {item.value && (
-                    <span className="text-xs text-zinc-500">{item.value}</span>
+                    <span
+                      className="text-xs text-[#7A7168]"
+                      style={{ fontFamily: 'var(--font-lora), serif' }}
+                    >
+                      {item.value}
+                    </span>
                   )}
-                  <ChevronRight className="w-4 h-4 text-zinc-600" />
+                  <ChevronRight className="w-4 h-4 text-[#7A7168]" />
                 </div>
               </button>
-              {index < SETTINGS_ITEMS.length - 1 && <Separator className="bg-[#1E1E1E]" />}
+              {index < SETTINGS_ITEMS.length - 1 && <Separator className="bg-[#F0EBE4]" />}
             </motion.div>
           ))}
         </motion.div>
+
+        {/* Logout Button */}
+        {onLogout && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <button
+              onClick={onLogout}
+              className="w-full py-4 rounded-xl border-2 border-[#722F37]/30 text-[#722F37] font-semibold flex items-center justify-center gap-2 hover:bg-[#722F37]/5 transition-all duration-200"
+              style={{ fontFamily: 'var(--font-lora), serif' }}
+            >
+              <LogOut className="w-4 h-4" />
+              Sign Out
+            </button>
+          </motion.div>
+        )}
 
         {/* App Version */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
+          transition={{ delay: 0.6 }}
           className="text-center py-4"
         >
-          <p className="text-[10px] text-zinc-600">GigRider v2.1.0</p>
-          <p className="text-[9px] text-zinc-700 mt-0.5">One App. Every Platform. More Earnings.</p>
+          <p
+            className="text-[10px] text-[#7A7168]/60"
+            style={{ fontFamily: 'var(--font-lora), serif' }}
+          >
+            GigRider v2.1.0
+          </p>
+          <p
+            className="text-[9px] text-[#7A7168]/40 mt-0.5 tracking-[0.1em] uppercase"
+            style={{ fontFamily: 'var(--font-lora), serif' }}
+          >
+            One App. Every Platform. More Earnings.
+          </p>
         </motion.div>
       </div>
     </div>

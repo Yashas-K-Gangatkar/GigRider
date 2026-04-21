@@ -3,6 +3,9 @@
 import { useState, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import SplashScreen from '@/components/gigrider/SplashScreen';
+import LoginScreen from '@/components/gigrider/LoginScreen';
+import SignupScreen from '@/components/gigrider/SignupScreen';
+import OTPScreen from '@/components/gigrider/OTPScreen';
 import HomeScreen from '@/components/gigrider/HomeScreen';
 import EarningsScreen from '@/components/gigrider/EarningsScreen';
 import PlatformsScreen from '@/components/gigrider/PlatformsScreen';
@@ -10,19 +13,75 @@ import ActivityScreen from '@/components/gigrider/ActivityScreen';
 import ProfileScreen from '@/components/gigrider/ProfileScreen';
 import BottomNav, { type ScreenType } from '@/components/gigrider/BottomNav';
 
+type AuthState = 'splash' | 'login' | 'signup' | 'otp';
+
 export default function Home() {
-  const [showSplash, setShowSplash] = useState(true);
+  const [authState, setAuthState] = useState<AuthState>('splash');
   const [activeScreen, setActiveScreen] = useState<ScreenType>('home');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [otpPhone, setOtpPhone] = useState('');
+  const [userName, setUserName] = useState('');
 
   const handleSplashComplete = useCallback(() => {
-    setShowSplash(false);
+    setAuthState('login');
+  }, []);
+
+  const handleLoginRequest = useCallback((phone: string) => {
+    setOtpPhone(phone);
+    setAuthState('otp');
+  }, []);
+
+  const handleSignupRequest = useCallback((data: { name: string; phone: string }) => {
+    setUserName(data.name);
+    setOtpPhone(data.phone);
+    setAuthState('otp');
+  }, []);
+
+  const handleOTPVerified = useCallback(() => {
+    setIsAuthenticated(true);
+  }, []);
+
+  const handleLogout = useCallback(() => {
+    setIsAuthenticated(false);
+    setAuthState('login');
+    setOtpPhone('');
+    setUserName('');
   }, []);
 
   const handleScreenChange = useCallback((screen: ScreenType) => {
     setActiveScreen(screen);
   }, []);
 
-  const renderScreen = () => {
+  const renderAuthScreen = () => {
+    switch (authState) {
+      case 'login':
+        return (
+          <LoginScreen
+            onLogin={handleLoginRequest}
+            onGoToSignup={() => setAuthState('signup')}
+          />
+        );
+      case 'signup':
+        return (
+          <SignupScreen
+            onSignup={handleSignupRequest}
+            onGoToLogin={() => setAuthState('login')}
+          />
+        );
+      case 'otp':
+        return (
+          <OTPScreen
+            phone={otpPhone}
+            onVerified={handleOTPVerified}
+            onBack={() => setAuthState('login')}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
+  const renderAppScreen = () => {
     switch (activeScreen) {
       case 'home':
         return <HomeScreen />;
@@ -33,43 +92,60 @@ export default function Home() {
       case 'activity':
         return <ActivityScreen />;
       case 'profile':
-        return <ProfileScreen />;
+        return <ProfileScreen onLogout={handleLogout} />;
       default:
         return <HomeScreen />;
     }
   };
 
+  // Splash screen
+  if (authState === 'splash') {
+    return (
+      <div className="min-h-screen bg-[#FAF7F2] relative max-w-lg mx-auto">
+        <AnimatePresence>
+          <SplashScreen onComplete={handleSplashComplete} />
+        </AnimatePresence>
+      </div>
+    );
+  }
+
+  // Auth screens (login / signup / OTP)
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#FAF7F2] relative max-w-lg mx-auto">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={authState}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.35, ease: 'easeInOut' }}
+          >
+            {renderAuthScreen()}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    );
+  }
+
+  // Main app (authenticated)
   return (
     <div className="min-h-screen bg-[#FAF7F2] relative max-w-lg mx-auto">
-      {/* Splash Screen */}
-      <AnimatePresence>
-        {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
+      {/* Screen Content */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeScreen}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.3, ease: 'easeInOut' }}
+        >
+          {renderAppScreen()}
+        </motion.div>
       </AnimatePresence>
 
-      {/* Main App */}
-      {!showSplash && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6 }}
-        >
-          {/* Screen Content */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeScreen}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
-            >
-              {renderScreen()}
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Bottom Navigation */}
-          <BottomNav activeScreen={activeScreen} onScreenChange={handleScreenChange} />
-        </motion.div>
-      )}
+      {/* Bottom Navigation */}
+      <BottomNav activeScreen={activeScreen} onScreenChange={handleScreenChange} />
     </div>
   );
 }
