@@ -34,7 +34,7 @@ interface BottomNavProps {
 export default function BottomNav({ activeScreen, onScreenChange }: BottomNavProps) {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 max-w-lg mx-auto">
-      <div className="bg-[#0A0A0A]/95 backdrop-blur-xl border-t border-[#222222] px-2 pb-[env(safe-area-inset-bottom)]">
+      <div className="bg-[#FAF7F2]/95 backdrop-blur-xl border-t border-[#D5CBBF] px-2 pb-[env(safe-area-inset-bottom)]">
         <div className="flex items-end justify-around h-16">
           {NAV_ITEMS.map((item) => {
             const isActive = activeScreen === item.id;
@@ -48,25 +48,31 @@ export default function BottomNav({ activeScreen, onScreenChange }: BottomNavPro
                   className="relative -mt-5"
                 >
                   <motion.div
-                    whileTap={{ scale: 0.85 }}
-                    className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-green-500/30 ${
+                    whileTap={{ scale: 0.9 }}
+                    className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 ${
                       isActive
-                        ? 'bg-gradient-to-br from-green-500 to-green-600'
-                        : 'bg-gradient-to-br from-green-600 to-green-700'
+                        ? 'bg-[#1B2A4A] shadow-[#1B2A4A]/20'
+                        : 'bg-[#2A3F6A] shadow-[#2A3F6A]/15'
                     }`}
+                    style={{
+                      boxShadow: isActive
+                        ? '0 4px 20px rgba(27, 42, 74, 0.3), 0 0 0 3px rgba(201, 169, 110, 0.3)'
+                        : '0 4px 12px rgba(27, 42, 74, 0.2)',
+                    }}
                   >
-                    <Icon className="w-6 h-6 text-white" />
+                    <Icon className="w-6 h-6 text-[#FAF7F2]" />
                     {isActive && (
                       <motion.div
                         layoutId="nav-glow"
-                        className="absolute inset-0 rounded-full bg-green-500/20 animate-glow-pulse"
+                        className="absolute inset-0 rounded-full animate-gold-glow"
                       />
                     )}
                   </motion.div>
                   <span
-                    className={`block text-center text-[9px] font-semibold mt-1 ${
-                      isActive ? 'text-green-400' : 'text-zinc-600'
+                    className={`block text-center text-[9px] mt-1 tracking-wider uppercase ${
+                      isActive ? 'text-[#1B2A4A] font-semibold' : 'text-[#7A7168]'
                     }`}
+                    style={{ fontFamily: 'var(--font-lora), serif' }}
                   >
                     {item.label}
                   </span>
@@ -80,17 +86,18 @@ export default function BottomNav({ activeScreen, onScreenChange }: BottomNavPro
                 onClick={() => onScreenChange(item.id)}
                 className="flex flex-col items-center justify-center gap-0.5 py-2 px-3 min-w-[48px] min-h-[48px]"
               >
-                <motion.div whileTap={{ scale: 0.8 }}>
+                <motion.div whileTap={{ scale: 0.85 }}>
                   <Icon
-                    className={`w-5 h-5 transition-colors ${
-                      isActive ? 'text-green-400' : 'text-zinc-600'
+                    className={`w-5 h-5 transition-colors duration-300 ${
+                      isActive ? 'text-[#1B2A4A]' : 'text-[#7A7168]'
                     }`}
                   />
                 </motion.div>
                 <span
-                  className={`text-[9px] font-semibold transition-colors ${
-                    isActive ? 'text-green-400' : 'text-zinc-600'
+                  className={`text-[9px] transition-colors duration-300 tracking-wider uppercase ${
+                    isActive ? 'text-[#1B2A4A] font-semibold' : 'text-[#7A7168]'
                   }`}
+                  style={{ fontFamily: 'var(--font-lora), serif' }}
                 >
                   {item.label}
                 </span>

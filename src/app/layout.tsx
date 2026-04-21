@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Playfair_Display, Lora, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+});
+
+const lora = Lora({
+  variable: "--font-lora",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const geistMono = Geist_Mono({
@@ -15,8 +22,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "GigRider - One App. Every Platform. More Earnings.",
-  description: "The ultimate delivery partner aggregation app. Manage orders from Swiggy, Zomato, Uber Eats, DoorDash and more — all in one app. More earnings, less switching.",
-  keywords: ["GigRider", "delivery rider", "delivery partner", "gig economy", "multi-platform", "Swiggy", "Zomato", "Uber Eats", "DoorDash"],
+  description: "The distinguished delivery partner aggregation app. Manage orders from multiple platforms — all in one app. More earnings, less switching.",
+  keywords: ["GigRider", "delivery rider", "delivery partner", "gig economy", "multi-platform"],
   authors: [{ name: "GigRider Team" }],
   icons: {
     icon: "/gigrider-logo.png",
@@ -40,9 +47,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" className="light" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#0A0A0A] text-[#FAFAFA] overflow-x-hidden`}
+        className={`${playfair.variable} ${lora.variable} ${geistMono.variable} antialiased bg-[#FAF7F2] text-[#2C2C2C] overflow-x-hidden`}
+        style={{ fontFamily: 'var(--font-lora), serif' }}
       >
         {children}
         <Toaster />

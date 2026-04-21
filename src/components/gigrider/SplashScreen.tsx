@@ -37,71 +37,81 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
       <motion.div
         className="fixed inset-0 z-50 flex flex-col items-center justify-center"
         initial={{ opacity: 1 }}
-        exit={{ opacity: 0, scale: 1.05 }}
-        transition={{ duration: 0.5 }}
+        exit={{ opacity: 0, scale: 1.02 }}
+        transition={{ duration: 0.6 }}
       >
-        {/* Background Image */}
-        <div className="absolute inset-0">
-          <Image
-            src="/rider-splash-bg.png"
-            alt="GigRider Splash"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/90" />
-        </div>
+        {/* Cream Background with subtle pattern */}
+        <div className="absolute inset-0 bg-[#FAF7F2] linen-texture" />
+
+        {/* Decorative gold corners */}
+        <div className="absolute top-8 left-8 w-16 h-16 border-t-2 border-l-2 border-[#C9A96E]/40" />
+        <div className="absolute top-8 right-8 w-16 h-16 border-t-2 border-r-2 border-[#C9A96E]/40" />
+        <div className="absolute bottom-8 left-8 w-16 h-16 border-b-2 border-l-2 border-[#C9A96E]/40" />
+        <div className="absolute bottom-8 right-8 w-16 h-16 border-b-2 border-r-2 border-[#C9A96E]/40" />
 
         {/* Content */}
         <div className="relative z-10 flex flex-col items-center gap-6 px-8">
           {/* Logo */}
           <motion.div
-            initial={{ scale: 0, opacity: 0 }}
+            initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{
-              duration: 0.8,
+              duration: 1,
               type: 'spring',
-              stiffness: 200,
-              damping: 12,
+              stiffness: 100,
+              damping: 15,
             }}
             className="relative"
           >
             <motion.div
               animate={{
-                scale: [1, 1.08, 1],
+                scale: [1, 1.04, 1],
               }}
               transition={{
-                duration: 2,
+                duration: 3,
                 repeat: Infinity,
                 ease: 'easeInOut',
               }}
+              className="w-24 h-24 rounded-full border-2 border-[#C9A96E] bg-white/80 flex items-center justify-center shadow-lg"
+              style={{ boxShadow: '0 0 30px rgba(201, 169, 110, 0.2)' }}
             >
               <Image
                 src="/gigrider-logo.png"
                 alt="GigRider Logo"
-                width={100}
-                height={100}
+                width={64}
+                height={64}
                 priority
-                className="drop-shadow-[0_0_30px_rgba(34,197,94,0.5)]"
               />
             </motion.div>
           </motion.div>
 
           {/* App Name */}
           <motion.div
-            initial={{ y: 30, opacity: 0 }}
+            initial={{ y: 24, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-            className="flex flex-col items-center gap-2"
+            transition={{ duration: 0.7, delay: 0.5 }}
+            className="flex flex-col items-center gap-3"
           >
-            <h1 className="text-4xl font-black tracking-wider text-white">
-              GIG<span className="text-green-400">RIDER</span>
+            <h1
+              className="text-4xl tracking-[0.15em] text-[#1B2A4A]"
+              style={{ fontFamily: 'var(--font-playfair), serif', fontWeight: 700 }}
+            >
+              GIG<span className="text-[#C9A96E]">RIDER</span>
             </h1>
+
+            {/* Ornamental divider */}
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-px bg-gradient-to-r from-transparent to-[#C9A96E]" />
+              <div className="w-1.5 h-1.5 rounded-full bg-[#C9A96E]" />
+              <div className="w-12 h-px bg-gradient-to-l from-transparent to-[#C9A96E]" />
+            </div>
+
             <motion.p
-              initial={{ y: 20, opacity: 0 }}
+              initial={{ y: 16, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.9 }}
-              className="text-sm text-zinc-300 text-center tracking-wide"
+              className="text-xs text-[#7A7168] text-center tracking-[0.2em] uppercase"
+              style={{ fontFamily: 'var(--font-lora), serif' }}
             >
               One App. Every Platform. More Earnings.
             </motion.p>
@@ -109,21 +119,24 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
 
           {/* Loading Bar */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 1.2 }}
-            className="w-48 mt-8"
+            transition={{ duration: 0.5, delay: 1.2 }}
+            className="w-52 mt-6"
           >
-            <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+            <div className="h-0.5 bg-[#E8E0D4] rounded-full overflow-hidden">
               <motion.div
-                className="h-full bg-gradient-to-r from-green-500 to-green-400 rounded-full"
+                className="h-full bg-gradient-to-r from-[#C9A96E] to-[#D4BC8E] rounded-full"
                 initial={{ width: '0%' }}
                 animate={{ width: `${Math.min(progress, 100)}%` }}
                 transition={{ duration: 0.1 }}
               />
             </div>
-            <p className="text-[10px] text-zinc-500 text-center mt-2">
-              Loading your cockpit...
+            <p
+              className="text-[9px] text-[#7A7168] text-center mt-3 tracking-[0.15em] uppercase"
+              style={{ fontFamily: 'var(--font-lora), serif' }}
+            >
+              Preparing your dashboard
             </p>
           </motion.div>
         </div>

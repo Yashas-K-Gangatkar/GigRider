@@ -16,10 +16,10 @@ import {
 } from 'lucide-react';
 
 const PLATFORM_EARNINGS = [
-  { platform: 'Swiggy', amount: 3200, color: '#FC8019', percentage: 38 },
-  { platform: 'Zomato', amount: 2800, color: '#E23744', percentage: 33 },
-  { platform: 'Uber Eats', amount: 1450, color: '#06C167', percentage: 17 },
-  { platform: 'DoorDash', amount: 1000, color: '#FF3008', percentage: 12 },
+  { platform: 'Food Delivery S', amount: 3200, color: '#B87333', percentage: 38 },
+  { platform: 'Food Delivery Z', amount: 2800, color: '#943540', percentage: 33 },
+  { platform: 'Meal Delivery U', amount: 1450, color: '#2C7A5F', percentage: 17 },
+  { platform: 'Delivery D', amount: 1000, color: '#A84020', percentage: 12 },
 ];
 
 const DAILY_EARNINGS = [
@@ -33,14 +33,14 @@ const DAILY_EARNINGS = [
 ];
 
 const TRANSACTIONS = [
-  { date: 'Today', platform: 'Swiggy', restaurant: 'Pizza Hut', amount: 45, status: 'completed' as const },
-  { date: 'Today', platform: 'Zomato', restaurant: 'Truffles', amount: 55, status: 'completed' as const },
-  { date: 'Today', platform: 'Uber Eats', restaurant: 'McDonald\'s', amount: 38, status: 'in-progress' as const },
-  { date: 'Yesterday', platform: 'Swiggy', restaurant: 'Biryani Blues', amount: 48, status: 'completed' as const },
-  { date: 'Yesterday', platform: 'DoorDash', restaurant: 'Chennai Express', amount: 65, status: 'completed' as const },
-  { date: 'Yesterday', platform: 'Zomato', restaurant: 'Domino\'s', amount: 52, status: 'completed' as const },
-  { date: '2 days ago', platform: 'Swiggy', restaurant: 'KFC', amount: 42, status: 'completed' as const },
-  { date: '2 days ago', platform: 'Uber Eats', restaurant: 'Subway', amount: 35, status: 'completed' as const },
+  { date: 'Today', platform: 'Food Delivery S', restaurant: 'The Grand Kitchens', amount: 45, status: 'completed' as const },
+  { date: 'Today', platform: 'Food Delivery Z', restaurant: 'The Truffle Club', amount: 55, status: 'completed' as const },
+  { date: 'Today', platform: 'Meal Delivery U', restaurant: 'McKinley\'s Grill', amount: 38, status: 'in-progress' as const },
+  { date: 'Yesterday', platform: 'Food Delivery S', restaurant: 'Royal Biryani House', amount: 48, status: 'completed' as const },
+  { date: 'Yesterday', platform: 'Delivery D', restaurant: 'The Spice Heritage', amount: 65, status: 'completed' as const },
+  { date: 'Yesterday', platform: 'Food Delivery Z', restaurant: 'Dominique\'s', amount: 52, status: 'completed' as const },
+  { date: '2 days ago', platform: 'Food Delivery S', restaurant: 'Colonel\'s Kitchen', amount: 42, status: 'completed' as const },
+  { date: '2 days ago', platform: 'Meal Delivery U', restaurant: 'The Garden Table', amount: 35, status: 'completed' as const },
 ];
 
 function AnimatedCounter({ target, prefix = '₹', duration = 1500 }: { target: number; prefix?: string; duration?: number }) {
@@ -66,17 +66,17 @@ function AnimatedCounter({ target, prefix = '₹', duration = 1500 }: { target: 
   }, [target, duration]);
 
   return (
-    <span>
+    <span style={{ fontFamily: 'var(--font-playfair), serif' }}>
       {prefix}{count.toLocaleString()}
     </span>
   );
 }
 
 const PLATFORM_COLORS: Record<string, string> = {
-  Swiggy: '#FC8019',
-  Zomato: '#E23744',
-  'Uber Eats': '#06C167',
-  DoorDash: '#FF3008',
+  'Food Delivery S': '#B87333',
+  'Food Delivery Z': '#943540',
+  'Meal Delivery U': '#2C7A5F',
+  'Delivery D': '#A84020',
 };
 
 export default function EarningsScreen() {
@@ -86,10 +86,15 @@ export default function EarningsScreen() {
   const comparedPercent = period === 'week' ? 12 : 8;
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] pb-24">
+    <div className="min-h-screen bg-[#FAF7F2] pb-24">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-[#0A0A0A]/90 backdrop-blur-xl border-b border-[#222222] px-4 py-3">
-        <h1 className="text-lg font-bold text-white">Earnings</h1>
+      <div className="sticky top-0 z-40 bg-[#FAF7F2]/90 backdrop-blur-xl border-b border-[#D5CBBF] px-4 py-3">
+        <h1
+          className="text-lg font-bold text-[#1B2A4A] tracking-wide"
+          style={{ fontFamily: 'var(--font-playfair), serif' }}
+        >
+          Earnings
+        </h1>
       </div>
 
       <div className="px-4 pt-4 space-y-5">
@@ -97,15 +102,23 @@ export default function EarningsScreen() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-br from-[#141414] to-[#1E1E1E] rounded-xl p-5 border border-[#222222]"
+          className="bg-gradient-to-br from-white to-[#F5F0EB] rounded-xl p-5 border border-[#D5CBBF] card-elegant"
         >
           <div className="flex items-center justify-between mb-4">
             <Tabs value={period} onValueChange={(v) => setPeriod(v as 'week' | 'month')}>
-              <TabsList className="bg-[#0A0A0A] h-8">
-                <TabsTrigger value="week" className="text-xs px-3 h-6 data-[state=active]:bg-green-500/20 data-[state=active]:text-green-400">
+              <TabsList className="bg-[#F0EBE4] h-8">
+                <TabsTrigger
+                  value="week"
+                  className="text-xs px-3 h-6 data-[state=active]:bg-[#1B2A4A] data-[state=active]:text-[#FAF7F2]"
+                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                >
                   This Week
                 </TabsTrigger>
-                <TabsTrigger value="month" className="text-xs px-3 h-6 data-[state=active]:bg-green-500/20 data-[state=active]:text-green-400">
+                <TabsTrigger
+                  value="month"
+                  className="text-xs px-3 h-6 data-[state=active]:bg-[#1B2A4A] data-[state=active]:text-[#FAF7F2]"
+                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                >
                   This Month
                 </TabsTrigger>
               </TabsList>
@@ -113,15 +126,25 @@ export default function EarningsScreen() {
           </div>
 
           <div className="text-center mb-3">
-            <p className="text-4xl font-black text-white">
+            <p className="text-4xl font-bold text-[#1B2A4A]" style={{ fontFamily: 'var(--font-playfair), serif' }}>
               <AnimatedCounter target={totalEarnings} />
             </p>
-            <p className="text-xs text-zinc-500 mt-1">Total Earnings</p>
+            <p
+              className="text-xs text-[#7A7168] mt-1 tracking-wider uppercase"
+              style={{ fontFamily: 'var(--font-lora), serif' }}
+            >
+              Total Earnings
+            </p>
           </div>
 
           <div className="flex items-center justify-center gap-1">
-            <ArrowUpRight className="w-3.5 h-3.5 text-green-400" />
-            <span className="text-sm font-semibold text-green-400">{comparedPercent}% from last {period === 'week' ? 'week' : 'month'}</span>
+            <ArrowUpRight className="w-3.5 h-3.5 text-[#2C4A3E]" />
+            <span
+              className="text-sm font-semibold text-[#2C4A3E]"
+              style={{ fontFamily: 'var(--font-lora), serif' }}
+            >
+              {comparedPercent}% from last {period === 'week' ? 'week' : 'month'}
+            </span>
           </div>
         </motion.div>
 
@@ -130,10 +153,13 @@ export default function EarningsScreen() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-[#141414] rounded-xl p-4 border border-[#222222]"
+          className="bg-white rounded-xl p-4 border border-[#D5CBBF] card-elegant"
         >
-          <h3 className="text-sm font-bold text-zinc-300 mb-4 flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-green-400" />
+          <h3
+            className="text-sm font-semibold text-[#2C2C2C] mb-4 flex items-center gap-2"
+            style={{ fontFamily: 'var(--font-playfair), serif' }}
+          >
+            <TrendingUp className="w-4 h-4 text-[#1B2A4A]" />
             Earnings by Platform
           </h3>
 
@@ -141,7 +167,7 @@ export default function EarningsScreen() {
             {PLATFORM_EARNINGS.map((item, index) => (
               <motion.div
                 key={item.platform}
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -16 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 + index * 0.08 }}
                 className="space-y-1.5"
@@ -149,19 +175,34 @@ export default function EarningsScreen() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div
-                      className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white"
+                      className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white border border-[#C9A96E]/20"
                       style={{ backgroundColor: item.color }}
                     >
-                      {item.platform[0]}
+                      {item.platform.split(' ').pop()}
                     </div>
-                    <span className="text-sm text-white font-medium">{item.platform}</span>
+                    <span
+                      className="text-sm text-[#2C2C2C] font-medium"
+                      style={{ fontFamily: 'var(--font-lora), serif' }}
+                    >
+                      {item.platform}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-white">₹{item.amount.toLocaleString()}</span>
-                    <span className="text-[10px] text-zinc-500">{item.percentage}%</span>
+                    <span
+                      className="text-sm font-bold text-[#1B2A4A]"
+                      style={{ fontFamily: 'var(--font-playfair), serif' }}
+                    >
+                      ₹{item.amount.toLocaleString()}
+                    </span>
+                    <span
+                      className="text-[10px] text-[#7A7168]"
+                      style={{ fontFamily: 'var(--font-lora), serif' }}
+                    >
+                      {item.percentage}%
+                    </span>
                   </div>
                 </div>
-                <div className="w-full bg-[#0A0A0A] rounded-full h-2">
+                <div className="w-full bg-[#F0EBE4] rounded-full h-2">
                   <motion.div
                     className="h-2 rounded-full"
                     style={{ backgroundColor: item.color }}
@@ -180,33 +221,48 @@ export default function EarningsScreen() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-[#141414] rounded-xl p-4 border border-[#222222]"
+          className="bg-white rounded-xl p-4 border border-[#D5CBBF] card-elegant"
         >
-          <h3 className="text-sm font-bold text-zinc-300 mb-4 flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-green-400" />
+          <h3
+            className="text-sm font-semibold text-[#2C2C2C] mb-4 flex items-center gap-2"
+            style={{ fontFamily: 'var(--font-playfair), serif' }}
+          >
+            <Calendar className="w-4 h-4 text-[#1B2A4A]" />
             Daily Earnings
           </h3>
 
           <div className="grid grid-cols-7 gap-2">
             {DAILY_EARNINGS.map((day) => (
               <div key={day.day} className="flex flex-col items-center gap-1.5">
-                <span className="text-[10px] text-zinc-500">{day.day}</span>
+                <span
+                  className="text-[10px] text-[#7A7168]"
+                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                >
+                  {day.day}
+                </span>
                 <div
                   className={`w-full aspect-square rounded-lg flex items-center justify-center text-[11px] font-bold ${
                     day.isBest
-                      ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                      : 'bg-[#1E1E1E] text-zinc-300'
+                      ? 'bg-[#1B2A4A]/10 text-[#1B2A4A] border border-[#1B2A4A]/20'
+                      : 'bg-[#F5F0EB] text-[#2C2C2C]'
                   }`}
+                  style={{ fontFamily: 'var(--font-playfair), serif' }}
                 >
                   {(day.amount / 100).toFixed(0)}h
                 </div>
-                <span className={`text-[9px] ${day.isBest ? 'text-green-400 font-semibold' : 'text-zinc-600'}`}>
+                <span
+                  className={`text-[9px] ${day.isBest ? 'text-[#1B2A4A] font-semibold' : 'text-[#7A7168]'}`}
+                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                >
                   ₹{(day.amount / 100).toFixed(0)}h
                 </span>
               </div>
             ))}
           </div>
-          <p className="text-[10px] text-zinc-600 mt-2 text-center">
+          <p
+            className="text-[10px] text-[#7A7168]/60 mt-2 text-center"
+            style={{ fontFamily: 'var(--font-lora), serif' }}
+          >
             Values shown as hundreds (₹11 = ₹1,100)
           </p>
         </motion.div>
@@ -216,11 +272,14 @@ export default function EarningsScreen() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-[#141414] rounded-xl border border-[#222222] overflow-hidden"
+          className="bg-white rounded-xl border border-[#D5CBBF] overflow-hidden card-elegant"
         >
           <div className="p-4 pb-2">
-            <h3 className="text-sm font-bold text-zinc-300 flex items-center gap-2">
-              <Banknote className="w-4 h-4 text-green-400" />
+            <h3
+              className="text-sm font-semibold text-[#2C2C2C] flex items-center gap-2"
+              style={{ fontFamily: 'var(--font-playfair), serif' }}
+            >
+              <Banknote className="w-4 h-4 text-[#1B2A4A]" />
               Recent Transactions
             </h3>
           </div>
@@ -232,27 +291,42 @@ export default function EarningsScreen() {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 + index * 0.05 }}
-                className="flex items-center justify-between px-4 py-3 border-b border-[#1E1E1E] last:border-0"
+                className="flex items-center justify-between px-4 py-3 border-b border-[#F0EBE4] last:border-0"
               >
                 <div className="flex items-center gap-3">
                   <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
-                    style={{ backgroundColor: PLATFORM_COLORS[tx.platform] || '#666' }}
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white border border-[#C9A96E]/20"
+                    style={{ backgroundColor: PLATFORM_COLORS[tx.platform] || '#7A7168' }}
                   >
-                    {tx.platform[0]}
+                    {tx.platform.split(' ').pop()}
                   </div>
                   <div>
-                    <p className="text-sm text-white font-medium">{tx.restaurant}</p>
-                    <p className="text-[10px] text-zinc-500">{tx.platform} · {tx.date}</p>
+                    <p
+                      className="text-sm text-[#2C2C2C] font-medium"
+                      style={{ fontFamily: 'var(--font-playfair), serif' }}
+                    >
+                      {tx.restaurant}
+                    </p>
+                    <p
+                      className="text-[10px] text-[#7A7168]"
+                      style={{ fontFamily: 'var(--font-lora), serif' }}
+                    >
+                      {tx.platform} · {tx.date}
+                    </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-bold text-green-400">+₹{tx.amount}</p>
+                  <p
+                    className="text-sm font-bold text-[#2C4A3E]"
+                    style={{ fontFamily: 'var(--font-playfair), serif' }}
+                  >
+                    +₹{tx.amount}
+                  </p>
                   <Badge
                     className={`text-[8px] px-1 py-0 ${
                       tx.status === 'completed'
-                        ? 'bg-green-500/20 text-green-400 border-green-500/30'
-                        : 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+                        ? 'bg-[#2C4A3E]/10 text-[#2C4A3E] border-[#2C4A3E]/15'
+                        : 'bg-[#8B5E3C]/10 text-[#8B5E3C] border-[#8B5E3C]/15'
                     }`}
                   >
                     {tx.status === 'completed' ? 'Done' : 'Active'}
@@ -268,34 +342,60 @@ export default function EarningsScreen() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="bg-[#141414] rounded-xl p-4 border border-[#222222]"
+          className="bg-white rounded-xl p-4 border border-[#D5CBBF] card-elegant"
         >
-          <h3 className="text-sm font-bold text-zinc-300 mb-3 flex items-center gap-2">
-            <Wallet className="w-4 h-4 text-green-400" />
+          <h3
+            className="text-sm font-semibold text-[#2C2C2C] mb-3 flex items-center gap-2"
+            style={{ fontFamily: 'var(--font-playfair), serif' }}
+          >
+            <Wallet className="w-4 h-4 text-[#1B2A4A]" />
             Payouts
           </h3>
 
           <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="text-xs text-zinc-500">Current Balance</p>
-              <p className="text-2xl font-black text-white">₹2,450</p>
+              <p
+                className="text-xs text-[#7A7168] tracking-wider uppercase"
+                style={{ fontFamily: 'var(--font-lora), serif' }}
+              >
+                Current Balance
+              </p>
+              <p
+                className="text-2xl font-bold text-[#1B2A4A]"
+                style={{ fontFamily: 'var(--font-playfair), serif' }}
+              >
+                ₹2,450
+              </p>
             </div>
-            <button className="px-4 py-2 bg-green-500 rounded-lg text-sm font-bold text-white active:scale-95 transition-transform">
+            <button
+              className="px-4 py-2 bg-[#1B2A4A] rounded-lg text-sm font-semibold text-[#FAF7F2] active:scale-[0.97] transition-all duration-200 shadow-sm"
+              style={{ fontFamily: 'var(--font-lora), serif' }}
+            >
               Withdraw
             </button>
           </div>
 
-          <div className="bg-[#1E1E1E] rounded-lg p-3 flex items-center justify-between">
+          <div className="bg-[#F5F0EB] rounded-lg p-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded bg-zinc-700 flex items-center justify-center text-[10px] font-bold text-white">
-                🏦
+              <div className="w-6 h-6 rounded bg-[#1B2A4A]/10 flex items-center justify-center text-[10px] font-bold text-[#1B2A4A]">
+                B
               </div>
               <div>
-                <p className="text-xs text-white font-medium">HDFC Bank ****4523</p>
-                <p className="text-[10px] text-zinc-500">Savings Account</p>
+                <p
+                  className="text-xs text-[#2C2C2C] font-medium"
+                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                >
+                  HDFC Bank ****4523
+                </p>
+                <p
+                  className="text-[10px] text-[#7A7168]"
+                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                >
+                  Savings Account
+                </p>
               </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-zinc-600" />
+            <ChevronRight className="w-4 h-4 text-[#7A7168]" />
           </div>
         </motion.div>
 
@@ -304,19 +404,37 @@ export default function EarningsScreen() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="bg-gradient-to-r from-amber-500/10 to-green-500/10 rounded-xl p-4 border border-amber-500/20"
+          className="bg-gradient-to-r from-[#C9A96E]/8 to-[#1B2A4A]/5 rounded-xl p-4 border border-[#C9A96E]/20"
         >
           <div className="flex items-center gap-2 mb-2">
-            <Gift className="w-4 h-4 text-amber-400" />
-            <h3 className="text-sm font-bold text-amber-400">Tips Earned</h3>
+            <Gift className="w-4 h-4 text-[#C9A96E]" />
+            <h3
+              className="text-sm font-semibold text-[#8B5E3C]"
+              style={{ fontFamily: 'var(--font-playfair), serif' }}
+            >
+              Tips Earned
+            </h3>
           </div>
-          <p className="text-2xl font-black text-white mb-1">
+          <p
+            className="text-2xl font-bold text-[#1B2A4A] mb-1"
+            style={{ fontFamily: 'var(--font-playfair), serif' }}
+          >
             ₹<AnimatedCounter target={680} prefix="" />
           </p>
-          <p className="text-xs text-zinc-400">This Week</p>
+          <p
+            className="text-xs text-[#7A7168]"
+            style={{ fontFamily: 'var(--font-lora), serif' }}
+          >
+            This Week
+          </p>
           <div className="flex items-center gap-1 mt-2">
-            <Sparkles className="w-3 h-3 text-amber-400" />
-            <p className="text-xs text-amber-400">3 customers tipped today!</p>
+            <Sparkles className="w-3 h-3 text-[#C9A96E]" />
+            <p
+              className="text-xs text-[#8B5E3C]"
+              style={{ fontFamily: 'var(--font-lora), serif' }}
+            >
+              3 customers tipped today!
+            </p>
           </div>
         </motion.div>
       </div>

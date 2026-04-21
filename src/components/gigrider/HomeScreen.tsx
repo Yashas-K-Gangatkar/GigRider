@@ -9,7 +9,6 @@ import {
   MapPin,
   Navigation,
   CheckCircle2,
-  X,
   Clock,
   Zap,
   TrendingUp,
@@ -43,18 +42,18 @@ interface ActiveDelivery {
 }
 
 const PLATFORM_CONFIG = {
-  swiggy: { name: 'SWIGGY', color: '#FC8019', bg: 'bg-[#FC8019]', letter: 'S' },
-  zomato: { name: 'ZOMATO', color: '#E23744', bg: 'bg-[#E23744]', letter: 'Z' },
-  ubereats: { name: 'UBER EATS', color: '#06C167', bg: 'bg-[#06C167]', letter: 'U' },
-  doordash: { name: 'DOORDASH', color: '#FF3008', bg: 'bg-[#FF3008]', letter: 'D' },
-  grubhub: { name: 'GRUBHUB', color: '#F06617', bg: 'bg-[#F06617]', letter: 'G' },
+  swiggy: { name: 'FOOD DELIVERY S', color: '#B87333', bg: 'bg-[#B87333]', letter: 'S' },
+  zomato: { name: 'FOOD DELIVERY Z', color: '#943540', bg: 'bg-[#943540]', letter: 'Z' },
+  ubereats: { name: 'MEAL DELIVERY U', color: '#2C7A5F', bg: 'bg-[#2C7A5F]', letter: 'U' },
+  doordash: { name: 'DELIVERY D', color: '#A84020', bg: 'bg-[#A84020]', letter: 'D' },
+  grubhub: { name: 'FOOD G', color: '#9E6B2F', bg: 'bg-[#9E6B2F]', letter: 'G' },
 };
 
 const MOCK_ORDERS: Order[] = [
   {
     id: 'ord-1',
     platform: 'swiggy',
-    restaurant: 'Pizza Hut',
+    restaurant: 'The Grand Kitchens',
     distance: 2.3,
     pickup: 'MG Road Metro Station',
     drop: 'Koramangala 5th Block',
@@ -67,7 +66,7 @@ const MOCK_ORDERS: Order[] = [
   {
     id: 'ord-2',
     platform: 'zomato',
-    restaurant: 'Domino\'s Pizza',
+    restaurant: 'Dominique\'s Pizzeria',
     distance: 3.1,
     pickup: 'Indiranagar 100ft Road',
     drop: 'HSR Layout Sector 2',
@@ -80,7 +79,7 @@ const MOCK_ORDERS: Order[] = [
   {
     id: 'ord-3',
     platform: 'ubereats',
-    restaurant: 'McDonald\'s',
+    restaurant: 'McKinley\'s Grill',
     distance: 1.8,
     pickup: 'Whitefield Main Rd',
     drop: 'ITPL Back Gate',
@@ -93,7 +92,7 @@ const MOCK_ORDERS: Order[] = [
   {
     id: 'ord-4',
     platform: 'doordash',
-    restaurant: 'Chennai Express',
+    restaurant: 'The Spice Heritage',
     distance: 4.5,
     pickup: 'Jayanagar 4th Block',
     drop: 'BTM 2nd Stage',
@@ -105,7 +104,7 @@ const MOCK_ORDERS: Order[] = [
   {
     id: 'ord-5',
     platform: 'swiggy',
-    restaurant: 'Biryani Blues',
+    restaurant: 'Royal Biryani House',
     distance: 2.0,
     pickup: 'HSR BDA Complex',
     drop: 'Bellandur Outer Ring Rd',
@@ -119,7 +118,7 @@ const MOCK_ORDERS: Order[] = [
 const ACTIVE_DELIVERY: ActiveDelivery = {
   id: 'act-1',
   platform: 'zomato',
-  restaurant: 'Truffles',
+  restaurant: 'The Truffle Club',
   customer: 'St. Mark\'s Road',
   eta: 8,
   earnings: 55,
@@ -167,13 +166,16 @@ export default function HomeScreen() {
   const activePlatforms = ['swiggy', 'zomato', 'ubereats', 'doordash'];
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] pb-24">
+    <div className="min-h-screen bg-[#FAF7F2] pb-24">
       {/* Top Bar */}
-      <div className="sticky top-0 z-40 bg-[#0A0A0A]/90 backdrop-blur-xl border-b border-[#222222]">
+      <div className="sticky top-0 z-40 bg-[#FAF7F2]/90 backdrop-blur-xl border-b border-[#D5CBBF]">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
-            <span className="text-lg font-black tracking-wider text-white">
-              GIG<span className="text-green-400">RIDER</span>
+            <span
+              className="text-lg tracking-[0.12em] text-[#1B2A4A]"
+              style={{ fontFamily: 'var(--font-playfair), serif', fontWeight: 700 }}
+            >
+              GIG<span className="text-[#C9A96E]">RIDER</span>
             </span>
           </div>
 
@@ -187,24 +189,29 @@ export default function HomeScreen() {
                   animate={{ opacity: 1, x: 0 }}
                 >
                   <span className="relative flex h-2.5 w-2.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500" />
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#1A6B4A] opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#2C4A3E]" />
                   </span>
-                  <span className="text-[10px] font-bold text-green-400 tracking-widest">LIVE</span>
+                  <span
+                    className="text-[10px] font-bold text-[#2C4A3E] tracking-[0.15em] uppercase"
+                    style={{ fontFamily: 'var(--font-lora), serif' }}
+                  >
+                    LIVE
+                  </span>
                 </motion.div>
               )}
               <Switch
                 checked={isOnline}
                 onCheckedChange={setIsOnline}
-                className={`${isOnline ? 'bg-green-500' : 'bg-zinc-600'} data-[state=checked]:bg-green-500`}
+                className={`${isOnline ? 'bg-[#2C4A3E]' : 'bg-[#D5CBBF]'} data-[state=checked]:bg-[#2C4A3E]`}
               />
             </div>
 
             {/* Notification Bell */}
             <button className="relative p-1.5">
-              <Bell className="w-5 h-5 text-zinc-400" />
+              <Bell className="w-5 h-5 text-[#7A7168]" />
               {notificationCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 bg-[#722F37] text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
                   {notificationCount}
                 </span>
               )}
@@ -219,7 +226,7 @@ export default function HomeScreen() {
             return (
               <div key={p} className="flex items-center gap-1.5 shrink-0">
                 <div
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white border border-[#C9A96E]/30"
                   style={{ backgroundColor: config.color }}
                 >
                   {config.letter}
@@ -227,11 +234,11 @@ export default function HomeScreen() {
                 <span className="relative flex h-2 w-2">
                   {isOnline && (
                     <>
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2C4A3E] opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-[#1A6B4A]" />
                     </>
                   )}
-                  {!isOnline && <span className="inline-flex rounded-full h-2 w-2 bg-zinc-600" />}
+                  {!isOnline && <span className="inline-flex rounded-full h-2 w-2 bg-[#D5CBBF]" />}
                 </span>
               </div>
             );
@@ -241,25 +248,27 @@ export default function HomeScreen() {
 
       {/* Smart Mode Toggle */}
       <div className="px-4 pt-3">
-        <div className="flex items-center gap-1 bg-[#141414] rounded-lg p-1">
+        <div className="flex items-center gap-1 bg-white rounded-lg p-1 border border-[#D5CBBF]">
           <button
             onClick={() => setSmartMode('auto-rank')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-md text-xs font-semibold transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-md text-xs font-medium transition-all duration-300 ${
               smartMode === 'auto-rank'
-                ? 'bg-green-500/20 text-green-400'
-                : 'text-zinc-500 hover:text-zinc-400'
+                ? 'bg-[#1B2A4A] text-[#FAF7F2] shadow-sm'
+                : 'text-[#7A7168] hover:text-[#2C2C2C]'
             }`}
+            style={{ fontFamily: 'var(--font-lora), serif' }}
           >
             <Zap className="w-3.5 h-3.5" />
             Auto-Rank
           </button>
           <button
             onClick={() => setSmartMode('first-come')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-md text-xs font-semibold transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-md text-xs font-medium transition-all duration-300 ${
               smartMode === 'first-come'
-                ? 'bg-green-500/20 text-green-400'
-                : 'text-zinc-500 hover:text-zinc-400'
+                ? 'bg-[#1B2A4A] text-[#FAF7F2] shadow-sm'
+                : 'text-[#7A7168] hover:text-[#2C2C2C]'
             }`}
+            style={{ fontFamily: 'var(--font-lora), serif' }}
           >
             <Clock className="w-3.5 h-3.5" />
             First Come
@@ -270,59 +279,99 @@ export default function HomeScreen() {
       {/* Active Delivery Card */}
       {activeDelivery && isOnline && (
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: -16 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
           className="px-4 pt-3"
         >
-          <div className="border-2 border-green-500/60 rounded-xl bg-[#141414] p-4 animate-border-pulse">
+          <div className="border-2 border-[#C9A96E]/50 rounded-xl bg-white p-4 animate-border-pulse-gold card-elegant">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <div
-                  className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
+                  className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white border border-[#C9A96E]/30"
                   style={{ backgroundColor: PLATFORM_CONFIG[activeDelivery.platform].color }}
                 >
                   {PLATFORM_CONFIG[activeDelivery.platform].letter}
                 </div>
-                <span className="text-[10px] font-bold tracking-wider text-zinc-400">
+                <span
+                  className="text-[10px] font-bold tracking-[0.12em] text-[#7A7168] uppercase"
+                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                >
                   {PLATFORM_CONFIG[activeDelivery.platform].name}
                 </span>
               </div>
-              <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[10px]">
+              <Badge className="bg-[#2C4A3E]/10 text-[#2C4A3E] border-[#2C4A3E]/20 text-[10px]">
                 <Bike className="w-3 h-3 mr-1" />
-                DELIVERING
+                EN ROUTE
               </Badge>
             </div>
 
             <div className="flex items-center gap-3 mb-3">
               <div className="flex flex-col items-center">
-                <Package className="w-4 h-4 text-green-400" />
-                <div className="w-px h-6 bg-green-500/30 my-1" />
-                <MapPin className="w-4 h-4 text-amber-400" />
+                <Package className="w-4 h-4 text-[#2C4A3E]" />
+                <div className="w-px h-6 bg-[#C9A96E]/30 my-1" />
+                <MapPin className="w-4 h-4 text-[#C9A96E]" />
               </div>
               <div className="flex-1 space-y-3">
                 <div>
-                  <p className="text-xs text-zinc-500">Pickup</p>
-                  <p className="text-sm font-semibold text-white">{activeDelivery.restaurant}</p>
+                  <p
+                    className="text-[10px] text-[#7A7168] tracking-wider uppercase"
+                    style={{ fontFamily: 'var(--font-lora), serif' }}
+                  >
+                    Pickup
+                  </p>
+                  <p
+                    className="text-sm font-semibold text-[#2C2C2C]"
+                    style={{ fontFamily: 'var(--font-playfair), serif' }}
+                  >
+                    {activeDelivery.restaurant}
+                  </p>
                 </div>
                 <div>
-                  <p className="text-xs text-zinc-500">Drop-off</p>
-                  <p className="text-sm font-semibold text-white">{activeDelivery.customer}</p>
+                  <p
+                    className="text-[10px] text-[#7A7168] tracking-wider uppercase"
+                    style={{ fontFamily: 'var(--font-lora), serif' }}
+                  >
+                    Drop-off
+                  </p>
+                  <p
+                    className="text-sm font-semibold text-[#2C2C2C]"
+                    style={{ fontFamily: 'var(--font-playfair), serif' }}
+                  >
+                    {activeDelivery.customer}
+                  </p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-lg font-bold text-green-400">₹{activeDelivery.earnings}</p>
-                <p className="text-xs text-zinc-500">{activeDelivery.eta} min left</p>
+                <p
+                  className="text-lg font-bold text-[#1B2A4A]"
+                  style={{ fontFamily: 'var(--font-playfair), serif' }}
+                >
+                  ₹{activeDelivery.earnings}
+                </p>
+                <p
+                  className="text-xs text-[#7A7168]"
+                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                >
+                  {activeDelivery.eta} min left
+                </p>
               </div>
             </div>
 
             <div className="flex gap-2">
-              <button className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-green-500 rounded-lg text-sm font-bold text-white active:scale-95 transition-transform">
+              <button
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-[#1B2A4A] rounded-lg text-sm font-semibold text-[#FAF7F2] active:scale-[0.97] transition-all duration-200 shadow-sm"
+                style={{ fontFamily: 'var(--font-lora), serif' }}
+              >
                 <Navigation className="w-4 h-4" />
                 Navigate
               </button>
-              <button className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-[#1E1E1E] border border-green-500/30 rounded-lg text-sm font-semibold text-green-400 active:scale-95 transition-transform">
+              <button
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-white border border-[#1B2A4A]/30 rounded-lg text-sm font-semibold text-[#1B2A4A] active:scale-[0.97] transition-all duration-200"
+                style={{ fontFamily: 'var(--font-lora), serif' }}
+              >
                 <CheckCircle2 className="w-4 h-4" />
-                Mark Delivered
+                Delivered
               </button>
             </div>
           </div>
@@ -332,27 +381,43 @@ export default function HomeScreen() {
       {/* Order Feed */}
       <div className="px-4 pt-3 space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-zinc-300">
+          <h2
+            className="text-sm font-semibold text-[#2C2C2C] tracking-wide"
+            style={{ fontFamily: 'var(--font-playfair), serif' }}
+          >
             {isOnline ? 'Incoming Orders' : 'You\'re Offline'}
           </h2>
           {isOnline && (
-            <span className="text-[10px] text-green-400 font-semibold flex items-center gap-1">
+            <span
+              className="text-[10px] text-[#2C4A3E] font-medium flex items-center gap-1 tracking-wider uppercase"
+              style={{ fontFamily: 'var(--font-lora), serif' }}
+            >
               <span className="relative flex h-1.5 w-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2C4A3E] opacity-75" />
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#1A6B4A]" />
               </span>
-              Listening...
+              Listening
             </span>
           )}
         </div>
 
         {!isOnline && (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-16 h-16 rounded-full bg-zinc-800 flex items-center justify-center mb-4">
-              <Bike className="w-8 h-8 text-zinc-600" />
+            <div className="w-16 h-16 rounded-full bg-[#F0EBE4] flex items-center justify-center mb-4 border border-[#D5CBBF]">
+              <Bike className="w-8 h-8 text-[#7A7168]" />
             </div>
-            <p className="text-zinc-500 text-sm font-medium">Go online to start receiving orders</p>
-            <p className="text-zinc-600 text-xs mt-1">Toggle the switch above to get started</p>
+            <p
+              className="text-[#7A7168] text-sm font-medium"
+              style={{ fontFamily: 'var(--font-lora), serif' }}
+            >
+              Go online to start receiving orders
+            </p>
+            <p
+              className="text-[#7A7168]/60 text-xs mt-1"
+              style={{ fontFamily: 'var(--font-lora), serif' }}
+            >
+              Toggle the switch above to begin
+            </p>
           </div>
         )}
 
@@ -373,19 +438,19 @@ export default function HomeScreen() {
               return (
                 <motion.div
                   key={order.id}
-                  initial={{ opacity: 0, x: 50, scale: 0.95 }}
+                  initial={{ opacity: 0, x: 30, scale: 0.97 }}
                   animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={{ opacity: 0, x: -100, scale: 0.9 }}
+                  exit={{ opacity: 0, x: -80, scale: 0.95 }}
                   transition={{
-                    duration: 0.4,
-                    delay: order.isNew ? 0.1 * index : 0,
+                    duration: 0.5,
+                    delay: order.isNew ? 0.08 * index : 0,
                     type: 'spring',
-                    stiffness: 150,
+                    stiffness: 120,
                   }}
                 >
                   <div
-                    className={`rounded-xl bg-[#141414] overflow-hidden ${
-                      order.isNew ? 'animate-green-pulse' : ''
+                    className={`rounded-xl bg-white overflow-hidden card-elegant ${
+                      order.isNew ? 'animate-navy-pulse' : ''
                     }`}
                     style={{ borderLeft: `4px solid ${config.color}` }}
                   >
@@ -394,29 +459,29 @@ export default function HomeScreen() {
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <div
-                            className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
+                            className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white border border-[#C9A96E]/20"
                             style={{ backgroundColor: config.color }}
                           >
                             {config.letter}
                           </div>
                           <span
-                            className="text-[11px] font-bold tracking-wider"
-                            style={{ color: config.color }}
+                            className="text-[11px] font-semibold tracking-[0.1em]"
+                            style={{ color: config.color, fontFamily: 'var(--font-lora), serif' }}
                           >
                             {config.name}
                           </span>
                           {order.rank && order.rank <= 3 && (
-                            <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[9px] px-1.5 py-0">
+                            <Badge className="bg-[#1B2A4A]/8 text-[#1B2A4A] border-[#1B2A4A]/15 text-[9px] px-1.5 py-0">
                               <TrendingUp className="w-2.5 h-2.5 mr-0.5" />
                               RANK #{order.rank}
                             </Badge>
                           )}
                         </div>
                         <div className={`flex items-center gap-1 ${isUrgent ? 'animate-timer-urgent' : ''}`}>
-                          <Clock className="w-3.5 h-3.5 text-zinc-500" />
+                          <Clock className="w-3.5 h-3.5 text-[#7A7168]" />
                           <span
                             className={`text-sm font-bold tabular-nums ${
-                              isUrgent ? 'text-red-500' : timeLeft <= 15 ? 'text-amber-400' : 'text-zinc-400'
+                              isUrgent ? 'text-[#722F37]' : timeLeft <= 15 ? 'text-[#8B5E3C]' : 'text-[#7A7168]'
                             }`}
                           >
                             {timeLeft}s
@@ -425,21 +490,39 @@ export default function HomeScreen() {
                       </div>
 
                       {/* Restaurant + Distance */}
-                      <h3 className="text-white font-bold text-base mb-1">
+                      <h3
+                        className="text-[#2C2C2C] font-bold text-base mb-1"
+                        style={{ fontFamily: 'var(--font-playfair), serif' }}
+                      >
                         {order.restaurant}{' '}
-                        <span className="text-zinc-500 font-normal text-sm">— {order.distance} km</span>
+                        <span
+                          className="text-[#7A7168] font-normal text-sm"
+                          style={{ fontFamily: 'var(--font-lora), serif' }}
+                        >
+                          — {order.distance} km
+                        </span>
                       </h3>
 
                       {/* Pickup / Drop */}
                       <div className="flex items-start gap-2 mb-3">
                         <div className="flex flex-col items-center mt-0.5">
-                          <div className="w-2 h-2 rounded-full bg-green-500" />
-                          <div className="w-px h-4 bg-zinc-700" />
-                          <div className="w-2 h-2 rounded-full bg-amber-500" />
+                          <div className="w-2 h-2 rounded-full bg-[#2C4A3E]" />
+                          <div className="w-px h-4 bg-[#D5CBBF]" />
+                          <div className="w-2 h-2 rounded-full bg-[#C9A96E]" />
                         </div>
                         <div className="space-y-1.5">
-                          <p className="text-xs text-zinc-400">{order.pickup}</p>
-                          <p className="text-xs text-zinc-400">{order.drop}</p>
+                          <p
+                            className="text-xs text-[#7A7168]"
+                            style={{ fontFamily: 'var(--font-lora), serif' }}
+                          >
+                            {order.pickup}
+                          </p>
+                          <p
+                            className="text-xs text-[#7A7168]"
+                            style={{ fontFamily: 'var(--font-lora), serif' }}
+                          >
+                            {order.drop}
+                          </p>
                         </div>
                       </div>
 
@@ -447,26 +530,38 @@ export default function HomeScreen() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                           <div>
-                            <p className="text-2xl font-black text-green-400">₹{order.earnings}</p>
+                            <p
+                              className="text-2xl font-bold text-[#1B2A4A]"
+                              style={{ fontFamily: 'var(--font-playfair), serif' }}
+                            >
+                              ₹{order.earnings}
+                            </p>
                           </div>
-                          <div className="flex items-center gap-1 text-zinc-500">
+                          <div className="flex items-center gap-1 text-[#7A7168]">
                             <Clock className="w-3 h-3" />
-                            <span className="text-xs">{order.estimatedTime} min</span>
+                            <span
+                              className="text-xs"
+                              style={{ fontFamily: 'var(--font-lora), serif' }}
+                            >
+                              {order.estimatedTime} min
+                            </span>
                           </div>
                         </div>
 
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleDecline(order.id)}
-                            className="px-3 py-2 text-xs text-zinc-500 hover:text-red-400 transition-colors"
+                            className="px-3 py-2 text-xs text-[#7A7168] hover:text-[#722F37] transition-colors duration-200"
+                            style={{ fontFamily: 'var(--font-lora), serif' }}
                           >
                             Decline
                           </button>
                           <motion.button
                             onClick={() => handleAccept(order.id)}
-                            whileTap={{ scale: 0.9 }}
+                            whileTap={{ scale: 0.93 }}
                             whileHover={{ scale: 1.02 }}
-                            className="px-5 py-2.5 bg-green-500 hover:bg-green-400 rounded-lg text-sm font-bold text-white shadow-lg shadow-green-500/25 active:shadow-green-500/50 transition-all"
+                            className="px-5 py-2.5 bg-[#1B2A4A] hover:bg-[#2A3F6A] rounded-lg text-sm font-semibold text-[#FAF7F2] shadow-sm transition-all duration-200"
+                            style={{ fontFamily: 'var(--font-lora), serif' }}
                           >
                             ACCEPT
                           </motion.button>
@@ -482,13 +577,16 @@ export default function HomeScreen() {
         {/* Accepted Orders Summary */}
         {acceptedOrders.size > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-green-500/10 border border-green-500/20 rounded-xl p-3"
+            className="bg-[#2C4A3E]/8 border border-[#2C4A3E]/15 rounded-xl p-3"
           >
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-green-400" />
-              <span className="text-sm font-semibold text-green-400">
+              <CheckCircle2 className="w-5 h-5 text-[#2C4A3E]" />
+              <span
+                className="text-sm font-semibold text-[#2C4A3E]"
+                style={{ fontFamily: 'var(--font-lora), serif' }}
+              >
                 {acceptedOrders.size} order{acceptedOrders.size > 1 ? 's' : ''} accepted
               </span>
             </div>
@@ -500,7 +598,7 @@ export default function HomeScreen() {
       <div className="fixed bottom-20 left-0 right-0 max-w-lg mx-auto px-4 z-30">
         <motion.div
           layout
-          className="bg-[#141414] border border-[#222222] rounded-xl overflow-hidden"
+          className="bg-white border border-[#D5CBBF] rounded-xl overflow-hidden card-elegant"
         >
           <button
             onClick={() => setShowStats(!showStats)}
@@ -508,22 +606,52 @@ export default function HomeScreen() {
           >
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1.5">
-                <span className="text-green-400 font-bold text-sm">₹1,247</span>
-                <span className="text-[10px] text-zinc-600">earned</span>
+                <span
+                  className="text-[#1B2A4A] font-bold text-sm"
+                  style={{ fontFamily: 'var(--font-playfair), serif' }}
+                >
+                  ₹1,247
+                </span>
+                <span
+                  className="text-[10px] text-[#7A7168] tracking-wider uppercase"
+                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                >
+                  earned
+                </span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="text-white font-bold text-sm">8</span>
-                <span className="text-[10px] text-zinc-600">orders</span>
+                <span
+                  className="text-[#2C2C2C] font-bold text-sm"
+                  style={{ fontFamily: 'var(--font-playfair), serif' }}
+                >
+                  8
+                </span>
+                <span
+                  className="text-[10px] text-[#7A7168] tracking-wider uppercase"
+                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                >
+                  orders
+                </span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="text-white font-bold text-sm">4h 23m</span>
-                <span className="text-[10px] text-zinc-600">online</span>
+                <span
+                  className="text-[#2C2C2C] font-bold text-sm"
+                  style={{ fontFamily: 'var(--font-playfair), serif' }}
+                >
+                  4h 23m
+                </span>
+                <span
+                  className="text-[10px] text-[#7A7168] tracking-wider uppercase"
+                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                >
+                  online
+                </span>
               </div>
             </div>
             {showStats ? (
-              <ChevronDown className="w-4 h-4 text-zinc-500" />
+              <ChevronDown className="w-4 h-4 text-[#7A7168]" />
             ) : (
-              <ChevronUp className="w-4 h-4 text-zinc-500" />
+              <ChevronUp className="w-4 h-4 text-[#7A7168]" />
             )}
           </button>
 
@@ -536,25 +664,45 @@ export default function HomeScreen() {
                 transition={{ duration: 0.3 }}
                 className="overflow-hidden"
               >
-                <div className="px-4 pb-3 space-y-2 border-t border-[#222222] pt-3">
+                <div className="px-4 pb-3 space-y-2 border-t border-[#D5CBBF] pt-3">
                   <div className="flex justify-between text-xs">
-                    <span className="text-zinc-500">Acceptance Rate</span>
-                    <span className="text-green-400 font-semibold">87%</span>
+                    <span
+                      className="text-[#7A7168]"
+                      style={{ fontFamily: 'var(--font-lora), serif' }}
+                    >
+                      Acceptance Rate
+                    </span>
+                    <span
+                      className="text-[#2C4A3E] font-semibold"
+                      style={{ fontFamily: 'var(--font-lora), serif' }}
+                    >
+                      87%
+                    </span>
                   </div>
-                  <div className="w-full bg-zinc-800 rounded-full h-1.5">
-                    <div className="bg-green-500 h-1.5 rounded-full" style={{ width: '87%' }} />
+                  <div className="w-full bg-[#F0EBE4] rounded-full h-1.5">
+                    <div className="bg-[#2C4A3E] h-1.5 rounded-full" style={{ width: '87%' }} />
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-zinc-500">Avg. Delivery Time</span>
-                    <span className="text-white font-semibold">18 min</span>
+                    <span className="text-[#7A7168]" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                      Avg. Delivery Time
+                    </span>
+                    <span className="text-[#2C2C2C] font-semibold" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                      18 min
+                    </span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-zinc-500">Peak Earnings Today</span>
-                    <span className="text-amber-400 font-semibold">₹320 (12pm-1pm)</span>
+                    <span className="text-[#7A7168]" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                      Peak Earnings Today
+                    </span>
+                    <span className="text-[#8B5E3C] font-semibold" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                      ₹320 (12pm-1pm)
+                    </span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-zinc-500">This Week Trend</span>
-                    <span className="text-green-400 font-semibold flex items-center gap-0.5">
+                    <span className="text-[#7A7168]" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                      This Week Trend
+                    </span>
+                    <span className="text-[#2C4A3E] font-semibold flex items-center gap-0.5" style={{ fontFamily: 'var(--font-lora), serif' }}>
                       <TrendingUp className="w-3 h-3" /> +12%
                     </span>
                   </div>

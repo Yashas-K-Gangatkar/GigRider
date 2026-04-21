@@ -40,7 +40,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] relative max-w-lg mx-auto">
+    <div className="min-h-screen bg-[#FAF7F2] relative max-w-lg mx-auto">
       {/* Splash Screen */}
       <AnimatePresence>
         {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
@@ -51,16 +51,16 @@ export default function Home() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.6 }}
         >
           {/* Screen Content */}
           <AnimatePresence mode="wait">
             <motion.div
               key={activeScreen}
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.25, ease: 'easeInOut' }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
             >
               {renderScreen()}
             </motion.div>
