@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+html { background: #FAF7F2; }
+body {
+  width: 720pt; height: 405pt; margin: 0; padding: 0;
+  font-family: Georgia, serif;
+  display: flex; flex-direction: column;
+  background: #FAF7F2;
+  color: #2C2C2C;
+}
+.header {
+  background-image: url('gold-bar.png'); background-size: 100% 3pt; background-repeat: no-repeat; background-position: bottom;
+  padding: 20pt 40pt 14pt 40pt;
+}
+.accent-bar { width: 40pt; height: 2pt; background: #C9A96E; margin-bottom: 8pt; }
+.content { padding: 16pt 40pt 20pt 40pt; display: flex; gap: 24pt; flex: 1; }
+.left { flex: 1; }
+.right { flex: 1; }
+.stat-card { background: #FFFFFF; border: 1pt solid #D5CBBF; border-radius: 6pt; padding: 12pt 16pt; margin-bottom: 10pt; }
+.stat-num { font-size: 22pt; font-weight: bold; color: #1B2A4A; margin: 0; }
+.stat-label { font-size: 8pt; color: #7A7168; letter-spacing: 2pt; text-transform: uppercase; margin: 2pt 0 0 0; }
+.problem-card { background: #722F37; border-radius: 6pt; padding: 14pt 16pt; margin-bottom: 8pt; }
+.problem-card p { color: #FAF7F2; margin: 0; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="accent-bar"></div>
+  <h1 style="font-size: 22pt; color: #1B2A4A; margin: 0;">The Problem</h1>
+  <p style="font-size: 9pt; color: #7A7168; letter-spacing: 2pt; margin: 4pt 0 0 0;">WHY DELIVERY RIDERS ARE STRUGGLING</p>
+</div>
+<div class="content">
+  <div class="left">
+    <div class="problem-card">
+      <p style="font-size: 11pt; font-weight: bold;">5+ Apps, 1 Rider</p>
+      <p style="font-size: 8pt; margin-top: 4pt;">Riders juggle multiple phones and apps simultaneously, missing orders and losing earnings</p>
+    </div>
+    <div class="problem-card">
+      <p style="font-size: 11pt; font-weight: bold;">Missed Orders = Lost Income</p>
+      <p style="font-size: 8pt; margin-top: 4pt;">Average rider misses 8-12 orders per day due to app switching delays</p>
+    </div>
+    <div class="problem-card">
+      <p style="font-size: 11pt; font-weight: bold;">Zero Decision Support</p>
+      <p style="font-size: 8pt; margin-top: 4pt;">No intelligence on which order pays best, which route stacks, or when peak hours hit</p>
+    </div>
+  </div>
+  <div class="right">
+    <div class="stat-card">
+      <p class="stat-num">5M+</p>
+      <p class="stat-label">Delivery Riders in India</p>
+    </div>
+    <div class="stat-card">
+      <p class="stat-num">40%</p>
+      <p class="stat-label">Income Lost to App Switching</p>
+    </div>
+    <div class="stat-card">
+      <p class="stat-num">$12B</p>
+      <p class="stat-label">Gig Economy Market by 2028</p>
+    </div>
+    <div class="stat-card">
+      <p class="stat-num">78%</p>
+      <p class="stat-label">Riders Use 3+ Platforms</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>
