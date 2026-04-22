@@ -73,12 +73,13 @@ export default function ActivityScreen() {
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [swipedId, setSwipedId] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [currentTime, setCurrentTime] = useState(Date.now());
+  const [currentTime, setCurrentTime] = useState(0);
 
   const deliveryHistory = useGigRiderStore(s => s.deliveryHistory);
 
-  // Live clock for session timer display
+  // Live clock for session timer display - initialize on client only to avoid hydration mismatch
   useEffect(() => {
+    setCurrentTime(Date.now());
     const interval = setInterval(() => setCurrentTime(Date.now()), 60000);
     return () => clearInterval(interval);
   }, []);
@@ -173,84 +174,109 @@ export default function ActivityScreen() {
     }
   };
 
-  // Refresh handler
+  // Refresh handler with visual feedback
   const handleRefresh = () => {
     setIsRefreshing(true);
     setTimeout(() => setIsRefreshing(false), 1200);
   };
 
+  // Pull-to-refresh animation progress
+  const [pullProgress, setPullProgress] = useState(0);
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.currentTarget;
+    if (target.scrollTop === 0) {
+      setPullProgress(1);
+    } else {
+      setPullProgress(0);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#FAF7F2] pb-24">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-[#FAF7F2]/90 backdrop-blur-xl border-b border-[#D5CBBF] px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h1
-              className="text-lg font-bold text-[#1B2A4A] tracking-wide"
-              style={{ fontFamily: 'var(--font-playfair), serif' }}
-            >
-              Activity
-            </h1>
-            <motion.button
-              onClick={handleRefresh}
-              whileTap={{ scale: 0.85, rotate: 180 }}
-              className="p-1"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 text-[#7A7168] ${isRefreshing ? 'animate-spin' : ''}`} />
-            </motion.button>
-          </div>
-          <div className="flex items-center gap-2">
-            {/* Sort Button */}
-            <div className="relative">
+      <div className="sticky top-0 z-40 bg-[#FAF7F2]/90 backdrop-blur-xl border-b border-[#D5CBBF]">
+        {/* Refresh progress bar */}
+        <AnimatePresence>
+          {isRefreshing && (
+            <motion.div
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: 1 }}
+              exit={{ scaleX: 0, opacity: 0 }}
+              transition={{ duration: 1, ease: 'easeInOut' }}
+              className="h-0.5 bg-gradient-to-r from-[#1B2A4A] via-[#C9A96E] to-[#1B2A4A] origin-left"
+            />
+          )}
+        </AnimatePresence>
+        <div className="px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <h1
+                className="text-lg font-bold text-[#1B2A4A] tracking-wide"
+                style={{ fontFamily: 'var(--font-playfair), serif' }}
+              >
+                Activity
+              </h1>
+              <motion.button
+                onClick={handleRefresh}
+                whileTap={{ scale: 0.85, rotate: 180 }}
+                className="p-1"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 text-[#7A7168] ${isRefreshing ? 'animate-spin' : ''}`} />
+              </motion.button>
+            </div>
+            <div className="flex items-center gap-2">
+              {/* Sort Button */}
+              <div className="relative">
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowSortMenu(!showSortMenu)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold transition-all duration-200 ${
+                    sortMode !== 'newest'
+                      ? 'bg-[#1B2A4A] text-[#FAF7F2]'
+                      : 'bg-[#1B2A4A]/5 text-[#1B2A4A]'
+                  }`}
+                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                >
+                  <ArrowUpDown className="w-3.5 h-3.5" />
+                  {sortLabels[sortMode]}
+                </motion.button>
+                <AnimatePresence>
+                  {showSortMenu && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 top-full mt-1 bg-white border border-[#D5CBBF] rounded-xl shadow-lg overflow-hidden z-50 min-w-[160px]"
+                    >
+                      {(Object.keys(sortLabels) as SortMode[]).map((mode) => (
+                        <button
+                          key={mode}
+                          onClick={() => { setSortMode(mode); setShowSortMenu(false); }}
+                          className={`w-full text-left px-4 py-2.5 text-xs transition-colors ${
+                            sortMode === mode
+                              ? 'bg-[#1B2A4A]/5 text-[#1B2A4A] font-semibold'
+                              : 'text-[#7A7168] hover:bg-[#F5F0EB]'
+                          }`}
+                          style={{ fontFamily: 'var(--font-lora), serif' }}
+                        >
+                          {sortLabels[mode]}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+              {/* Export Button */}
               <motion.button
                 whileTap={{ scale: 0.95 }}
-                onClick={() => setShowSortMenu(!showSortMenu)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold transition-all duration-200 ${
-                  sortMode !== 'newest'
-                    ? 'bg-[#1B2A4A] text-[#FAF7F2]'
-                    : 'bg-[#1B2A4A]/5 text-[#1B2A4A]'
-                }`}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1B2A4A]/5 rounded-lg text-[10px] font-semibold text-[#1B2A4A]"
                 style={{ fontFamily: 'var(--font-lora), serif' }}
               >
-                <ArrowUpDown className="w-3.5 h-3.5" />
-                {sortLabels[sortMode]}
+                <Download className="w-3.5 h-3.5" />
+                Export
               </motion.button>
-              <AnimatePresence>
-                {showSortMenu && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -8, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -8, scale: 0.95 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-full mt-1 bg-white border border-[#D5CBBF] rounded-xl shadow-lg overflow-hidden z-50 min-w-[160px]"
-                  >
-                    {(Object.keys(sortLabels) as SortMode[]).map((mode) => (
-                      <button
-                        key={mode}
-                        onClick={() => { setSortMode(mode); setShowSortMenu(false); }}
-                        className={`w-full text-left px-4 py-2.5 text-xs transition-colors ${
-                          sortMode === mode
-                            ? 'bg-[#1B2A4A]/5 text-[#1B2A4A] font-semibold'
-                            : 'text-[#7A7168] hover:bg-[#F5F0EB]'
-                        }`}
-                        style={{ fontFamily: 'var(--font-lora), serif' }}
-                      >
-                        {sortLabels[mode]}
-                      </button>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
             </div>
-            {/* Export Button */}
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1B2A4A]/5 rounded-lg text-[10px] font-semibold text-[#1B2A4A]"
-              style={{ fontFamily: 'var(--font-lora), serif' }}
-            >
-              <Download className="w-3.5 h-3.5" />
-              Export
-            </motion.button>
           </div>
         </div>
       </div>
@@ -273,7 +299,7 @@ export default function ActivityScreen() {
               className="text-[10px] text-[#C9A96E] font-semibold"
               style={{ fontFamily: 'var(--font-lora), serif' }}
             >
-              {new Date(currentTime).toLocaleDateString('en-IN', { weekday: 'long', month: 'short', day: 'numeric' })}
+              {currentTime > 0 ? new Date(currentTime).toLocaleDateString('en-IN', { weekday: 'long', month: 'short', day: 'numeric' }) : ''}
             </span>
           </div>
           <div className="grid grid-cols-2 gap-2.5">

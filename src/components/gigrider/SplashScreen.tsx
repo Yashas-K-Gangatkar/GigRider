@@ -12,6 +12,22 @@ const TAGLINES = [
   'Better Tips.',
 ];
 
+// Deterministic particle offsets to avoid hydration mismatch (no Math.random)
+const PARTICLE_OFFSETS = [
+  { x: -120, y: 180, duration: 4.5 },
+  { x: 85, y: -140, duration: 5.2 },
+  { x: -60, y: 320, duration: 6.0 },
+  { x: 190, y: -80, duration: 4.8 },
+  { x: -150, y: -220, duration: 5.5 },
+  { x: 40, y: 280, duration: 6.3 },
+  { x: -100, y: -160, duration: 4.2 },
+  { x: 160, y: 120, duration: 5.8 },
+  { x: -80, y: -300, duration: 6.5 },
+  { x: 120, y: 200, duration: 4.9 },
+  { x: -190, y: -60, duration: 5.1 },
+  { x: 60, y: 340, duration: 6.1 },
+];
+
 interface SplashScreenProps {
   onComplete: () => void;
 }
@@ -75,15 +91,15 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
           }}
         />
 
-        {/* Animated particle field - floating gold dots */}
+        {/* Animated particle field - floating gold dots (deterministic for SSR) */}
         <div className="absolute inset-0 pointer-events-none">
-          {Array.from({ length: 12 }).map((_, i) => (
+          {PARTICLE_OFFSETS.map((particle, i) => (
             <motion.div
               key={i}
               initial={{
                 opacity: 0,
-                x: Math.random() * 400 - 200,
-                y: Math.random() * 800 - 400,
+                x: particle.x,
+                y: particle.y,
               }}
               animate={{
                 opacity: [0, 0.15, 0.15, 0],
@@ -91,7 +107,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
                 scale: [0.5, 1, 0.5],
               }}
               transition={{
-                duration: 4 + Math.random() * 3,
+                duration: particle.duration,
                 delay: 0.5 + i * 0.3,
                 repeat: Infinity,
                 repeatDelay: 1,
