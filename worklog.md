@@ -107,3 +107,21 @@ Work Log:
 Stage Summary:
 - Build passes successfully
 - All 6 improvement items completed
+
+---
+Task ID: 7
+Agent: Main Agent
+Task: Fix ActivityScreen runtime ReferenceError: Can't find variable: serif
+
+Work Log:
+- Identified bug: 5 occurrences of `style={{ fontFamily: 'var(--font-lora)', serif }}` where `serif` was a bare JavaScript identifier instead of part of the CSS font-family string
+- The pattern `fontFamily: 'var(--font-lora)', serif` creates an object with two properties: `fontFamily: 'var(--font-lora)'` and `serif: undefined` (variable reference)
+- Fixed all 5 instances to `fontFamily: 'var(--font-lora), serif'` (serif as part of the CSS string value)
+- Lines fixed: 736, 741, 746, 751, 757 in ActivityScreen.tsx (expanded detail section)
+- Searched entire codebase for similar pattern - no other occurrences found
+- Verified build passes successfully
+
+Stage Summary:
+- Runtime ReferenceError fixed by correcting CSS font-family syntax in style objects
+- All 5 expanded delivery detail labels (Pickup, Drop-off, Duration, Platform, Tip) now use correct font-family string
+- File modified: `/home/z/my-project/src/components/gigrider/ActivityScreen.tsx`

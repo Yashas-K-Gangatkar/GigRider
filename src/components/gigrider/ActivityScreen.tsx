@@ -733,28 +733,28 @@ export default function ActivityScreen() {
                                   <div className="flex items-center gap-2 text-xs">
                                     <Package className="w-3.5 h-3.5 text-[#2C4A3E]" />
                                     <span className="text-[#7A7168]" style={{ fontFamily: 'var(--font-lora), serif' }}>Pickup:</span>
-                                    <span className="text-[#2C2C2C] font-medium" style={{ fontFamily: 'var(--font-lora)', serif }}>{delivery.restaurant}</span>
+                                    <span className="text-[#2C2C2C] font-medium" style={{ fontFamily: 'var(--font-lora), serif' }}>{delivery.restaurant}</span>
                                   </div>
                                   <div className="flex items-center gap-2 text-xs">
                                     <MapPin className="w-3.5 h-3.5 text-[#C9A96E]" />
                                     <span className="text-[#7A7168]" style={{ fontFamily: 'var(--font-lora), serif' }}>Drop-off:</span>
-                                    <span className="text-[#2C2C2C] font-medium" style={{ fontFamily: 'var(--font-lora)', serif }}>{delivery.customer}</span>
+                                    <span className="text-[#2C2C2C] font-medium" style={{ fontFamily: 'var(--font-lora), serif' }}>{delivery.customer}</span>
                                   </div>
                                   <div className="flex items-center gap-2 text-xs">
                                     <Clock className="w-3.5 h-3.5 text-[#7A7168]" />
                                     <span className="text-[#7A7168]" style={{ fontFamily: 'var(--font-lora), serif' }}>Duration:</span>
-                                    <span className="text-[#2C2C2C] font-medium" style={{ fontFamily: 'var(--font-lora)', serif }}>{delivery.duration} min</span>
+                                    <span className="text-[#2C2C2C] font-medium" style={{ fontFamily: 'var(--font-lora), serif' }}>{delivery.duration} min</span>
                                   </div>
                                   <div className="flex items-center gap-2 text-xs">
                                     <Bike className="w-3.5 h-3.5 text-[#1B2A4A]" />
                                     <span className="text-[#7A7168]" style={{ fontFamily: 'var(--font-lora), serif' }}>Platform:</span>
-                                    <span className="text-[#2C2C2C] font-medium" style={{ fontFamily: 'var(--font-lora)', serif }}>{config?.displayName || delivery.platform}</span>
+                                    <span className="text-[#2C2C2C] font-medium" style={{ fontFamily: 'var(--font-lora), serif' }}>{config?.displayName || delivery.platform}</span>
                                   </div>
                                   {delivery.tip && (
                                     <div className="flex items-center gap-2 text-xs">
                                       <Star className="w-3.5 h-3.5 text-[#C9A96E]" />
                                       <span className="text-[#7A7168]" style={{ fontFamily: 'var(--font-lora), serif' }}>Tip:</span>
-                                      <span className="text-[#8B5E3C] font-bold" style={{ fontFamily: 'var(--font-lora)', serif }}>₹{delivery.tip}</span>
+                                      <span className="text-[#8B5E3C] font-bold" style={{ fontFamily: 'var(--font-lora), serif' }}>₹{delivery.tip}</span>
                                     </div>
                                   )}
 
