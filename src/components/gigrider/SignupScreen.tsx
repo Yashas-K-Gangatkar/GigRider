@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { User, Phone, ArrowRight, ChevronLeft, CheckCircle2, Shield, Star } from 'lucide-react';
 
@@ -22,6 +22,17 @@ export default function SignupScreen({ onSignup, onGoToLogin }: SignupScreenProp
   const [vehicleType, setVehicleType] = useState<'bicycle' | 'scooter' | 'motorcycle' | 'car'>('scooter');
   const [isLoading, setIsLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [vehiclePulse, setVehiclePulse] = useState<string | null>(null);
+
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-focus name input after entrance animation
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      nameInputRef.current?.focus();
+    }, 700);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Format phone as XXXXX XXXXX
   const formatPhone = (value: string) => {
@@ -43,6 +54,12 @@ export default function SignupScreen({ onSignup, onGoToLogin }: SignupScreenProp
     agreedToTerms,
   ].filter(Boolean).length;
 
+  const handleVehicleSelect = (id: 'bicycle' | 'scooter' | 'motorcycle' | 'car') => {
+    setVehicleType(id);
+    setVehiclePulse(id);
+    setTimeout(() => setVehiclePulse(null), 500);
+  };
+
   const handleSignup = () => {
     if (isFormValid) {
       setIsLoading(true);
@@ -55,6 +72,14 @@ export default function SignupScreen({ onSignup, onGoToLogin }: SignupScreenProp
 
   return (
     <div className="min-h-screen bg-[#FAF7F2] flex flex-col linen-texture relative">
+      {/* Gradient overlay for depth - similar to SplashScreen */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse at 50% 20%, rgba(201, 169, 110, 0.08) 0%, transparent 55%)',
+        }}
+      />
+
       {/* Decorative corners */}
       <div className="absolute top-6 left-6 w-12 h-12 border-t-2 border-l-2 border-[#C9A96E]/30" />
       <div className="absolute top-6 right-6 w-12 h-12 border-t-2 border-r-2 border-[#C9A96E]/30" />
@@ -195,6 +220,7 @@ export default function SignupScreen({ onSignup, onGoToLogin }: SignupScreenProp
                 <User className="w-4 h-4 text-[#7A7168]" />
               </div>
               <input
+                ref={nameInputRef}
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -272,7 +298,7 @@ export default function SignupScreen({ onSignup, onGoToLogin }: SignupScreenProp
             </div>
           </div>
 
-          {/* Vehicle Type - Enhanced with perks */}
+          {/* Vehicle Type - Enhanced with pulse animation */}
           <div>
             <label
               className="block text-xs text-[#7A7168] mb-1.5 tracking-[0.1em] uppercase"
@@ -284,14 +310,29 @@ export default function SignupScreen({ onSignup, onGoToLogin }: SignupScreenProp
               {VEHICLE_OPTIONS.map((vehicle) => (
                 <motion.button
                   key={vehicle.id}
-                  onClick={() => setVehicleType(vehicle.id)}
+                  onClick={() => handleVehicleSelect(vehicle.id)}
                   whileTap={{ scale: 0.95 }}
-                  className={`flex flex-col items-center gap-1 py-3 rounded-xl border transition-all duration-200 ${
+                  animate={{
+                    scale: vehiclePulse === vehicle.id ? [1, 1.1, 1] : 1,
+                  }}
+                  transition={{
+                    scale: { duration: 0.4, ease: 'easeInOut' },
+                  }}
+                  className={`flex flex-col items-center gap-1 py-3 rounded-xl border transition-all duration-200 relative ${
                     vehicleType === vehicle.id
                       ? 'bg-[#1B2A4A] border-[#1B2A4A] text-[#FAF7F2] shadow-sm'
                       : 'bg-white border-[#D5CBBF] text-[#2C2C2C] hover:border-[#1B2A4A]/30'
                   }`}
                 >
+                  {/* Pulse ring on selection */}
+                  {vehiclePulse === vehicle.id && (
+                    <motion.div
+                      initial={{ scale: 0.8, opacity: 0.5 }}
+                      animate={{ scale: 1.6, opacity: 0 }}
+                      transition={{ duration: 0.5 }}
+                      className="absolute inset-0 rounded-xl border-2 border-[#C9A96E]"
+                    />
+                  )}
                   <span className="text-lg">{vehicle.icon}</span>
                   <span
                     className="text-[9px] font-medium tracking-wider uppercase"

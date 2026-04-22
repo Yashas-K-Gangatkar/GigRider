@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
+import { Badge } from '@/components/ui/badge';
 import { useGigRiderStore, type Notification } from '@/lib/store';
 import {
   Bell,

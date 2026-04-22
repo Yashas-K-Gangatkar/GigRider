@@ -10,6 +10,16 @@ interface OTPScreenProps {
   onBack: () => void;
 }
 
+// Deterministic confetti particle directions (avoid Math.random for SSR)
+const CONFETTI_PARTICLES = [
+  { x: -40, y: -50, delay: 0 },
+  { x: 35, y: -55, delay: 0.05 },
+  { x: -55, y: -20, delay: 0.1 },
+  { x: 50, y: -25, delay: 0.08 },
+  { x: -20, y: -60, delay: 0.12 },
+  { x: 25, y: -65, delay: 0.03 },
+];
+
 export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps) {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -18,6 +28,8 @@ export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps)
   const [countdown, setCountdown] = useState(30);
   const [canResend, setCanResend] = useState(false);
   const [shakeError, setShakeError] = useState(false);
+  const [countdownNumber, setCountdownNumber] = useState<number | null>(null);
+  const [showConfetti, setShowConfetti] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // Auto-focus first input on mount
@@ -40,6 +52,16 @@ export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps)
     return () => clearTimeout(timer);
   }, [countdown]);
 
+  // Ref to hold countdown timers for cleanup
+  const countdownTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  // Cleanup countdown timers on unmount
+  useEffect(() => {
+    return () => {
+      countdownTimersRef.current.forEach(clearTimeout);
+    };
+  }, []);
+
   const handleVerify = useCallback((otpValue: string) => {
     if (isVerifying || isVerified) return;
     setIsVerifying(true);
@@ -49,11 +71,17 @@ export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps)
     setTimeout(() => {
       setIsVerifying(false);
       setIsVerified(true);
+      setShowConfetti(true);
 
-      // Auto-navigate after success animation
-      setTimeout(() => {
+      // Start 3, 2, 1 countdown then navigate
+      setCountdownNumber(3);
+      const t1 = setTimeout(() => setCountdownNumber(2), 1000);
+      const t2 = setTimeout(() => setCountdownNumber(1), 2000);
+      const t3 = setTimeout(() => {
+        setCountdownNumber(null);
         onVerified();
-      }, 1500);
+      }, 3000);
+      countdownTimersRef.current = [t1, t2, t3];
     }, 1500);
   }, [isVerifying, isVerified, onVerified]);
 
@@ -116,11 +144,19 @@ export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps)
 
   return (
     <div className="min-h-screen bg-[#FAF7F2] flex flex-col linen-texture relative">
+      {/* Gradient overlay for depth */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse at 50% 30%, rgba(201, 169, 110, 0.06) 0%, transparent 55%)',
+        }}
+      />
+
       {/* Decorative corners */}
       <div className="absolute top-6 left-6 w-12 h-12 border-t-2 border-l-2 border-[#C9A96E]/30" />
       <div className="absolute top-6 right-6 w-12 h-12 border-t-2 border-r-2 border-[#C9A96E]/30" />
 
-      <div className="flex-1 flex flex-col justify-center px-8 max-w-md mx-auto w-full">
+      <div className="flex-1 flex flex-col justify-center px-8 max-w-md mx-auto w-full relative z-10">
         {/* Shield Icon - Animated */}
         <motion.div
           initial={{ scale: 0.5, opacity: 0 }}
@@ -131,7 +167,7 @@ export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps)
           <motion.div
             animate={isVerified ? { scale: [1, 1.1, 1] } : {}}
             transition={{ duration: 0.5 }}
-            className={`w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center border-2 transition-all duration-500 ${
+            className={`w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center border-2 transition-all duration-500 relative ${
               isVerified
                 ? 'bg-[#2C4A3E]/10 border-[#2C4A3E]/30'
                 : 'bg-[#1B2A4A]/5 border-[#1B2A4A]/20'
@@ -142,8 +178,29 @@ export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps)
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+                className="relative"
               >
                 <CheckCircle2 className="w-10 h-10 text-[#2C4A3E]" />
+
+                {/* Success confetti - gold dots animate outward */}
+                {showConfetti && CONFETTI_PARTICLES.map((particle, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ x: 0, y: 0, scale: 1, opacity: 1 }}
+                    animate={{
+                      x: particle.x,
+                      y: particle.y,
+                      scale: [1, 0.3],
+                      opacity: [1, 0],
+                    }}
+                    transition={{
+                      duration: 0.8,
+                      delay: particle.delay,
+                      ease: 'easeOut',
+                    }}
+                    className="absolute top-1/2 left-1/2 w-2 h-2 rounded-full bg-[#C9A96E]"
+                  />
+                ))}
               </motion.div>
             ) : (
               <Shield className="w-10 h-10 text-[#1B2A4A]" />
@@ -368,6 +425,26 @@ export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps)
               >
                 Welcome to GigRider
               </p>
+
+              {/* Countdown display */}
+              <div className="h-8 flex items-center justify-center">
+                <AnimatePresence mode="wait">
+                  {countdownNumber !== null && (
+                    <motion.span
+                      key={countdownNumber}
+                      initial={{ scale: 0.5, opacity: 0, y: 10 }}
+                      animate={{ scale: 1, opacity: 1, y: 0 }}
+                      exit={{ scale: 1.5, opacity: 0, y: -10 }}
+                      transition={{ duration: 0.4, ease: 'easeOut' }}
+                      className="text-2xl font-bold text-[#C9A96E]"
+                      style={{ fontFamily: 'var(--font-playfair), serif' }}
+                    >
+                      {countdownNumber}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </div>
+
               <p
                 className="text-xs text-[#7A7168]"
                 style={{ fontFamily: 'var(--font-lora), serif' }}

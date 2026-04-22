@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
@@ -17,6 +17,7 @@ import {
   Route,
   Globe,
   ChevronRight,
+  ChevronDown,
   Star,
   Loader2,
   Sparkles,
@@ -35,6 +36,9 @@ import {
   Timer,
   Award,
   Flame,
+  Copy,
+  Lightbulb,
+  Trophy,
 } from 'lucide-react';
 
 export default function PlatformsScreen() {
@@ -56,6 +60,10 @@ export default function PlatformsScreen() {
   const [connectingProgress, setConnectingProgress] = useState(0);
   const [confirmDisconnect, setConfirmDisconnect] = useState<string | null>(null);
   const [expandedPlatform, setExpandedPlatform] = useState<string | null>(null);
+  const [expandedShift, setExpandedShift] = useState<number | null>(null);
+  const [editingShiftIndex, setEditingShiftIndex] = useState<number | null>(null);
+  const [editStartTime, setEditStartTime] = useState('');
+  const [editEndTime, setEditEndTime] = useState('');
 
   // Derive available platforms (not connected yet)
   const availablePlatforms = useMemo(() => {
@@ -125,6 +133,76 @@ export default function PlatformsScreen() {
   const totalTodayOrders = connectedPlatforms.reduce((sum, p) => sum + p.todayOrders, 0);
   const maxEarnings = Math.max(...connectedPlatforms.map(p => p.todayEarnings), 1);
 
+  // Quick Stats calculations
+  const avgRating = useMemo(() => {
+    const rated = connectedPlatforms.filter(p => p.rating > 0);
+    if (rated.length === 0) return '0.0';
+    return (rated.reduce((sum, p) => sum + p.rating, 0) / rated.length).toFixed(1);
+  }, [connectedPlatforms]);
+
+  // Platform Performance calculations
+  const { bestPlatform, worstPlatform } = useMemo(() => {
+    if (connectedPlatforms.length === 0) return { bestPlatform: null, worstPlatform: null };
+    const sorted = [...connectedPlatforms].sort((a, b) => b.todayEarnings - a.todayEarnings);
+    return {
+      bestPlatform: sorted[0],
+      worstPlatform: sorted[sorted.length - 1],
+    };
+  }, [connectedPlatforms]);
+
+  // Shift Scheduler helpers
+  const handleExpandShift = useCallback((index: number) => {
+    if (expandedShift === index) {
+      setExpandedShift(null);
+      setEditingShiftIndex(null);
+    } else {
+      setExpandedShift(index);
+      const shift = shifts[index];
+      if (shift.active && shift.time !== 'Not scheduled') {
+        const parts = shift.time.split(' - ');
+        setEditStartTime(parts[0] || '');
+        setEditEndTime(parts[1] || '');
+      } else {
+        setEditStartTime('9:00 AM');
+        setEditEndTime('9:00 PM');
+      }
+    }
+  }, [expandedShift, shifts]);
+
+  const handleSaveShiftTime = useCallback((index: number) => {
+    const newTime = `${editStartTime} - ${editEndTime}`;
+    updateShift(index, { active: true, time: newTime });
+    setEditingShiftIndex(null);
+  }, [editStartTime, editEndTime, updateShift]);
+
+  const handleCopyToAll = useCallback(() => {
+    const firstActiveShift = shifts.find(s => s.active);
+    if (!firstActiveShift) return;
+    shifts.forEach((shift, index) => {
+      if (!shift.active) {
+        updateShift(index, { active: true, time: firstActiveShift.time });
+      }
+    });
+  }, [shifts, updateShift]);
+
+  // Parse shift time to get a numeric position for the timeline bar (0-24 hours)
+  const parseTimeToHours = (timeStr: string): { start: number; end: number } | null => {
+    if (timeStr === 'Not scheduled') return null;
+    const parts = timeStr.split(' - ');
+    if (parts.length !== 2) return null;
+    const parsePart = (p: string): number => {
+      const match = p.trim().match(/(\d+):(\d+)\s*(AM|PM)/i);
+      if (!match) return 0;
+      let hours = parseInt(match[1]);
+      const minutes = parseInt(match[2]);
+      const ampm = match[3].toUpperCase();
+      if (ampm === 'PM' && hours !== 12) hours += 12;
+      if (ampm === 'AM' && hours === 12) hours = 0;
+      return hours + minutes / 60;
+    };
+    return { start: parsePart(parts[0]), end: parsePart(parts[1]) };
+  };
+
   // Platform health score (simulated)
   const getPlatformHealth = (p: typeof connectedPlatforms[0]) => {
     if (!p.isOnline) return { score: 0, label: 'Offline', color: 'text-[#7A7168]', bg: 'bg-[#E8E0D4]' };
@@ -133,6 +211,11 @@ export default function PlatformsScreen() {
     if (p.todayOrders >= 1) return { score: 50, label: 'Fair', color: 'text-[#8B5E3C]', bg: 'bg-[#8B5E3C]/10' };
     return { score: 25, label: 'Slow', color: 'text-[#7A7168]', bg: 'bg-[#F0EBE4]' };
   };
+
+  // Week day labels for timeline
+  const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const currentDayIndex = new Date().getDay(); // 0=Sun
+  const adjustedDayIndex = currentDayIndex === 0 ? 6 : currentDayIndex - 1; // Convert to Mon=0
 
   return (
     <div className="min-h-screen bg-[#FAF7F2] pb-24">
@@ -169,6 +252,77 @@ export default function PlatformsScreen() {
       </div>
 
       <div className="px-4 pt-4 space-y-5">
+        {/* Quick Stats Row - Horizontally scrollable pills */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex gap-3 overflow-x-auto pb-1 scrollbar-thin"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {/* Avg. Rating Pill */}
+          <div className="flex-shrink-0 flex items-center gap-2.5 px-4 py-2.5 bg-[#FAF7F2] rounded-full border border-[#C9A96E]/30 shadow-sm">
+            <div className="w-7 h-7 rounded-full bg-[#C9A96E]/10 flex items-center justify-center">
+              <Star className="w-3.5 h-3.5 text-[#C9A96E] fill-[#C9A96E]" />
+            </div>
+            <div>
+              <p
+                className="text-[9px] text-[#7A7168] tracking-wider uppercase font-semibold"
+                style={{ fontFamily: 'var(--font-lora), serif' }}
+              >
+                Avg. Rating
+              </p>
+              <p
+                className="text-sm font-bold text-[#1B2A4A] leading-tight"
+                style={{ fontFamily: 'var(--font-playfair), serif' }}
+              >
+                {avgRating}
+              </p>
+            </div>
+          </div>
+
+          {/* Best Hour Pill */}
+          <div className="flex-shrink-0 flex items-center gap-2.5 px-4 py-2.5 bg-[#FAF7F2] rounded-full border border-[#C9A96E]/30 shadow-sm">
+            <div className="w-7 h-7 rounded-full bg-[#1B2A4A]/10 flex items-center justify-center">
+              <Clock className="w-3.5 h-3.5 text-[#1B2A4A]" />
+            </div>
+            <div>
+              <p
+                className="text-[9px] text-[#7A7168] tracking-wider uppercase font-semibold"
+                style={{ fontFamily: 'var(--font-lora), serif' }}
+              >
+                Best Hour
+              </p>
+              <p
+                className="text-sm font-bold text-[#1B2A4A] leading-tight"
+                style={{ fontFamily: 'var(--font-playfair), serif' }}
+              >
+                12-2 PM
+              </p>
+            </div>
+          </div>
+
+          {/* Accept Rate Pill */}
+          <div className="flex-shrink-0 flex items-center gap-2.5 px-4 py-2.5 bg-[#FAF7F2] rounded-full border border-[#C9A96E]/30 shadow-sm">
+            <div className="w-7 h-7 rounded-full bg-[#2C4A3E]/10 flex items-center justify-center">
+              <CheckCircle2 className="w-3.5 h-3.5 text-[#2C4A3E]" />
+            </div>
+            <div>
+              <p
+                className="text-[9px] text-[#7A7168] tracking-wider uppercase font-semibold"
+                style={{ fontFamily: 'var(--font-lora), serif' }}
+              >
+                Accept Rate
+              </p>
+              <p
+                className="text-sm font-bold text-[#1B2A4A] leading-tight"
+                style={{ fontFamily: 'var(--font-playfair), serif' }}
+              >
+                94%
+              </p>
+            </div>
+          </div>
+        </motion.div>
+
         {/* Status Summary Banner - Enhanced with gradient animation */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -440,6 +594,102 @@ export default function PlatformsScreen() {
             })}
           </div>
         </motion.div>
+
+        {/* Platform Performance Insight */}
+        {bestPlatform && worstPlatform && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="bg-white rounded-xl border border-[#C9A96E]/25 overflow-hidden card-elegant"
+            style={{ boxShadow: '0 2px 12px rgba(201, 169, 110, 0.08)' }}
+          >
+            <div className="p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-7 h-7 rounded-lg bg-[#C9A96E]/10 flex items-center justify-center">
+                  <TrendingUp className="w-3.5 h-3.5 text-[#C9A96E]" />
+                </div>
+                <h3
+                  className="text-sm font-semibold text-[#2C2C2C]"
+                  style={{ fontFamily: 'var(--font-playfair), serif' }}
+                >
+                  Platform Performance
+                </h3>
+              </div>
+
+              <div className="flex gap-3 mb-3">
+                {/* Best Performing */}
+                <div className="flex-1 p-3 bg-[#2C4A3E]/5 rounded-lg border border-[#2C4A3E]/10">
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <Trophy className="w-3 h-3 text-[#C9A96E]" />
+                    <span
+                      className="text-[9px] font-semibold text-[#2C4A3E] tracking-wider uppercase"
+                      style={{ fontFamily: 'var(--font-lora), serif' }}
+                    >
+                      Best
+                    </span>
+                  </div>
+                  <p
+                    className="text-xs font-semibold text-[#1B2A4A]"
+                    style={{ fontFamily: 'var(--font-lora), serif' }}
+                  >
+                    {PLATFORMS[bestPlatform.id]?.displayName || bestPlatform.id}
+                  </p>
+                  <p
+                    className="text-lg font-bold text-[#2C4A3E]"
+                    style={{ fontFamily: 'var(--font-playfair), serif' }}
+                  >
+                    ₹{bestPlatform.todayEarnings}
+                  </p>
+                </div>
+
+                {/* Worst Performing */}
+                <div className="flex-1 p-3 bg-[#8B5E3C]/5 rounded-lg border border-[#8B5E3C]/10">
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <AlertCircle className="w-3 h-3 text-[#8B5E3C]" />
+                    <span
+                      className="text-[9px] font-semibold text-[#8B5E3C] tracking-wider uppercase"
+                      style={{ fontFamily: 'var(--font-lora), serif' }}
+                    >
+                      Needs Work
+                    </span>
+                  </div>
+                  <p
+                    className="text-xs font-semibold text-[#1B2A4A]"
+                    style={{ fontFamily: 'var(--font-lora), serif' }}
+                  >
+                    {PLATFORMS[worstPlatform.id]?.displayName || worstPlatform.id}
+                  </p>
+                  <p
+                    className="text-lg font-bold text-[#8B5E3C]"
+                    style={{ fontFamily: 'var(--font-playfair), serif' }}
+                  >
+                    ₹{worstPlatform.todayEarnings}
+                  </p>
+                </div>
+              </div>
+
+              {/* Insight Tip */}
+              <div className="flex items-start gap-2.5 p-3 bg-[#C9A96E]/5 rounded-lg border border-[#C9A96E]/15">
+                <Lightbulb className="w-4 h-4 text-[#C9A96E] flex-shrink-0 mt-0.5" />
+                <div>
+                  <p
+                    className="text-[10px] font-semibold text-[#8B5E3C] tracking-wider uppercase mb-0.5"
+                    style={{ fontFamily: 'var(--font-lora), serif' }}
+                  >
+                    Pro Tip
+                  </p>
+                  <p
+                    className="text-[11px] text-[#1B2A4A] leading-relaxed"
+                    style={{ fontFamily: 'var(--font-lora), serif' }}
+                  >
+                    Switch to Uber Eats during lunch hours for 23% more earnings. Peak demand is between 12-2 PM.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Add New Platform */}
         <motion.div
@@ -844,55 +1094,237 @@ export default function PlatformsScreen() {
           transition={{ delay: 0.4 }}
           className="bg-white rounded-xl p-4 border border-[#D5CBBF] card-elegant"
         >
-          <h3
-            className="text-sm font-semibold text-[#2C2C2C] mb-3 flex items-center gap-2"
-            style={{ fontFamily: 'var(--font-playfair), serif' }}
-          >
-            <Shield className="w-4 h-4 text-[#1B2A4A]" />
-            Shift Scheduler
-            {shifts.filter(s => s.active).length > 0 && (
-              <Badge className="bg-[#2C4A3E]/10 text-[#2C4A3E] border-[#2C4A3E]/15 text-[9px]">
-                {shifts.filter(s => s.active).length} scheduled
-              </Badge>
+          <div className="flex items-center justify-between mb-3">
+            <h3
+              className="text-sm font-semibold text-[#2C2C2C] flex items-center gap-2"
+              style={{ fontFamily: 'var(--font-playfair), serif' }}
+            >
+              <Shield className="w-4 h-4 text-[#1B2A4A]" />
+              Shift Scheduler
+              {shifts.filter(s => s.active).length > 0 && (
+                <Badge className="bg-[#2C4A3E]/10 text-[#2C4A3E] border-[#2C4A3E]/15 text-[9px]">
+                  {shifts.filter(s => s.active).length} scheduled
+                </Badge>
+              )}
+            </h3>
+            {shifts.some(s => s.active) && (
+              <motion.button
+                onClick={handleCopyToAll}
+                whileTap={{ scale: 0.95 }}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold bg-[#1B2A4A]/5 text-[#1B2A4A] hover:bg-[#1B2A4A]/10 transition-colors duration-200"
+                style={{ fontFamily: 'var(--font-lora), serif' }}
+              >
+                <Copy className="w-3 h-3" />
+                Copy to All
+              </motion.button>
             )}
-          </h3>
+          </div>
+
+          {/* Visual Week Timeline Bar */}
+          <div className="mb-4 p-3 bg-[#F5F0EB] rounded-lg">
+            <p
+              className="text-[9px] text-[#7A7168] font-semibold tracking-wider uppercase mb-2"
+              style={{ fontFamily: 'var(--font-lora), serif' }}
+            >
+              Weekly Overview
+            </p>
+            <div className="flex gap-1">
+              {weekDays.map((day, i) => {
+                // Map shift data to the week timeline
+                const shiftForDay = i < shifts.length ? shifts[i] : null;
+                const isActive = shiftForDay?.active ?? false;
+                const isToday = i === adjustedDayIndex;
+                const timeRange = shiftForDay ? parseTimeToHours(shiftForDay.time) : null;
+
+                return (
+                  <div key={day} className="flex-1 flex flex-col items-center gap-1">
+                    <span
+                      className={`text-[8px] font-bold ${isToday ? 'text-[#C9A96E]' : 'text-[#7A7168]'}`}
+                      style={{ fontFamily: 'var(--font-lora), serif' }}
+                    >
+                      {day}
+                    </span>
+                    <div className="w-full h-8 rounded-sm bg-[#E8E0D4] relative overflow-hidden">
+                      {isActive && timeRange && (
+                        <motion.div
+                          initial={{ scaleX: 0 }}
+                          animate={{ scaleX: 1 }}
+                          transition={{ duration: 0.5, delay: i * 0.05 }}
+                          className="absolute top-0 bottom-0 rounded-sm origin-left"
+                          style={{
+                            left: `${(timeRange.start / 24) * 100}%`,
+                            width: `${((timeRange.end - timeRange.start) / 24) * 100}%`,
+                            backgroundColor: isToday ? '#1B2A4A' : '#2C4A3E',
+                            opacity: isToday ? 1 : 0.6,
+                          }}
+                        />
+                      )}
+                      {isActive && !timeRange && (
+                        <motion.div
+                          initial={{ scaleX: 0 }}
+                          animate={{ scaleX: 1 }}
+                          transition={{ duration: 0.5, delay: i * 0.05 }}
+                          className="absolute top-0 bottom-0 left-[25%] w-[50%] rounded-sm origin-left"
+                          style={{
+                            backgroundColor: isToday ? '#1B2A4A' : '#2C4A3E',
+                            opacity: isToday ? 1 : 0.6,
+                          }}
+                        />
+                      )}
+                    </div>
+                    <div className={`w-1.5 h-1.5 rounded-full ${isToday ? 'bg-[#C9A96E]' : isActive ? 'bg-[#2C4A3E]' : 'bg-[#D5CBBF]'}`} />
+                  </div>
+                );
+              })}
+            </div>
+            {/* Hour labels */}
+            <div className="flex justify-between mt-1.5 px-0.5">
+              <span className="text-[7px] text-[#7A7168]/60">6AM</span>
+              <span className="text-[7px] text-[#7A7168]/60">12PM</span>
+              <span className="text-[7px] text-[#7A7168]/60">6PM</span>
+              <span className="text-[7px] text-[#7A7168]/60">12AM</span>
+            </div>
+          </div>
 
           <div className="space-y-2">
-            {shifts.map((shift, index) => (
-              <div
-                key={shift.day}
-                className="flex items-center justify-between p-3 bg-[#F5F0EB] rounded-lg"
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full ${shift.active ? 'bg-[#2C4A3E]' : 'bg-[#D5CBBF]'}`} />
-                  <div>
-                    <p
-                      className="text-sm font-medium text-[#2C2C2C]"
-                      style={{ fontFamily: 'var(--font-lora), serif' }}
-                    >
-                      {shift.day}
-                    </p>
-                    <p
-                      className={`text-[10px] ${shift.active ? 'text-[#2C4A3E]' : 'text-[#7A7168]'}`}
-                      style={{ fontFamily: 'var(--font-lora), serif' }}
-                    >
-                      {shift.time}
-                    </p>
-                  </div>
+            {shifts.map((shift, index) => {
+              const isExpanded = expandedShift === index;
+              const isEditing = editingShiftIndex === index;
+
+              return (
+                <div key={shift.day}>
+                  <motion.button
+                    onClick={() => handleExpandShift(index)}
+                    className="w-full flex items-center justify-between p-3 bg-[#F5F0EB] rounded-lg text-left"
+                    whileTap={{ scale: 0.995 }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-2 h-2 rounded-full ${shift.active ? 'bg-[#2C4A3E]' : 'bg-[#D5CBBF]'}`} />
+                      <div>
+                        <p
+                          className="text-sm font-medium text-[#2C2C2C]"
+                          style={{ fontFamily: 'var(--font-lora), serif' }}
+                        >
+                          {shift.day}
+                        </p>
+                        <p
+                          className={`text-[10px] ${shift.active ? 'text-[#2C4A3E]' : 'text-[#7A7168]'}`}
+                          style={{ fontFamily: 'var(--font-lora), serif' }}
+                        >
+                          {shift.time}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all duration-200 ${
+                          shift.active
+                            ? 'bg-[#2C4A3E]/10 text-[#2C4A3E]'
+                            : 'bg-[#E8E0D4] text-[#7A7168]'
+                        }`}
+                        style={{ fontFamily: 'var(--font-lora), serif' }}
+                      >
+                        {shift.active ? 'Scheduled' : 'Set'}
+                      </span>
+                      <ChevronDown
+                        className={`w-3.5 h-3.5 text-[#7A7168] transition-transform duration-200 ${
+                          isExpanded ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </div>
+                  </motion.button>
+
+                  {/* Expanded shift details */}
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-3 py-3 bg-[#F5F0EB]/50 rounded-b-lg border-t border-[#E8E0D4] space-y-3">
+                          {/* Toggle active */}
+                          <div className="flex items-center justify-between">
+                            <span
+                              className="text-[11px] text-[#7A7168] font-medium"
+                              style={{ fontFamily: 'var(--font-lora), serif' }}
+                            >
+                              Active Shift
+                            </span>
+                            <Switch
+                              checked={shift.active}
+                              onCheckedChange={(checked) => updateShift(index, { active: checked, time: checked ? (shift.time === 'Not scheduled' ? '9:00 AM - 9:00 PM' : shift.time) : 'Not scheduled' })}
+                              className="data-[state=checked]:bg-[#2C4A3E]"
+                            />
+                          </div>
+
+                          {/* Edit time range */}
+                          {shift.active && (
+                            <div className="space-y-2">
+                              <span
+                                className="text-[10px] text-[#7A7168] font-semibold tracking-wider uppercase"
+                                style={{ fontFamily: 'var(--font-lora), serif' }}
+                              >
+                                Shift Hours
+                              </span>
+                              {isEditing ? (
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="text"
+                                    value={editStartTime}
+                                    onChange={(e) => setEditStartTime(e.target.value)}
+                                    className="flex-1 px-2.5 py-1.5 rounded-lg border border-[#D5CBBF] bg-white text-xs text-[#1B2A4A] font-medium focus:outline-none focus:border-[#C9A96E] focus:ring-1 focus:ring-[#C9A96E]/30"
+                                    style={{ fontFamily: 'var(--font-lora), serif' }}
+                                    placeholder="9:00 AM"
+                                  />
+                                  <span className="text-[10px] text-[#7A7168]">to</span>
+                                  <input
+                                    type="text"
+                                    value={editEndTime}
+                                    onChange={(e) => setEditEndTime(e.target.value)}
+                                    className="flex-1 px-2.5 py-1.5 rounded-lg border border-[#D5CBBF] bg-white text-xs text-[#1B2A4A] font-medium focus:outline-none focus:border-[#C9A96E] focus:ring-1 focus:ring-[#C9A96E]/30"
+                                    style={{ fontFamily: 'var(--font-lora), serif' }}
+                                    placeholder="9:00 PM"
+                                  />
+                                  <motion.button
+                                    onClick={() => handleSaveShiftTime(index)}
+                                    whileTap={{ scale: 0.95 }}
+                                    className="px-2.5 py-1.5 rounded-lg text-[10px] font-semibold bg-[#1B2A4A] text-[#FAF7F2]"
+                                    style={{ fontFamily: 'var(--font-lora), serif' }}
+                                  >
+                                    Save
+                                  </motion.button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center justify-between">
+                                  <span
+                                    className="text-xs font-semibold text-[#1B2A4A]"
+                                    style={{ fontFamily: 'var(--font-playfair), serif' }}
+                                  >
+                                    {shift.time}
+                                  </span>
+                                  <motion.button
+                                    onClick={() => setEditingShiftIndex(index)}
+                                    whileTap={{ scale: 0.95 }}
+                                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-[#C9A96E]/10 text-[#8B5E3C] hover:bg-[#C9A96E]/20 transition-colors"
+                                    style={{ fontFamily: 'var(--font-lora), serif' }}
+                                  >
+                                    <Timer className="w-3 h-3" />
+                                    Edit
+                                  </motion.button>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
-                <button
-                  onClick={() => updateShift(index, { active: !shift.active })}
-                  className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all duration-200 ${
-                    shift.active
-                      ? 'bg-[#2C4A3E]/10 text-[#2C4A3E]'
-                      : 'bg-[#E8E0D4] text-[#7A7168]'
-                  }`}
-                  style={{ fontFamily: 'var(--font-lora), serif' }}
-                >
-                  {shift.active ? 'Scheduled' : 'Set'}
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </motion.div>
       </div>

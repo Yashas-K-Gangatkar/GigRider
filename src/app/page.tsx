@@ -1,12 +1,19 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { AnimatePresence, motion } from 'framer-motion';
-import SplashScreen from '@/components/gigrider/SplashScreen';
 import LoginScreen from '@/components/gigrider/LoginScreen';
 import SignupScreen from '@/components/gigrider/SignupScreen';
 import OTPScreen from '@/components/gigrider/OTPScreen';
 import HomeScreen from '@/components/gigrider/HomeScreen';
+
+// Dynamic import SplashScreen with SSR disabled to prevent hydration mismatch
+// from framer-motion animations generating different transforms on server vs client
+const SplashScreen = dynamic(
+  () => import('@/components/gigrider/SplashScreen'),
+  { ssr: false }
+);
 import EarningsScreen from '@/components/gigrider/EarningsScreen';
 import PlatformsScreen from '@/components/gigrider/PlatformsScreen';
 import ActivityScreen from '@/components/gigrider/ActivityScreen';

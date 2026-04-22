@@ -15,6 +15,7 @@ import {
   Zap,
   TrendingUp,
   ChevronUp,
+  ChevronDown,
   Bike,
   Package,
   Layers,
@@ -22,6 +23,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Power,
+  X,
+  DollarSign,
+  Star,
+  Gift,
 } from 'lucide-react';
 
 const PLATFORM_CONFIG: Record<string, { name: string; color: string; bg: string; letter: string }> = {};
@@ -68,7 +73,9 @@ export default function HomeScreen({ onOpenNotifications }: { onOpenNotification
   const [showDeliveredSuccess, setShowDeliveredSuccess] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [bellRinging, setBellRinging] = useState(false);
+  const [showNotifPanel, setShowNotifPanel] = useState(false);
   const prevOrderCountRef = useRef(0);
+  const notifications = useGigRiderStore(s => s.notifications);
 
   // Detect stacked orders
   const stackIds = useMemo(() => {
@@ -194,6 +201,121 @@ export default function HomeScreen({ onOpenNotifications }: { onOpenNotification
         )}
       </AnimatePresence>
 
+      {/* Notifications Quick Panel */}
+      <AnimatePresence>
+        {showNotifPanel && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40 bg-[#1B2A4A]/20 backdrop-blur-sm"
+              onClick={() => setShowNotifPanel(false)}
+            />
+            {/* Panel */}
+            <motion.div
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="fixed top-2 left-2 right-2 max-w-lg mx-auto z-50 bg-white rounded-xl border border-[#D5CBBF] shadow-xl overflow-hidden"
+              style={{ boxShadow: '0 8px 32px rgba(27, 42, 74, 0.15), 0 2px 8px rgba(27, 42, 74, 0.08)' }}
+            >
+              {/* Panel Header */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-[#F0EBE4]">
+                <div className="flex items-center gap-2">
+                  <Bell className="w-4 h-4 text-[#C9A96E]" />
+                  <span
+                    className="text-sm font-semibold text-[#1B2A4A]"
+                    style={{ fontFamily: 'var(--font-playfair), serif' }}
+                  >
+                    Notifications
+                  </span>
+                  {unreadNotificationCount > 0 && (
+                    <span className="bg-[#722F37] text-white text-[9px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                      {unreadNotificationCount}
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={() => setShowNotifPanel(false)}
+                  className="p-1 rounded-full hover:bg-[#F0EBE4] transition-colors"
+                >
+                  <X className="w-4 h-4 text-[#7A7168]" />
+                </button>
+              </div>
+
+              {/* Notification Items */}
+              <div className="max-h-[280px] overflow-y-auto">
+                {notifications.slice(0, 5).map((notif, i) => {
+                  const getIcon = () => {
+                    switch (notif.type) {
+                      case 'earnings_milestone': return <DollarSign className="w-3.5 h-3.5 text-[#C9A96E]" />;
+                      case 'tip_received': return <Gift className="w-3.5 h-3.5 text-[#2C4A3E]" />;
+                      case 'platform_update': return <Layers className="w-3.5 h-3.5 text-[#1B2A4A]" />;
+                      case 'stack_order': return <Zap className="w-3.5 h-3.5 text-[#8B5E3C]" />;
+                      case 'order_completed': return <CheckCircle2 className="w-3.5 h-3.5 text-[#2C4A3E]" />;
+                      case 'tier_upgrade': return <Star className="w-3.5 h-3.5 text-[#C9A96E]" />;
+                      default: return <Bell className="w-3.5 h-3.5 text-[#7A7168]" />;
+                    }
+                  };
+                  return (
+                    <motion.div
+                      key={notif.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      className={`flex items-start gap-3 px-4 py-3 border-b border-[#F0EBE4]/60 ${
+                        !notif.isRead ? 'bg-[#C9A96E]/[0.03]' : ''
+                      }`}
+                    >
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                        !notif.isRead ? 'bg-[#C9A96E]/10' : 'bg-[#F5F0EB]'
+                      }`}>
+                        {getIcon()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p
+                          className={`text-xs ${!notif.isRead ? 'text-[#1B2A4A] font-semibold' : 'text-[#2C2C2C]'}`}
+                          style={{ fontFamily: 'var(--font-lora), serif' }}
+                        >
+                          {notif.title}
+                        </p>
+                        <p
+                          className="text-[10px] text-[#7A7168] truncate"
+                          style={{ fontFamily: 'var(--font-lora), serif' }}
+                        >
+                          {notif.description}
+                        </p>
+                      </div>
+                      {!notif.isRead && (
+                        <div className="w-2 h-2 rounded-full bg-[#C9A96E] shrink-0 mt-1.5" />
+                      )}
+                    </motion.div>
+                  );
+                })}
+              </div>
+
+              {/* View All Footer */}
+              {onOpenNotifications && (
+                <button
+                  onClick={() => {
+                    setShowNotifPanel(false);
+                    onOpenNotifications();
+                  }}
+                  className="w-full flex items-center justify-center gap-1.5 py-3 text-xs font-semibold text-[#1B2A4A] hover:bg-[#F5F0EB] transition-colors border-t border-[#F0EBE4]"
+                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                >
+                  View All Notifications
+                  <ChevronDown className="w-3 h-3" />
+                </button>
+              )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       {/* Top Bar */}
       <div className="sticky top-0 z-40 bg-[#FAF7F2]/90 backdrop-blur-xl border-b border-[#D5CBBF]">
         <div className="flex items-center justify-between px-4 py-3">
@@ -238,7 +360,7 @@ export default function HomeScreen({ onOpenNotifications }: { onOpenNotification
             <motion.button
               className="relative p-1.5"
               whileTap={{ scale: 0.9 }}
-              onClick={onOpenNotifications}
+              onClick={() => setShowNotifPanel(!showNotifPanel)}
               animate={
                 bellRinging
                   ? { rotate: [0, -15, 15, -10, 10, -5, 5, 0] }

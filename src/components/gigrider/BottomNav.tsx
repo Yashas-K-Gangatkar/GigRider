@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Home,
@@ -39,12 +39,36 @@ export default function BottomNav({ activeScreen, onScreenChange }: BottomNavPro
   const isOnline = useGigRiderStore(s => s.isOnline);
   const deliveryHistory = useGigRiderStore(s => s.deliveryHistory);
   const [rippleId, setRippleId] = useState<string | null>(null);
+  const [flashId, setFlashId] = useState<string | null>(null);
+
+  // Quick pulse: track isOnline transitions from false → true
+  const prevIsOnlineRef = useRef(isOnline);
+  const [showOnlinePulse, setShowOnlinePulse] = useState(false);
+
+  useEffect(() => {
+    if (isOnline && !prevIsOnlineRef.current) {
+      setShowOnlinePulse(true);
+      const timer = setTimeout(() => setShowOnlinePulse(false), 800);
+      return () => clearTimeout(timer);
+    }
+    prevIsOnlineRef.current = isOnline;
+  }, [isOnline]);
 
   const handleNavClick = useCallback((id: ScreenType) => {
+    // Scroll-to-top: if clicking the currently active tab, dispatch custom event
+    if (id === activeScreen) {
+      window.dispatchEvent(new CustomEvent('scrollToTop'));
+    }
+
+    // Opacity flash visual cue
+    setFlashId(id);
     setRippleId(id);
     onScreenChange(id);
-    setTimeout(() => setRippleId(null), 400);
-  }, [onScreenChange]);
+    setTimeout(() => {
+      setRippleId(null);
+      setFlashId(null);
+    }, 400);
+  }, [onScreenChange, activeScreen]);
 
   // Check if there are recent deliveries for activity badge
   const recentDeliveries = deliveryHistory.filter(
@@ -62,6 +86,7 @@ export default function BottomNav({ activeScreen, onScreenChange }: BottomNavPro
             const isActive = activeScreen === item.id;
             const Icon = item.icon;
             const isRippling = rippleId === item.id;
+            const isFlashing = flashId === item.id;
 
             if (item.isCenter) {
               return (
@@ -72,6 +97,10 @@ export default function BottomNav({ activeScreen, onScreenChange }: BottomNavPro
                 >
                   <motion.div
                     whileTap={{ scale: 0.85 }}
+                    animate={{
+                      scale: isActive ? 1.08 : 1,
+                    }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                     className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 relative ${
                       isActive
                         ? 'bg-[#1B2A4A] shadow-[#1B2A4A]/20'
@@ -83,13 +112,43 @@ export default function BottomNav({ activeScreen, onScreenChange }: BottomNavPro
                         : '0 4px 12px rgba(27, 42, 74, 0.2)',
                     }}
                   >
-                    <Icon className="w-6 h-6 text-[#FAF7F2]" />
+                    <motion.div
+                      animate={{ opacity: isFlashing ? 0.5 : 1 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      <Icon className="w-6 h-6 text-[#FAF7F2]" />
+                    </motion.div>
+
+                    {/* Gold ring animation when active */}
                     {isActive && (
                       <motion.div
                         layoutId="nav-glow"
-                        className="absolute inset-0 rounded-full animate-gold-glow"
+                        className="absolute inset-0 rounded-full"
+                        animate={{
+                          boxShadow: [
+                            '0 0 0 0px rgba(201, 169, 110, 0.4)',
+                            '0 0 0 4px rgba(201, 169, 110, 0.2)',
+                            '0 0 0 0px rgba(201, 169, 110, 0.4)',
+                          ],
+                        }}
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: 'easeInOut',
+                        }}
                       />
                     )}
+
+                    {/* Quick pulse when going online */}
+                    {showOnlinePulse && (
+                      <motion.div
+                        initial={{ scale: 1, opacity: 0.6 }}
+                        animate={{ scale: 2.2, opacity: 0 }}
+                        transition={{ duration: 0.8, ease: 'easeOut' }}
+                        className="absolute inset-0 rounded-full bg-[#4ADE80]/40"
+                      />
+                    )}
+
                     {/* Online indicator dot on center button */}
                     {isOnline && !isActive && (
                       <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-[#4ADE80] rounded-full border border-[#1B2A4A]" />
@@ -137,11 +196,16 @@ export default function BottomNav({ activeScreen, onScreenChange }: BottomNavPro
                     )}
                   </AnimatePresence>
 
-                  <Icon
-                    className={`w-5 h-5 transition-colors duration-300 relative z-10 ${
-                      isActive ? 'text-[#1B2A4A]' : 'text-[#7A7168]'
-                    }`}
-                  />
+                  <motion.div
+                    animate={{ opacity: isFlashing ? 0.5 : 1 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <Icon
+                      className={`w-5 h-5 transition-colors duration-300 relative z-10 ${
+                        isActive ? 'text-[#1B2A4A]' : 'text-[#7A7168]'
+                      }`}
+                    />
+                  </motion.div>
 
                   {/* Notification badge on Home icon */}
                   {item.id === 'home' && unreadNotificationCount > 0 && (

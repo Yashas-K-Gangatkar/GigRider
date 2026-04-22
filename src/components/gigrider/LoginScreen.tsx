@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Phone, ArrowRight, CheckCircle2, Shield } from 'lucide-react';
 
@@ -14,6 +14,16 @@ export default function LoginScreen({ onLogin, onGoToSignup }: LoginScreenProps)
   const [isLoading, setIsLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [showTermsDetail, setShowTermsDetail] = useState(false);
+  const [isShaking, setIsShaking] = useState(false);
+  const phoneInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-focus phone input after entrance animation
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      phoneInputRef.current?.focus();
+    }, 800);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Format phone as XXXXX XXXXX
   const formatPhone = (value: string) => {
@@ -33,11 +43,23 @@ export default function LoginScreen({ onLogin, onGoToSignup }: LoginScreenProps)
         setIsLoading(false);
         onLogin(rawPhone);
       }, 1200);
+    } else {
+      // Shake animation when trying to proceed without valid input
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 600);
     }
   };
 
   return (
     <div className="min-h-screen bg-[#FAF7F2] flex flex-col linen-texture relative">
+      {/* Gradient overlay for depth - similar to SplashScreen */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse at 50% 20%, rgba(201, 169, 110, 0.08) 0%, transparent 55%)',
+        }}
+      />
+
       {/* Decorative gold corners */}
       <div className="absolute top-6 left-6 w-12 h-12 border-t-2 border-l-2 border-[#C9A96E]/30" />
       <div className="absolute top-6 right-6 w-12 h-12 border-t-2 border-r-2 border-[#C9A96E]/30" />
@@ -172,6 +194,7 @@ export default function LoginScreen({ onLogin, onGoToSignup }: LoginScreenProps)
                 <div className="w-px h-5 bg-[#D5CBBF]" />
               </div>
               <input
+                ref={phoneInputRef}
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(formatPhone(e.target.value))}
@@ -248,31 +271,40 @@ export default function LoginScreen({ onLogin, onGoToSignup }: LoginScreenProps)
             </p>
           </motion.div>
 
-          {/* Send OTP Button */}
-          <motion.button
-            onClick={handleSendOTP}
-            disabled={!canProceed || isLoading}
-            whileTap={{ scale: 0.97 }}
-            className={`w-full py-4 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-300 ${
-              canProceed
-                ? 'bg-[#1B2A4A] text-[#FAF7F2] shadow-md hover:bg-[#2A3F6A] hover:shadow-lg'
-                : 'bg-[#E8E0D4] text-[#7A7168] cursor-not-allowed'
-            }`}
-            style={{ fontFamily: 'var(--font-lora), serif' }}
+          {/* Send OTP Button with shake animation */}
+          <motion.div
+            animate={
+              isShaking
+                ? { x: [0, -10, 10, -8, 8, -5, 5, 0] }
+                : { x: 0 }
+            }
+            transition={{ duration: 0.5 }}
           >
-            {isLoading ? (
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                className="w-5 h-5 border-2 border-[#FAF7F2]/30 border-t-[#FAF7F2] rounded-full"
-              />
-            ) : (
-              <>
-                Continue with OTP
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </motion.button>
+            <motion.button
+              onClick={handleSendOTP}
+              disabled={isLoading}
+              whileTap={{ scale: 0.97 }}
+              className={`w-full py-4 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-300 ${
+                canProceed
+                  ? 'bg-[#1B2A4A] text-[#FAF7F2] shadow-md hover:bg-[#2A3F6A] hover:shadow-lg'
+                  : 'bg-[#E8E0D4] text-[#7A7168] cursor-not-allowed'
+              }`}
+              style={{ fontFamily: 'var(--font-lora), serif' }}
+            >
+              {isLoading ? (
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                  className="w-5 h-5 border-2 border-[#FAF7F2]/30 border-t-[#FAF7F2] rounded-full"
+                />
+              ) : (
+                <>
+                  Continue with OTP
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </motion.button>
+          </motion.div>
         </motion.div>
 
         {/* Divider */}
