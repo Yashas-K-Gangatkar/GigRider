@@ -7,6 +7,8 @@ import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useGigRiderStore, PLATFORMS, type PlatformId } from '@/lib/store';
+import { PLATFORM_PROVIDERS, getProvidersByStatus, type PlatformAuthProvider, type PlatformConnection, syncPlatformData, savePlatformConnection } from '@/lib/platformAuth';
+import PlatformConnectModal from '@/components/gigrider/PlatformConnectModal';
 import {
   Link2,
   Plus,
@@ -64,6 +66,9 @@ export default function PlatformsScreen() {
   const [editingShiftIndex, setEditingShiftIndex] = useState<number | null>(null);
   const [editStartTime, setEditStartTime] = useState('');
   const [editEndTime, setEditEndTime] = useState('');
+  const [connectModalPlatform, setConnectModalPlatform] = useState<PlatformAuthProvider | null>(null);
+  const [syncingPlatformId, setSyncingPlatformId] = useState<string | null>(null);
+  const [lastSyncTimestamps, setLastSyncTimestamps] = useState<Record<string, string>>({});
 
   // Derive available platforms (not connected yet)
   const availablePlatforms = useMemo(() => {
@@ -83,27 +88,57 @@ export default function PlatformsScreen() {
   const recommendedPlatforms = availablePlatforms.filter(p => p.isRecommended);
   const otherPlatforms = availablePlatforms.filter(p => !p.isRecommended);
 
+  // Open the platform connect modal using the auth framework
   const handleConnect = (platformId: string) => {
-    setConnectingPlatform(platformId);
-    setConnectingProgress(0);
-
-    const interval = setInterval(() => {
-      setConnectingProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          return 100;
-        }
-        return prev + 5;
-      });
-    }, 100);
-
-    setTimeout(() => {
-      clearInterval(interval);
-      addPlatform(platformId as PlatformId);
-      setConnectingPlatform(null);
+    const provider = PLATFORM_PROVIDERS[platformId];
+    if (provider) {
+      setConnectModalPlatform(provider);
+    } else {
+      // Fallback for platforms not in auth framework
+      setConnectingPlatform(platformId);
       setConnectingProgress(0);
-    }, 2000);
+
+      const interval = setInterval(() => {
+        setConnectingProgress(prev => {
+          if (prev >= 100) {
+            clearInterval(interval);
+            return 100;
+          }
+          return prev + 5;
+        });
+      }, 100);
+
+      setTimeout(() => {
+        clearInterval(interval);
+        addPlatform(platformId as PlatformId);
+        setConnectingPlatform(null);
+        setConnectingProgress(0);
+      }, 2000);
+    }
   };
+
+  // Handle platform connected via auth modal
+  const handlePlatformConnected = (connection: PlatformConnection) => {
+    addPlatform(connection.platformId as PlatformId);
+    savePlatformConnection(connection);
+    setLastSyncTimestamps(prev => ({ ...prev, [connection.platformId]: new Date().toLocaleString() }));
+  };
+
+  // Handle sync
+  const handleSync = async (platformId: string) => {
+    setSyncingPlatformId(platformId);
+    try {
+      const result = await syncPlatformData(platformId);
+      if (result.success) {
+        setLastSyncTimestamps(prev => ({ ...prev, [platformId]: new Date(result.syncedAt).toLocaleString() }));
+      }
+    } finally {
+      setSyncingPlatformId(null);
+    }
+  };
+
+  // Get providers grouped by status
+  const providersByStatus = useMemo(() => getProvidersByStatus(), []);
 
   const handleDisconnect = (platformId: string) => {
     if (confirmDisconnect !== platformId) {
@@ -252,6 +287,64 @@ export default function PlatformsScreen() {
       </div>
 
       <div className="px-4 pt-4 space-y-5">
+        {/* Platform Status Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-xl p-4 border border-[#D5CBBF]"
+          style={{ boxShadow: '0 2px 8px rgba(27, 42, 74, 0.04)' }}
+        >
+          <h3
+            className="text-sm font-semibold text-[#2C2C2C] flex items-center gap-2 mb-3"
+            style={{ fontFamily: 'var(--font-playfair), serif' }}
+          >
+            <Shield className="w-4 h-4 text-[#1B2A4A]" />
+            Platform Integration Status
+          </h3>
+          <div className="grid grid-cols-3 gap-2">
+            <div className="p-2.5 bg-[#2C4A3E]/5 rounded-lg text-center">
+              <p className="text-lg font-bold text-[#2C4A3E]" style={{ fontFamily: 'var(--font-playfair), serif' }}>{providersByStatus.available.length}</p>
+              <p className="text-[8px] text-[#7A7168] tracking-wider uppercase font-semibold" style={{ fontFamily: 'var(--font-lora), serif' }}>Available</p>
+            </div>
+            <div className="p-2.5 bg-[#8B5E3C]/5 rounded-lg text-center">
+              <p className="text-lg font-bold text-[#8B5E3C]" style={{ fontFamily: 'var(--font-playfair), serif' }}>{providersByStatus.beta.length}</p>
+              <p className="text-[8px] text-[#7A7168] tracking-wider uppercase font-semibold" style={{ fontFamily: 'var(--font-lora), serif' }}>Beta</p>
+            </div>
+            <div className="p-2.5 bg-[#7A7168]/5 rounded-lg text-center">
+              <p className="text-lg font-bold text-[#7A7168]" style={{ fontFamily: 'var(--font-playfair), serif' }}>{providersByStatus.comingSoon.length}</p>
+              <p className="text-[8px] text-[#7A7168] tracking-wider uppercase font-semibold" style={{ fontFamily: 'var(--font-lora), serif' }}>Coming Soon</p>
+            </div>
+          </div>
+          {/* Status pills for each provider */}
+          <div className="flex flex-wrap gap-1.5 mt-3">
+            {Object.values(PLATFORM_PROVIDERS).map((provider) => {
+              const isConnectedPlatform = connectedPlatforms.some(p => p.id === provider.id);
+              return (
+                <button
+                  key={provider.id}
+                  onClick={() => !isConnectedPlatform && handleConnect(provider.id)}
+                  className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[8px] font-semibold transition-all ${
+                    isConnectedPlatform
+                      ? 'bg-[#2C4A3E]/10 text-[#2C4A3E]'
+                      : provider.status === 'available'
+                        ? 'bg-[#2C4A3E]/5 text-[#2C4A3E] hover:bg-[#2C4A3E]/10'
+                        : provider.status === 'beta'
+                          ? 'bg-[#8B5E3C]/5 text-[#8B5E3C] hover:bg-[#8B5E3C]/10'
+                          : 'bg-[#7A7168]/5 text-[#7A7168]'
+                  }`}
+                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                >
+                  <span
+                    className="w-1.5 h-1.5 rounded-full"
+                    style={{ backgroundColor: isConnectedPlatform ? '#2C4A3E' : provider.color }}
+                  />
+                  {provider.displayName}
+                  {isConnectedPlatform && <CheckCircle2 className="w-2.5 h-2.5" />}
+                </button>
+              );
+            })}
+          </div>
+        </motion.div>
         {/* Quick Stats Row - Horizontally scrollable pills */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
@@ -587,6 +680,28 @@ export default function PlatformsScreen() {
                           style={{ backgroundColor: config?.color || '#7A7168', opacity: platform.isOnline ? 1 : 0.4 }}
                         />
                       </div>
+                    </div>
+                    {/* Last synced & Sync Now */}
+                    <div className="mt-2 ml-14 flex items-center justify-between">
+                      <p className="text-[9px] text-[#7A7168]" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                        {lastSyncTimestamps[platform.id]
+                          ? `Last synced: ${lastSyncTimestamps[platform.id]}`
+                          : 'Not synced yet'}
+                      </p>
+                      <motion.button
+                        onClick={() => handleSync(platform.id)}
+                        whileTap={{ scale: 0.95 }}
+                        disabled={syncingPlatformId === platform.id}
+                        className="flex items-center gap-1 px-2 py-0.5 rounded text-[8px] font-semibold bg-[#1B2A4A]/5 text-[#1B2A4A] hover:bg-[#1B2A4A]/10 transition-colors disabled:opacity-50"
+                        style={{ fontFamily: 'var(--font-lora), serif' }}
+                      >
+                        {syncingPlatformId === platform.id ? (
+                          <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                        ) : (
+                          <Route className="w-2.5 h-2.5" />
+                        )}
+                        {syncingPlatformId === platform.id ? 'Syncing...' : 'Sync Now'}
+                      </motion.button>
                     </div>
                   </div>
                 </motion.div>
@@ -1328,6 +1443,17 @@ export default function PlatformsScreen() {
           </div>
         </motion.div>
       </div>
+
+      {/* Platform Connect Modal */}
+      <AnimatePresence>
+        {connectModalPlatform && (
+          <PlatformConnectModal
+            platform={connectModalPlatform}
+            onClose={() => setConnectModalPlatform(null)}
+            onConnected={handlePlatformConnected}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

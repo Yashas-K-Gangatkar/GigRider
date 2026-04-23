@@ -19,6 +19,9 @@ import PlatformsScreen from '@/components/gigrider/PlatformsScreen';
 import ActivityScreen from '@/components/gigrider/ActivityScreen';
 import ProfileScreen from '@/components/gigrider/ProfileScreen';
 import NotificationsScreen from '@/components/gigrider/NotificationsScreen';
+import SettingsScreen from '@/components/gigrider/SettingsScreen';
+import MapScreen from '@/components/gigrider/MapScreen';
+import WalletScreen from '@/components/gigrider/WalletScreen';
 import BottomNav, { type ScreenType } from '@/components/gigrider/BottomNav';
 import { useGigRiderStore, type RiderProfile } from '@/lib/store';
 import { useOrderSimulation, useOnlineTimer } from '@/hooks/use-order-simulation';
@@ -58,9 +61,9 @@ export default function Home() {
     setAuthState('otp');
   }, []);
 
-  const handleOTPVerified = useCallback(() => {
-    const name = otpName || 'Rider';
-    login(name, otpPhone, otpVehicle);
+  const handleOTPVerified = useCallback((token: string, rider: { id: string; phone: string; name: string; vehicleType: string; rating: number; tier: string }) => {
+    const name = rider.name || otpName || 'Rider';
+    login(name, rider.phone || otpPhone, (rider.vehicleType || otpVehicle) as RiderProfile['vehicleType']);
   }, [otpName, otpPhone, otpVehicle, login]);
 
   const handleLogout = useCallback(() => {
@@ -94,6 +97,8 @@ export default function Home() {
         return (
           <OTPScreen
             phone={otpPhone}
+            name={otpName}
+            vehicleType={otpVehicle}
             onVerified={handleOTPVerified}
             onBack={() => setAuthState('login')}
           />
@@ -106,17 +111,23 @@ export default function Home() {
   const renderAppScreen = () => {
     switch (activeScreen) {
       case 'home':
-        return <HomeScreen onOpenNotifications={() => setActiveScreen('notifications')} />;
+        return <HomeScreen onOpenNotifications={() => setActiveScreen('notifications')} onOpenMap={() => setActiveScreen('map')} />;
       case 'earnings':
-        return <EarningsScreen />;
+        return <EarningsScreen onOpenWallet={() => setActiveScreen('wallet')} />;
       case 'platforms':
         return <PlatformsScreen />;
       case 'activity':
         return <ActivityScreen />;
       case 'profile':
-        return <ProfileScreen onLogout={handleLogout} />;
+        return <ProfileScreen onLogout={handleLogout} onOpenSettings={() => setActiveScreen('settings')} />;
       case 'notifications':
         return <NotificationsScreen onBack={() => setActiveScreen('home')} />;
+      case 'settings':
+        return <SettingsScreen onBack={() => setActiveScreen('profile')} onLogout={handleLogout} />;
+      case 'map':
+        return <MapScreen onBack={() => setActiveScreen('home')} />;
+      case 'wallet':
+        return <WalletScreen onBack={() => setActiveScreen('earnings')} />;
       default:
         return <HomeScreen />;
     }
@@ -152,6 +163,9 @@ export default function Home() {
     );
   }
 
+  // For settings and map screens, don't show bottom nav (they have their own back buttons)
+  const showBottomNav = activeScreen !== 'settings' && activeScreen !== 'map' && activeScreen !== 'wallet';
+
   // Main app (authenticated)
   return (
     <div className="min-h-screen bg-[#FAF7F2] relative max-w-lg mx-auto">
@@ -169,7 +183,9 @@ export default function Home() {
       </AnimatePresence>
 
       {/* Bottom Navigation */}
-      <BottomNav activeScreen={activeScreen} onScreenChange={handleScreenChange} />
+      {showBottomNav && (
+        <BottomNav activeScreen={activeScreen} onScreenChange={handleScreenChange} />
+      )}
     </div>
   );
 }

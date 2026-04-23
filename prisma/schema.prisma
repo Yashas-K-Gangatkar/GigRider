@@ -11,12 +11,14 @@ model Rider {
   id              String   @id @default(cuid())
   phone           String   @unique
   name            String
-  vehicleType     String   @default("motorcycle") // bicycle, scooter, motorcycle, car
-  rating          Float    @default(0.0)
+  email           String?
+  vehicleType     String   @default("bicycle") // bicycle, scooter, motorcycle, car
+  rating          Float    @default(4.5)
   totalDeliveries Int      @default(0)
   totalEarnings   Int      @default(0) // in paisa (1/100 INR)
-  tier            String   @default("free") // free, pro, elite, fleet
-  isActive        Boolean  @default(false)
+  tier            String   @default("bronze") // bronze, silver, gold, platinum
+  isOnline        Boolean  @default(false)
+  mpgcsScore      Int      @default(700) // Multi-Platform Gig Comparison Score
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -24,76 +26,127 @@ model Rider {
   deliveries      Delivery[]
   earnings        Earning[]
   shifts          Shift[]
+  notifications   Notification[]
+  autoAcceptRules AutoAcceptRule[]
+  settings        RiderSettings?
 }
 
 model RiderPlatform {
-  id            String   @id @default(cuid())
-  riderId       String
-  platformId    String   // swiggy, zomato, ubereats, doordash, etc.
-  isOnline      Boolean  @default(false)
-  rating        Float    @default(0.0)
-  totalOrders   Int      @default(0)
-  totalEarnings Int      @default(0) // in paisa
-  lastOrderAt   DateTime?
-  connectedAt   DateTime @default(now())
-  rider         Rider    @relation(fields: [riderId], references: [id], onDelete: Cascade)
+  id             String   @id @default(cuid())
+  riderId        String
+  platformId     String   // swiggy, zomato, ubereats, doordash, etc.
+  isOnline       Boolean  @default(false)
+  isRegistered   Boolean  @default(true)
+  todayEarnings  Int      @default(0) // in paisa
+  todayOrders    Int      @default(0)
+  rating         Float    @default(4.5)
+  acceptanceRate Int      @default(85) // percentage
+  completionRate Int      @default(95) // percentage
+  autoAccept     Boolean  @default(false)
+  minPayout      Int      @default(3000) // in paisa (₹30)
+  maxDistance    Float    @default(8.0) // in km
+  shiftStart     String?  // "09:00"
+  shiftEnd       String?  // "21:00"
+  connectedAt    DateTime @default(now())
+
+  rider          Rider    @relation(fields: [riderId], references: [id], onDelete: Cascade)
 
   @@unique([riderId, platformId])
 }
 
 model Delivery {
-  id            String   @id @default(cuid())
-  riderId       String
-  platformId    String
-  orderId       String?  // platform's order ID
-  restaurant    String
-  customer      String
-  pickup        String
-  dropoff       String
-  earnings      Int      @default(0) // in paisa
-  distance      Float    @default(0.0) // in km
-  duration      Int      @default(0) // in minutes
-  tip           Int      @default(0) // in paisa
-  rating        Float?
-  status        String   @default("pending") // pending, accepted, in_progress, completed, cancelled
-  stackId       String?  // for Smart Stack grouping
-  acceptedAt    DateTime?
-  completedAt   DateTime?
-  createdAt     DateTime @default(now())
-  rider         Rider    @relation(fields: [riderId], references: [id], onDelete: Cascade)
+  id              String    @id @default(cuid())
+  riderId         String
+  platform        String    // swiggy, zomato, etc.
+  status          String    @default("pending") // pending, accepted, picked_up, completed, cancelled
+  customerName    String
+  restaurantName  String
+  pickupAddress   String
+  dropoffAddress  String
+  earnings        Int       @default(0) // in paisa
+  tip             Int       @default(0) // in paisa
+  distance        Float     @default(0.0) // in km
+  duration        Int       @default(0) // in minutes
+  orderValue      Int       @default(0) // in paisa
+  platformFee     Int       @default(0) // in paisa
+  createdAt       DateTime  @default(now())
+  completedAt     DateTime?
+
+  rider           Rider     @relation(fields: [riderId], references: [id], onDelete: Cascade)
+  earningsRecords Earning[]
 }
 
 model Earning {
   id          String   @id @default(cuid())
   riderId     String
-  platformId  String
+  deliveryId  String?  // optional — bonuses/incentives may not be linked to a delivery
   amount      Int      // in paisa
-  type        String   // delivery, tip, bonus, referral
-  deliveryId  String?
+  source      String   // delivery, tip, bonus, incentive, referral
+  platform    String   // swiggy, zomato, etc.
+  description String?
   createdAt   DateTime @default(now())
+
   rider       Rider    @relation(fields: [riderId], references: [id], onDelete: Cascade)
+  delivery    Delivery? @relation(fields: [deliveryId], references: [id], onDelete: SetNull)
 }
 
 model Shift {
+  id         String   @id @default(cuid())
+  riderId    String
+  date       String   // "2025-01-15" or "monday", "tuesday", etc.
+  startTime  String   // "09:00"
+  endTime    String   // "21:00"
+  isActive   Boolean  @default(false)
+  platformId String?  // optional — null means all platforms
+
+  rider      Rider    @relation(fields: [riderId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
   id        String   @id @default(cuid())
   riderId   String
-  dayOfWeek Int      // 0=Sun, 1=Mon, ..., 6=Sat
-  startTime String   // "09:00"
-  endTime   String   // "21:00"
-  isActive  Boolean  @default(false)
-  rider     Rider    @relation(fields: [riderId], references: [id], onDelete: Cascade)
+  type      String   // order_accepted, order_completed, earnings_milestone, platform_update, tier_upgrade, tip_received, stack_order
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  actionUrl String?
+  createdAt DateTime @default(now())
 
-  @@unique([riderId, dayOfWeek])
+  rider     Rider    @relation(fields: [riderId], references: [id], onDelete: Cascade)
 }
 
 model AutoAcceptRule {
-  id                  String   @id @default(cuid())
-  riderId             String   @unique
-  enabled             Boolean  @default(false)
-  minPayout           Int      @default(3500) // in paisa (₹35)
-  maxDistance          Float    @default(5.0) // in km
-  peakBoost           Boolean  @default(true)
-  smartStack          Boolean  @default(false)
-  preferredPlatforms  String   @default("{}") // JSON map
-  updatedAt           DateTime @updatedAt
+  id                 String   @id @default(cuid())
+  riderId            String
+  platformId         String   // which platform this rule applies to
+  enabled            Boolean  @default(false)
+  minPayout          Int      @default(3000) // in paisa (₹30)
+  maxDistance        Float    @default(8.0) // in km
+  peakBoost          Int      @default(0) // percentage boost during peak hours
+  smartStack         Boolean  @default(false)
+  preferredPlatforms String   @default("") // comma-separated platform ids
+  updatedAt          DateTime @updatedAt
+
+  rider              Rider    @relation(fields: [riderId], references: [id], onDelete: Cascade)
+
+  @@unique([riderId, platformId])
+}
+
+model RiderSettings {
+  id                   String   @id @default(cuid())
+  riderId              String   @unique
+  notifications        String   @default("{}") // JSON string
+  theme                String   @default("light") // light, dark, system
+  language             String   @default("en")
+  currency             String   @default("INR")
+  soundEnabled         Boolean  @default(true)
+  autoOnline           Boolean  @default(false)
+  maxDailyKm           Int      @default(100)
+  breakReminder        Boolean  @default(true)
+  breakIntervalMinutes Int      @default(120)
+  dataExportFormat     String   @default("csv") // csv, json, pdf
+  privacyMode          Boolean  @default(false)
+  updatedAt            DateTime @updatedAt
+
+  rider                Rider    @relation(fields: [riderId], references: [id], onDelete: Cascade)
 }

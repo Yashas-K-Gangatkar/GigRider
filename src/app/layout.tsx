@@ -27,7 +27,9 @@ export const metadata: Metadata = {
   authors: [{ name: "GigRider Team" }],
   icons: {
     icon: "/gigrider-logo.png",
+    apple: "/gigrider-logo.png",
   },
+  manifest: "/manifest.json",
   openGraph: {
     title: "GigRider - One App. Every Platform. More Earnings.",
     description: "Manage all your delivery platform orders in one unified app. No more switching between apps.",
@@ -48,6 +50,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="light" suppressHydrationWarning>
+      <head>
+        <meta name="theme-color" content="#1B2A4A" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/gigrider-logo.png" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+      </head>
       <body
         className={`${playfair.variable} ${lora.variable} ${geistMono.variable} antialiased bg-[#FAF7F2] text-[#2C2C2C] overflow-x-hidden`}
         style={{ fontFamily: 'var(--font-lora), serif' }}

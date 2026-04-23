@@ -110,6 +110,26 @@ export interface Notification {
   icon?: string;
 }
 
+export interface Transaction {
+  id: string;
+  type: 'delivery' | 'tip' | 'bonus' | 'incentive' | 'referral' | 'withdrawal' | 'payout';
+  amount: number;
+  description: string;
+  platform: string;
+  status: 'completed' | 'pending' | 'failed';
+  timestamp: number;
+}
+
+export interface WalletState {
+  balance: number;
+  pendingAmount: number;
+  transactions: Transaction[];
+  bankAccount: string;
+  upiId: string;
+  payoutSchedule: 'daily' | 'weekly' | 'monthly';
+  lastPayoutDate: string | null;
+}
+
 // ==================== PLATFORM CONFIGS ====================
 
 export const PLATFORMS: Record<PlatformId, PlatformConfig> = {
@@ -234,6 +254,73 @@ export function generateStack(connectedPlatforms: PlatformId[]): Order[] | null 
   return [o1, o2];
 }
 
+// ==================== SETTINGS ====================
+
+export interface AppSettings {
+  // Profile
+  profileName: string;
+  profileEmail: string;
+  profilePhone: string;
+
+  // Earnings & Finance
+  weeklyEarningGoal: number;
+  dailyTarget: number;
+  currency: string;
+  payoutSchedule: 'daily' | 'weekly' | 'monthly';
+
+  // Delivery Preferences
+  defaultVehicle: 'bicycle' | 'scooter' | 'car';
+  maxDeliveryDistance: number; // km 2-25
+  maxDailyKm: number; // 20-200
+  breakReminder: boolean;
+  breakInterval: 30 | 60 | 90 | 120; // minutes
+
+  // Notifications
+  pushNotifications: boolean;
+  orderAlerts: boolean;
+  earningsAlerts: boolean;
+  tipNotifications: boolean;
+  surgeAlerts: boolean;
+  soundEnabled: boolean;
+
+  // Platform Management
+  autoOnlineOnStart: boolean;
+  defaultPlatform: PlatformId | 'none';
+  acceptStackedOrders: boolean;
+
+  // App Settings
+  language: 'en' | 'hi' | 'kn';
+  theme: 'light' | 'dark' | 'system';
+  dataExportFormat: 'csv' | 'json' | 'pdf';
+}
+
+const DEFAULT_SETTINGS: AppSettings = {
+  profileName: '',
+  profileEmail: '',
+  profilePhone: '',
+  weeklyEarningGoal: 5000,
+  dailyTarget: 1000,
+  currency: 'INR',
+  payoutSchedule: 'weekly',
+  defaultVehicle: 'scooter',
+  maxDeliveryDistance: 10,
+  maxDailyKm: 80,
+  breakReminder: true,
+  breakInterval: 60,
+  pushNotifications: true,
+  orderAlerts: true,
+  earningsAlerts: true,
+  tipNotifications: true,
+  surgeAlerts: true,
+  soundEnabled: true,
+  autoOnlineOnStart: false,
+  defaultPlatform: 'none',
+  acceptStackedOrders: true,
+  language: 'en',
+  theme: 'light',
+  dataExportFormat: 'csv',
+};
+
 // ==================== STORE ====================
 
 interface GigRiderState {
@@ -283,6 +370,12 @@ interface GigRiderState {
   notifications: Notification[];
   unreadNotificationCount: number;
 
+  // Wallet
+  wallet: WalletState;
+
+  // Settings
+  settings: AppSettings;
+
   // Actions
   login: (name: string, phone: string, vehicle: RiderProfile['vehicleType']) => void;
   logout: () => void;
@@ -307,6 +400,9 @@ interface GigRiderState {
   markNotificationRead: (id: string) => void;
   markAllNotificationsRead: () => void;
   clearNotifications: () => void;
+  updateWallet: (partial: Partial<WalletState>) => void;
+  addTransaction: (transaction: Omit<Transaction, 'id'>) => void;
+  updateSettings: (partial: Partial<AppSettings>) => void;
   reset: () => void;
 }
 
@@ -396,6 +492,33 @@ export const useGigRiderStore = create<GigRiderState>()(
         { id: 'n6', type: 'stack_order', title: 'Smart Stack Match', description: '2 orders on the same route. Combined earnings: ₹95.', timestamp: Date.now() - 172800000, isRead: true },
       ],
       unreadNotificationCount: 3,
+
+      // Wallet
+      wallet: {
+        balance: Math.round(845 * 0.7), // 70% of todayEarnings
+        pendingAmount: Math.round(845 * 0.3), // 30% settlement in progress
+        transactions: [
+          { id: 'tx-1', type: 'delivery', amount: 65, description: 'Royal Biryani House delivery', platform: 'Swiggy', status: 'completed', timestamp: Date.now() - 1800000 },
+          { id: 'tx-2', type: 'tip', amount: 15, description: 'Tip from Royal Biryani order', platform: 'Swiggy', status: 'completed', timestamp: Date.now() - 1800000 },
+          { id: 'tx-3', type: 'delivery', amount: 52, description: 'The Spice Heritage delivery', platform: 'Zomato', status: 'completed', timestamp: Date.now() - 3600000 },
+          { id: 'tx-4', type: 'delivery', amount: 48, description: 'McKinley\'s Grill delivery', platform: 'Uber Eats', status: 'completed', timestamp: Date.now() - 7200000 },
+          { id: 'tx-5', type: 'bonus', amount: 100, description: 'Peak hour surge bonus', platform: 'Swiggy', status: 'completed', timestamp: Date.now() - 14400000 },
+          { id: 'tx-6', type: 'delivery', amount: 72, description: 'The Truffle Club delivery', platform: 'Zomato', status: 'completed', timestamp: Date.now() - 21600000 },
+          { id: 'tx-7', type: 'incentive', amount: 50, description: 'Weekly completion incentive', platform: 'Swiggy', status: 'pending', timestamp: Date.now() - 28800000 },
+          { id: 'tx-8', type: 'withdrawal', amount: -500, description: 'Withdrawal to HDFC Bank', platform: 'GigRider', status: 'completed', timestamp: Date.now() - 43200000 },
+          { id: 'tx-9', type: 'delivery', amount: 55, description: 'Imperial Wok delivery', platform: 'Uber Eats', status: 'completed', timestamp: Date.now() - 50400000 },
+          { id: 'tx-10', type: 'tip', amount: 20, description: 'Tip from Imperial Wok order', platform: 'Uber Eats', status: 'completed', timestamp: Date.now() - 50400000 },
+          { id: 'tx-11', type: 'referral', amount: 200, description: 'Referral bonus - Friend joined', platform: 'GigRider', status: 'completed', timestamp: Date.now() - 86400000 },
+          { id: 'tx-12', type: 'payout', amount: -3200, description: 'Weekly payout to HDFC Bank', platform: 'GigRider', status: 'completed', timestamp: Date.now() - 172800000 },
+        ],
+        bankAccount: 'HDFC Bank ****4523',
+        upiId: 'rider@upi',
+        payoutSchedule: 'weekly',
+        lastPayoutDate: new Date(Date.now() - 172800000).toISOString(),
+      },
+
+      // Settings
+      settings: DEFAULT_SETTINGS,
 
       // ---- ACTIONS ----
 
@@ -649,6 +772,31 @@ export const useGigRiderStore = create<GigRiderState>()(
         unreadNotificationCount: 0,
       }),
 
+      updateWallet: (partial) => set((state) => ({
+        wallet: { ...state.wallet, ...partial },
+      })),
+
+      addTransaction: (transaction) => set((state) => {
+        const newTx: Transaction = {
+          ...transaction,
+          id: `tx-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        };
+        const balanceChange = transaction.type === 'withdrawal' || transaction.type === 'payout'
+          ? -Math.abs(transaction.amount)
+          : Math.abs(transaction.amount);
+        return {
+          wallet: {
+            ...state.wallet,
+            transactions: [newTx, ...state.wallet.transactions],
+            balance: state.wallet.balance + balanceChange,
+          },
+        };
+      }),
+
+      updateSettings: (partial) => set((state) => ({
+        settings: { ...state.settings, ...partial },
+      })),
+
       reset: () => set({
         isAuthenticated: false,
         rider: null,
@@ -664,6 +812,16 @@ export const useGigRiderStore = create<GigRiderState>()(
         totalOnlineTime: 0,
         notifications: [],
         unreadNotificationCount: 0,
+        wallet: {
+          balance: 0,
+          pendingAmount: 0,
+          transactions: [],
+          bankAccount: '',
+          upiId: '',
+          payoutSchedule: 'weekly',
+          lastPayoutDate: null,
+        },
+        settings: DEFAULT_SETTINGS,
       }),
     }),
     {
@@ -684,6 +842,8 @@ export const useGigRiderStore = create<GigRiderState>()(
         totalOnlineTime: state.totalOnlineTime,
         notifications: state.notifications,
         unreadNotificationCount: state.unreadNotificationCount,
+        wallet: state.wallet,
+        settings: state.settings,
       }),
     }
   )

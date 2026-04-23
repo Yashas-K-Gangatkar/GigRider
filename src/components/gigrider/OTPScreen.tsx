@@ -6,7 +6,9 @@ import { Shield, CheckCircle2, ArrowRight, RotateCcw, Phone } from 'lucide-react
 
 interface OTPScreenProps {
   phone: string;
-  onVerified: () => void;
+  name?: string;
+  vehicleType?: string;
+  onVerified: (token: string, rider: { id: string; phone: string; name: string; vehicleType: string; rating: number; tier: string }) => void;
   onBack: () => void;
 }
 
@@ -20,7 +22,7 @@ const CONFETTI_PARTICLES = [
   { x: 25, y: -65, delay: 0.03 },
 ];
 
-export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps) {
+export default function OTPScreen({ phone, name, vehicleType, onVerified, onBack }: OTPScreenProps) {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
@@ -30,14 +32,42 @@ export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps)
   const [shakeError, setShakeError] = useState(false);
   const [countdownNumber, setCountdownNumber] = useState<number | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [verifyToken, setVerifyToken] = useState<string | null>(null);
+  const [devOtp, setDevOtp] = useState<string | null>(null);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Auto-focus first input on mount
+  // Auto-focus first input on mount + send OTP
   useEffect(() => {
     setTimeout(() => {
       inputRefs.current[0]?.focus();
     }, 500);
+    // Send OTP on mount
+    sendOtp();
   }, []);
+
+  const sendOtp = async () => {
+    setIsSendingOtp(true);
+    try {
+      const res = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setVerifyToken(data.verifyToken);
+        if (data.devOtp) setDevOtp(data.devOtp);
+      } else {
+        setError(data.error || 'Failed to send OTP');
+      }
+    } catch {
+      // Fallback: allow demo mode if API fails
+      console.warn('OTP API unavailable, using demo mode');
+      setVerifyToken('demo');
+    }
+    setIsSendingOtp(false);
+  };
 
   // Countdown timer for resend
   useEffect(() => {
@@ -67,23 +97,57 @@ export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps)
     setIsVerifying(true);
     setError('');
 
-    // DEMO: Accept any 6-digit OTP
-    setTimeout(() => {
-      setIsVerifying(false);
-      setIsVerified(true);
-      setShowConfetti(true);
+    const verifyWithApi = async () => {
+      try {
+        if (verifyToken && verifyToken !== 'demo') {
+          // Real API verification
+          const res = await fetch('/api/auth/verify-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone, otp: otpValue, verifyToken, name, vehicleType }),
+          });
+          const data = await res.json();
+          if (data.success) {
+            setIsVerified(true);
+            setShowConfetti(true);
+            setCountdownNumber(3);
+            const t1 = setTimeout(() => setCountdownNumber(2), 1000);
+            const t2 = setTimeout(() => setCountdownNumber(1), 2000);
+            const t3 = setTimeout(() => {
+              setCountdownNumber(null);
+              onVerified(data.token, data.rider);
+            }, 3000);
+            countdownTimersRef.current = [t1, t2, t3];
+            return;
+          } else {
+            setError(data.error || 'Invalid OTP');
+            setShakeError(true);
+            setTimeout(() => setShakeError(false), 500);
+            setIsVerifying(false);
+            return;
+          }
+        }
+      } catch {
+        console.warn('OTP verification API unavailable, using demo fallback');
+      }
 
-      // Start 3, 2, 1 countdown then navigate
-      setCountdownNumber(3);
-      const t1 = setTimeout(() => setCountdownNumber(2), 1000);
-      const t2 = setTimeout(() => setCountdownNumber(1), 2000);
-      const t3 = setTimeout(() => {
-        setCountdownNumber(null);
-        onVerified();
-      }, 3000);
-      countdownTimersRef.current = [t1, t2, t3];
-    }, 1500);
-  }, [isVerifying, isVerified, onVerified]);
+      // Demo fallback: accept any 6-digit OTP
+      setTimeout(() => {
+        setIsVerified(true);
+        setShowConfetti(true);
+        setCountdownNumber(3);
+        const t1 = setTimeout(() => setCountdownNumber(2), 1000);
+        const t2 = setTimeout(() => setCountdownNumber(1), 2000);
+        const t3 = setTimeout(() => {
+          setCountdownNumber(null);
+          onVerified('demo-token', { id: 'demo-rider', phone, name: name || `Rider ${phone.slice(-4)}`, vehicleType: vehicleType || 'bicycle', rating: 4.5, tier: 'bronze' });
+        }, 3000);
+        countdownTimersRef.current = [t1, t2, t3];
+      }, 1500);
+    };
+
+    verifyWithApi();
+  }, [isVerifying, isVerified, onVerified, phone, name, vehicleType, verifyToken]);
 
   const tryAutoVerify = useCallback((newOtp: string[]) => {
     const otpValue = newOtp.join('');
@@ -128,12 +192,13 @@ export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps)
     }
   };
 
-  const handleResend = () => {
+  const handleResend = async () => {
     setOtp(['', '', '', '', '', '']);
     setCountdown(30);
     setCanResend(false);
     setError('');
     inputRefs.current[0]?.focus();
+    await sendOtp();
   };
 
   const maskedPhone = phone
@@ -362,12 +427,21 @@ export default function OTPScreen({ phone, onVerified, onBack }: OTPScreenProps)
               transition={{ delay: 1 }}
               className="bg-[#C9A96E]/8 border border-[#C9A96E]/15 rounded-xl p-3 mb-6"
             >
-              <p
-                className="text-[10px] text-[#8B5E3C] text-center"
-                style={{ fontFamily: 'var(--font-lora), serif' }}
-              >
-                <span className="font-semibold">Demo Mode:</span> Enter any 6 digits to continue
-              </p>
+              {devOtp ? (
+                <p
+                  className="text-[10px] text-[#8B5E3C] text-center"
+                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                >
+                  <span className="font-semibold">Dev Mode:</span> Your OTP is <span className="font-bold text-[#1B2A4A]">{devOtp}</span>
+                </p>
+              ) : (
+                <p
+                  className="text-[10px] text-[#8B5E3C] text-center"
+                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                >
+                  <span className="font-semibold">Demo Mode:</span> Enter any 6 digits to continue
+                </p>
+              )}
             </motion.div>
 
             {/* Resend */}

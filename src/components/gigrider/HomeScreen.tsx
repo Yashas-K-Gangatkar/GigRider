@@ -1,11 +1,14 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { useGigRiderStore, PLATFORMS, type PlatformId } from '@/lib/store';
 import { useOrderTimers, formatOnlineTime } from '@/hooks/use-order-simulation';
+import { usePWA } from '@/hooks/usePWA';
+import { useNotifications } from '@/hooks/useNotifications';
+import { createRiderNotification, NotificationTypes } from '@/lib/notifications';
 import {
   Bell,
   MapPin,
@@ -27,6 +30,8 @@ import {
   DollarSign,
   Star,
   Gift,
+  Download,
+  Map,
 } from 'lucide-react';
 
 const PLATFORM_CONFIG: Record<string, { name: string; color: string; bg: string; letter: string }> = {};
@@ -48,7 +53,7 @@ function getTimeEmoji(): string {
   return '\uD83C\uDF19';
 }
 
-export default function HomeScreen({ onOpenNotifications }: { onOpenNotifications?: () => void } = {}) {
+export default function HomeScreen({ onOpenNotifications, onOpenMap }: { onOpenNotifications?: () => void; onOpenMap?: () => void } = {}) {
   const isOnline = useGigRiderStore(s => s.isOnline);
   const smartMode = useGigRiderStore(s => s.smartMode);
   const incomingOrders = useGigRiderStore(s => s.incomingOrders);
@@ -69,6 +74,9 @@ export default function HomeScreen({ onOpenNotifications }: { onOpenNotification
   const completeActiveDelivery = useGigRiderStore(s => s.completeActiveDelivery);
 
   const timers = useOrderTimers();
+  const { isInstallable, installApp } = usePWA();
+  const { permission, requestPermission, notify } = useNotifications();
+  const [showInstallBanner, setShowInstallBanner] = useState(true);
   const [showStats, setShowStats] = useState(false);
   const [showDeliveredSuccess, setShowDeliveredSuccess] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -109,6 +117,19 @@ export default function HomeScreen({ onOpenNotifications }: { onOpenNotification
     const currentCount = filteredOrders.length;
     if (currentCount > prevOrderCountRef.current && prevOrderCountRef.current >= 0 && isOnline) {
       setBellRinging(true);
+      // Send browser push notification for new order
+      const settings = useGigRiderStore.getState().settings;
+      if (settings.pushNotifications && settings.orderAlerts && Notification.permission === 'granted') {
+        const latestOrder = filteredOrders[0];
+        if (latestOrder) {
+          createRiderNotification(
+            NotificationTypes.NEW_ORDER,
+            'New Order Available',
+            `${latestOrder.restaurant} — ₹${latestOrder.earnings} · ${latestOrder.distance} km`,
+            { orderId: latestOrder.id }
+          );
+        }
+      }
       const timer = setTimeout(() => setBellRinging(false), 1500);
       prevOrderCountRef.current = currentCount;
       return () => clearTimeout(timer);
@@ -137,6 +158,18 @@ export default function HomeScreen({ onOpenNotifications }: { onOpenNotification
     setTimeout(() => setIsRefreshing(false), 1500);
   };
 
+  // Navigate to Google Maps for active delivery
+  const handleNavigate = useCallback(() => {
+    if (!activeDelivery) return;
+    // Use Bangalore center as fallback for rider position
+    const lat = 12.9716;
+    const lng = 77.5946;
+    window.open(
+      `https://www.google.com/maps/dir/?api=1&origin=${lat},${lng}&destination=${lat - 0.006},${lng + 0.01}&travelmode=driving`,
+      '_blank'
+    );
+  }, [activeDelivery]);
+
   const activePlatforms = connectedPlatforms.map(p => p.id);
   const riderName = rider?.name || 'Rider';
   const firstName = riderName.split(' ')[0];
@@ -148,6 +181,35 @@ export default function HomeScreen({ onOpenNotifications }: { onOpenNotification
 
   return (
     <div className="min-h-screen bg-[#FAF7F2] pb-24">
+      {/* Install App Banner */}
+      <AnimatePresence>
+        {isInstallable && showInstallBanner && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="sticky top-0 z-50 bg-[#1B2A4A] text-[#FAF7F2] px-4 py-2.5 flex items-center gap-3"
+          >
+            <Download className="w-4 h-4 text-[#C9A96E] shrink-0" />
+            <p className="text-xs flex-1" style={{ fontFamily: 'var(--font-lora), serif' }}>
+              Install GigRider for the best experience
+            </p>
+            <button
+              onClick={installApp}
+              className="px-3 py-1 bg-[#C9A96E] rounded text-xs font-bold text-[#1B2A4A] shrink-0"
+              style={{ fontFamily: 'var(--font-lora), serif' }}
+            >
+              Install
+            </button>
+            <button
+              onClick={() => setShowInstallBanner(false)}
+              className="p-0.5 hover:bg-white/10 rounded shrink-0"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* Full-screen delivered success overlay */}
       <AnimatePresence>
         {showDeliveredSuccess && (
@@ -482,6 +544,25 @@ export default function HomeScreen({ onOpenNotifications }: { onOpenNotification
         </div>
       </div>
 
+      {/* Quick Actions: Map */}
+      {onOpenMap && (
+        <div className="px-4 pt-2">
+          <motion.button
+            onClick={onOpenMap}
+            whileTap={{ scale: 0.97 }}
+            className="w-full flex items-center justify-between py-2.5 px-4 rounded-xl bg-white border border-[#D5CBBF] hover:bg-[#FAF7F2] transition-colors card-elegant"
+          >
+            <div className="flex items-center gap-2">
+              <Map className="w-4 h-4 text-[#C9A96E]" />
+              <span className="text-sm font-medium text-[#1B2A4A]" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                Open Live Map
+              </span>
+            </div>
+            <ChevronRight className="w-4 h-4 text-[#7A7168]" />
+          </motion.button>
+        </div>
+      )}
+
       {/* Active Delivery Card */}
       {activeDelivery && isOnline && (
         <motion.div
@@ -592,6 +673,7 @@ export default function HomeScreen({ onOpenNotifications }: { onOpenNotification
 
             <div className="flex gap-2">
               <button
+                onClick={handleNavigate}
                 className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-[#1B2A4A] rounded-lg text-sm font-semibold text-[#FAF7F2] active:scale-[0.97] transition-all duration-200 shadow-sm"
                 style={{ fontFamily: 'var(--font-lora), serif' }}
               >

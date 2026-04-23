@@ -1,0 +1,40 @@
+{
+  "name": "GigRider — Delivery Rider Aggregator",
+  "short_name": "GigRider",
+  "description": "The Ultimate Delivery Rider Aggregation App — Manage all your gig platforms in one elegant dashboard",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFBF0",
+  "theme_color": "#1B2A4A",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/gigrider-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/gigrider-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "finance", "lifestyle"],
+  "shortcuts": [
+    {
+      "name": "Go Online",
+      "short_name": "Online",
+      "url": "/?action=online",
+      "icons": [{"src": "/gigrider-logo.png", "sizes": "96x96"}]
+    },
+    {
+      "name": "Earnings",
+      "short_name": "Earnings",
+      "url": "/?tab=earnings",
+      "icons": [{"src": "/gigrider-logo.png", "sizes": "96x96"}]
+    }
+  ]
+}

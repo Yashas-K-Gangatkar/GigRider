@@ -70,9 +70,10 @@ const DOCUMENTS = [
 
 interface ProfileScreenProps {
   onLogout?: () => void;
+  onOpenSettings?: () => void;
 }
 
-export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
+export default function ProfileScreen({ onLogout, onOpenSettings }: ProfileScreenProps) {
   const [showAllAchievements, setShowAllAchievements] = useState(false);
 
   const rider = useGigRiderStore(s => s.rider);
@@ -95,8 +96,17 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
     fleet: 'Fleet Manager',
   };
 
-  // MPGCS Score
-  const mpgcsScore = 742;
+  // MPGCS Score - derived from platform data
+  const avgRating = connectedPlatforms.length > 0
+    ? connectedPlatforms.reduce((s, p) => s + p.rating, 0) / connectedPlatforms.length
+    : profileRating;
+  const avgAcceptance = connectedPlatforms.length > 0
+    ? connectedPlatforms.reduce((s, p) => s + (p.acceptanceRate || 85), 0) / connectedPlatforms.length
+    : 85;
+  const avgCompletion = connectedPlatforms.length > 0
+    ? connectedPlatforms.reduce((s, p) => s + (p.completionRate || 95), 0) / connectedPlatforms.length
+    : 95;
+  const mpgcsScore = Math.round((avgRating / 5 * 300) + (avgAcceptance / 100 * 300) + (avgCompletion / 100 * 300));
   const mpgcsMax = 900;
   const mpgcsPercent = mpgcsScore / mpgcsMax;
 
@@ -408,9 +418,9 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
           {/* Mini score factors */}
           <div className="grid grid-cols-3 gap-2 mt-3">
             {[
-              { label: 'Rating', value: '92', pct: 92 },
-              { label: 'Acceptance', value: '88', pct: 88 },
-              { label: 'Completion', value: '97', pct: 97 },
+              { label: 'Rating', value: Math.round(avgRating / 5 * 100), pct: Math.round(avgRating / 5 * 100) },
+              { label: 'Acceptance', value: Math.round(avgAcceptance), pct: Math.round(avgAcceptance) },
+              { label: 'Completion', value: Math.round(avgCompletion), pct: Math.round(avgCompletion) },
             ].map((factor) => (
               <div key={factor.label} className="text-center">
                 <p
@@ -449,7 +459,7 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
             { icon: Package, label: 'Total Deliveries', value: profileTotalDeliveries.toLocaleString(), color: 'text-[#1B2A4A]' },
             { icon: TrendingUp, label: 'Total Earnings', value: `₹${profileTotalEarnings.toLocaleString()}`, color: 'text-[#8B5E3C]' },
             { icon: Star, label: 'Average Rating', value: profileRating.toString(), color: 'text-[#C9A96E]' },
-            { icon: Zap, label: 'Completion Rate', value: '97%', color: 'text-[#2C4A3E]' },
+            { icon: Zap, label: 'Completion Rate', value: `${Math.round(avgCompletion)}%`, color: 'text-[#2C4A3E]' },
           ].map((stat, index) => (
             <motion.div
               key={stat.label}
@@ -509,9 +519,16 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
             >
               GIGRIDE500
             </div>
-            <motion.button
+          <motion.button
               whileTap={{ scale: 0.95 }}
               whileHover={{ scale: 1.02 }}
+              onClick={() => {
+                if (navigator.share) {
+                  navigator.share({ title: 'Join GigRider', text: 'Use my referral code GIGRIDE500 to get ₹100 bonus!', url: 'https://gigrider.app' });
+                } else {
+                  navigator.clipboard.writeText('GIGRIDE500');
+                }
+              }}
               className="px-5 py-2.5 bg-[#C9A96E] rounded-lg text-xs font-bold text-[#1B2A4A] flex items-center gap-1.5 shrink-0"
               style={{ fontFamily: 'var(--font-lora), serif' }}
             >
@@ -755,15 +772,23 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
           transition={{ delay: 0.4 }}
           className="bg-white rounded-xl border border-[#D5CBBF] overflow-hidden card-elegant"
         >
-          <div className="p-4 pb-2">
-            <h3
-              className="text-sm font-semibold text-[#2C2C2C] flex items-center gap-2"
-              style={{ fontFamily: 'var(--font-playfair), serif' }}
-            >
+          <button
+            onClick={onOpenSettings}
+            className="w-full p-4 flex items-center justify-between hover:bg-[#F5F0EB] transition-colors duration-200"
+          >
+            <div className="flex items-center gap-2">
               <Settings className="w-4 h-4 text-[#1B2A4A]" />
-              Settings
-            </h3>
-          </div>
+              <h3
+                className="text-sm font-semibold text-[#2C2C2C]"
+                style={{ fontFamily: 'var(--font-playfair), serif' }}
+              >
+                Settings
+              </h3>
+            </div>
+            <ChevronRight className="w-4 h-4 text-[#7A7168]" />
+          </button>
+
+          <Separator className="bg-[#F0EBE4]" />
 
           {settingsWithDynamic.map((item, index) => (
             <motion.div
@@ -772,7 +797,10 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 + index * 0.05 }}
             >
-              <button className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-[#F5F0EB] transition-colors duration-200">
+              <button
+                onClick={onOpenSettings}
+                className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-[#F5F0EB] transition-colors duration-200"
+              >
                 <div className="flex items-center gap-3">
                   <item.icon className="w-4 h-4 text-[#7A7168]" />
                   <span

@@ -53,7 +53,7 @@ function AnimatedCounter({ target, prefix = '₹', duration = 1500 }: { target: 
   );
 }
 
-export default function EarningsScreen() {
+export default function EarningsScreen({ onOpenWallet }: { onOpenWallet?: () => void }) {
   const [period, setPeriod] = useState<'week' | 'month'>('week');
 
   const weekEarnings = useGigRiderStore(s => s.weekEarnings);
@@ -641,13 +641,26 @@ export default function EarningsScreen() {
                 <AnimatedCounter target={payoutBalance} />
               </p>
             </div>
-            <button
-              onClick={() => toast({ title: 'Coming soon!', description: 'Withdrawal feature is under development.' })}
-              className="px-4 py-2 bg-[#1B2A4A] rounded-lg text-sm font-semibold text-[#FAF7F2] active:scale-[0.97] transition-all duration-200 shadow-sm hover:bg-[#2A3F6A]"
-              style={{ fontFamily: 'var(--font-lora), serif' }}
-            >
-              Withdraw
-            </button>
+            <div className="flex items-center gap-2">
+              {onOpenWallet && (
+                <motion.button
+                  onClick={onOpenWallet}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-3 py-2 bg-[#C9A96E]/10 rounded-lg text-[11px] font-semibold text-[#8B5E3C] active:bg-[#C9A96E]/20 transition-colors flex items-center gap-1.5"
+                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                >
+                  <Wallet className="w-3.5 h-3.5" />
+                  View Wallet
+                </motion.button>
+              )}
+              <button
+                onClick={() => toast({ title: 'Coming soon!', description: 'Withdrawal feature is under development.' })}
+                className="px-4 py-2 bg-[#1B2A4A] rounded-lg text-sm font-semibold text-[#FAF7F2] active:scale-[0.97] transition-all duration-200 shadow-sm hover:bg-[#2A3F6A]"
+                style={{ fontFamily: 'var(--font-lora), serif' }}
+              >
+                Withdraw
+              </button>
+            </div>
           </div>
 
           <div className="bg-[#F5F0EB] rounded-lg p-3 flex items-center justify-between">
