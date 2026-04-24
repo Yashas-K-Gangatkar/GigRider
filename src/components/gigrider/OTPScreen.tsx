@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, CheckCircle2, ArrowRight, RotateCcw, Phone } from 'lucide-react';
+import { runFraudCheck } from '@/lib/fraudPrevention';
 
 interface OTPScreenProps {
   phone: string;
@@ -116,6 +117,10 @@ export default function OTPScreen({ phone, name, vehicleType, onVerified, onBack
             const t3 = setTimeout(() => {
               setCountdownNumber(null);
               onVerified(data.token, data.rider);
+              // Run fraud check silently in background after signup
+              runFraudCheck({ riderId: data.rider.id, phone }).catch(() => {
+                // Silently fail - fraud check is non-blocking
+              });
             }, 3000);
             countdownTimersRef.current = [t1, t2, t3];
             return;
@@ -141,6 +146,8 @@ export default function OTPScreen({ phone, name, vehicleType, onVerified, onBack
         const t3 = setTimeout(() => {
           setCountdownNumber(null);
           onVerified('demo-token', { id: 'demo-rider', phone, name: name || `Rider ${phone.slice(-4)}`, vehicleType: vehicleType || 'bicycle', rating: 4.5, tier: 'bronze' });
+          // Run fraud check silently in background after signup
+          runFraudCheck({ riderId: 'demo-rider', phone }).catch(() => {});
         }, 3000);
         countdownTimersRef.current = [t1, t2, t3];
       }, 1500);

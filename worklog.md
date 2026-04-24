@@ -125,3 +125,36 @@ Stage Summary:
 - Runtime ReferenceError fixed by correcting CSS font-family syntax in style objects
 - All 5 expanded delivery detail labels (Pickup, Drop-off, Duration, Platform, Tip) now use correct font-family string
 - File modified: `/home/z/my-project/src/components/gigrider/ActivityScreen.tsx`
+---
+Task ID: fraud-prevention-system
+Agent: Main Agent
+Task: Implement complete fraud prevention system for referral program with all 7 layers
+
+Work Log:
+- Verified existing fraud prevention infrastructure (already built from prior sessions)
+- Connected KYCVerificationScreen to app navigation (page.tsx + BottomNav ScreenType)
+- Added 'kyc' screen type to BottomNav, page.tsx routing, and hide bottom nav on KYC screen
+- Fixed WalletScreen: added 'on_hold' status badge with Shield icon and hold days display
+- Added locked referral amount (₹400) display in wallet balance card (3-column grid: Available/Pending/On Hold)
+- Added 'On Hold' filter tab to transaction history filters
+- Added fraud hold explanation in expanded transaction details for on_hold referrals
+- Enhanced ProfileScreen with KYC Verification Card showing Aadhaar/Selfie/PAN/Bank progress
+- Enhanced ProfileScreen Invite Friends card with referral rules explanation (10 deliveries + KYC + 7-day hold)
+- Added referral stats mini bar (Invited/Qualified/Earned/On Hold) to referral card
+- Added Referral Tracker section showing each friend's progress with delivery count and status
+- Added fraud check (runFraudCheck) to OTPScreen after successful signup (both API and demo modes)
+- Referral amounts already set to ₹200 referrer / ₹100 referee (from prior session)
+- Build passes cleanly
+
+Stage Summary:
+- All 7 fraud prevention layers are now connected and visible in the app:
+  1. Device Fingerprint - runs on signup via runFraudCheck
+  2. Aadhaar + Selfie Match - accessible from Profile → KYC Verification
+  3. Bank Account Linking - Step 4 in KYC flow
+  4. Minimum Activity (10 deliveries) - visible in Referral Tracker progress bars
+  5. 7-Day Hold - visible in Wallet balance card "On Hold" section + transaction badges
+  6. IP + Location Cluster Detection - runs via fraud-check API on signup
+  7. PAN Card Verification - Step 3 in KYC flow
+- Referral amounts: ₹200 (referrer) / ₹100 (referee) - confirmed working
+- Wallet now shows 3-column breakdown with locked referral amount
+- ProfileScreen shows KYC status, referral stats, and per-friend tracking

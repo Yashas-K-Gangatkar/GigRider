@@ -71,14 +71,19 @@ const DOCUMENTS = [
 interface ProfileScreenProps {
   onLogout?: () => void;
   onOpenSettings?: () => void;
+  onOpenKYC?: () => void;
 }
 
-export default function ProfileScreen({ onLogout, onOpenSettings }: ProfileScreenProps) {
+export default function ProfileScreen({ onLogout, onOpenSettings, onOpenKYC }: ProfileScreenProps) {
   const [showAllAchievements, setShowAllAchievements] = useState(false);
 
   const rider = useGigRiderStore(s => s.rider);
   const connectedPlatforms = useGigRiderStore(s => s.connectedPlatforms);
   const logout = useGigRiderStore(s => s.logout);
+  const kyc = useGigRiderStore(s => s.kyc);
+  const referrals = useGigRiderStore(s => s.referrals);
+  const referralStats = useGigRiderStore(s => s.referralStats);
+  const referralCode = useGigRiderStore(s => s.referralCode);
 
   // Derive profile data from store
   const profileName = rider?.name || 'Rider';
@@ -485,6 +490,86 @@ export default function ProfileScreen({ onLogout, onOpenSettings }: ProfileScree
           ))}
         </motion.div>
 
+        {/* ─── KYC Verification Card ─── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.11 }}
+          className="bg-white rounded-xl p-5 border border-[#D5CBBF] card-elegant"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-[#1B2A4A]/8 flex items-center justify-center">
+                <Shield className="w-4 h-4 text-[#1B2A4A]" />
+              </div>
+              <div>
+                <h3
+                  className="text-sm font-semibold text-[#2C2C2C]"
+                  style={{ fontFamily: 'var(--font-playfair), serif' }}
+                >
+                  Identity Verification
+                </h3>
+                <p
+                  className="text-[9px] text-[#7A7168]"
+                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                >
+                  Required for referral bonuses & withdrawals
+                </p>
+              </div>
+            </div>
+            <Badge className={`text-[8px] font-semibold ${
+              kyc.overallStatus === 'fully_verified'
+                ? 'bg-[#2C4A3E]/10 text-[#2C4A3E] border-[#2C4A3E]/15'
+                : kyc.overallStatus === 'basic_verified'
+                ? 'bg-[#C9A96E]/15 text-[#8B5E3C] border-[#C9A96E]/25'
+                : 'bg-[#7A7168]/10 text-[#7A7168] border-[#7A7168]/20'
+            }`}>
+              {kyc.overallStatus === 'fully_verified' ? 'Verified' : kyc.overallStatus === 'basic_verified' ? 'Basic' : 'Unverified'}
+            </Badge>
+          </div>
+
+          {/* KYC Steps Progress */}
+          <div className="grid grid-cols-4 gap-2">
+            {[
+              { label: 'Aadhaar', done: kyc.aadhaarVerified },
+              { label: 'Selfie', done: kyc.selfieVerified && kyc.livenessPassed },
+              { label: 'PAN', done: kyc.panVerified },
+              { label: 'Bank', done: kyc.bankVerified },
+            ].map((step) => (
+              <div key={step.label} className="text-center">
+                <div className={`w-7 h-7 rounded-full mx-auto mb-1 flex items-center justify-center ${
+                  step.done ? 'bg-[#2C4A3E]/10' : 'bg-[#D5CBBF]/50'
+                }`}>
+                  {step.done ? (
+                    <CheckCircle2 className="w-4 h-4 text-[#2C4A3E]" />
+                  ) : (
+                    <Lock className="w-3 h-3 text-[#7A7168]/50" />
+                  )}
+                </div>
+                <p
+                  className={`text-[8px] font-semibold ${step.done ? 'text-[#2C4A3E]' : 'text-[#7A7168]/50'}`}
+                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                >
+                  {step.label}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {kyc.overallStatus !== 'fully_verified' && (
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              whileHover={{ scale: 1.01 }}
+              onClick={onOpenKYC}
+              className="w-full mt-3 py-2.5 bg-[#1B2A4A] rounded-lg text-xs font-bold text-[#FAF7F2] flex items-center justify-center gap-2"
+              style={{ fontFamily: 'var(--font-lora), serif' }}
+            >
+              <Shield className="w-3.5 h-3.5" />
+              {kyc.level === 0 ? 'Start Verification' : 'Continue Verification'}
+            </motion.button>
+          )}
+        </motion.div>
+
         {/* ─── Invite Friends Referral Card ─── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -507,7 +592,13 @@ export default function ProfileScreen({ onLogout, onOpenSettings }: ProfileScree
                 className="text-xs text-[#7A7168] mt-0.5"
                 style={{ fontFamily: 'var(--font-lora), serif' }}
               >
-                Earn <span className="font-bold text-[#C9A96E]">₹500</span> per referral — your friends get ₹100 too!
+                Earn <span className="font-bold text-[#C9A96E]">₹200</span> per referral — your friends get ₹100 too!
+              </p>
+              <p
+                className="text-[9px] text-[#7A7168]/70 mt-1"
+                style={{ fontFamily: 'var(--font-lora), serif' }}
+              >
+                Friend must complete 10 deliveries + KYC. Bonus on 7-day hold before payout.
               </p>
             </div>
           </div>
@@ -517,16 +608,17 @@ export default function ProfileScreen({ onLogout, onOpenSettings }: ProfileScree
               className="flex-1 px-3 py-2.5 bg-white rounded-lg border border-[#D5CBBF] text-sm font-bold text-[#1B2A4A] tracking-wider text-center"
               style={{ fontFamily: 'var(--font-playfair), serif' }}
             >
-              GIGRIDE500
+              {referralCode || 'GIGRIDE200'}
             </div>
           <motion.button
               whileTap={{ scale: 0.95 }}
               whileHover={{ scale: 1.02 }}
               onClick={() => {
+                const code = referralCode || 'GIGRIDE200';
                 if (navigator.share) {
-                  navigator.share({ title: 'Join GigRider', text: 'Use my referral code GIGRIDE500 to get ₹100 bonus!', url: 'https://gigrider.app' });
+                  navigator.share({ title: 'Join GigRider', text: `Use my referral code ${code} to get ₹100 bonus!`, url: 'https://gigrider.app' });
                 } else {
-                  navigator.clipboard.writeText('GIGRIDE500');
+                  navigator.clipboard.writeText(code);
                 }
               }}
               className="px-5 py-2.5 bg-[#C9A96E] rounded-lg text-xs font-bold text-[#1B2A4A] flex items-center gap-1.5 shrink-0"
@@ -536,7 +628,105 @@ export default function ProfileScreen({ onLogout, onOpenSettings }: ProfileScree
               Share Invite
             </motion.button>
           </div>
+
+          {/* Referral Stats Mini Bar */}
+          <div className="grid grid-cols-4 gap-2 mt-3">
+            {[
+              { label: 'Invited', value: referralStats.totalReferred, color: 'text-[#1B2A4A]' },
+              { label: 'Qualified', value: referralStats.qualified, color: 'text-[#2C4A3E]' },
+              { label: 'Earned', value: `₹${referralStats.earned}`, color: 'text-[#C9A96E]' },
+              { label: 'On Hold', value: `₹${referralStats.onHold}`, color: 'text-[#7A7168]' },
+            ].map((stat) => (
+              <div key={stat.label} className="text-center bg-white/50 rounded-lg py-1.5">
+                <p className={`text-xs font-bold ${stat.color}`} style={{ fontFamily: 'var(--font-playfair), serif' }}>
+                  {stat.value}
+                </p>
+                <p className="text-[7px] text-[#7A7168] uppercase tracking-wider" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                  {stat.label}
+                </p>
+              </div>
+            ))}
+          </div>
         </motion.div>
+
+        {/* ─── Referral Tracker ─── */}
+        {referrals.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.13 }}
+            className="bg-white rounded-xl p-5 border border-[#D5CBBF] card-elegant"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-[#1B2A4A]" />
+                <h3
+                  className="text-sm font-semibold text-[#2C2C2C]"
+                  style={{ fontFamily: 'var(--font-playfair), serif' }}
+                >
+                  Referral Tracker
+                </h3>
+              </div>
+              <Badge className="bg-[#C9A96E]/15 text-[#8B5E3C] border-[#C9A96E]/25 text-[8px]">
+                {referrals.length} friends
+              </Badge>
+            </div>
+
+            <div className="space-y-2">
+              {referrals.slice(0, 5).map((ref) => {
+                const progress = Math.min(100, Math.round((ref.refereeDeliveriesCompleted / ref.deliveriesRequired) * 100));
+                const statusColors: Record<string, { bg: string; text: string; label: string }> = {
+                  paid: { bg: 'bg-[#2C4A3E]/10', text: 'text-[#2C4A3E]', label: 'Paid' },
+                  on_hold: { bg: 'bg-[#1B2A4A]/10', text: 'text-[#1B2A4A]', label: `${ref.holdDaysRemaining}d hold` },
+                  qualified: { bg: 'bg-[#C9A96E]/10', text: 'text-[#8B5E3C]', label: 'Qualified' },
+                  pending: { bg: 'bg-[#7A7168]/10', text: 'text-[#7A7168]', label: 'In Progress' },
+                  fraud_detected: { bg: 'bg-[#722F37]/10', text: 'text-[#722F37]', label: 'Flagged' },
+                  rejected: { bg: 'bg-[#722F37]/10', text: 'text-[#722F37]', label: 'Rejected' },
+                };
+                const statusInfo = statusColors[ref.status] || statusColors.pending;
+
+                return (
+                  <div key={ref.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-[#FAF7F2] border border-[#F0EBE4]">
+                    <div className="w-8 h-8 rounded-full bg-[#1B2A4A]/10 flex items-center justify-center text-xs font-bold text-[#1B2A4A] shrink-0" style={{ fontFamily: 'var(--font-playfair), serif' }}>
+                      {ref.refereeName.charAt(0)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-xs font-medium text-[#2C2C2C] truncate" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                          {ref.refereeName}
+                        </p>
+                        <span className={`text-[7px] font-bold px-1.5 py-0.5 rounded-full ${statusInfo.bg} ${statusInfo.text} shrink-0`}>
+                          {statusInfo.label}
+                        </span>
+                      </div>
+                      {/* Progress bar for pending referrals */}
+                      {ref.status === 'pending' && (
+                        <div>
+                          <div className="w-full bg-[#E8E0D4] rounded-full h-1.5">
+                            <motion.div
+                              className="h-1.5 rounded-full bg-[#C9A96E]"
+                              initial={{ width: 0 }}
+                              animate={{ width: `${progress}%` }}
+                              transition={{ duration: 0.8 }}
+                            />
+                          </div>
+                          <p className="text-[7px] text-[#7A7168] mt-0.5" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                            {ref.refereeDeliveriesCompleted}/{ref.deliveriesRequired} deliveries
+                          </p>
+                        </div>
+                      )}
+                      {ref.status === 'on_hold' && (
+                        <p className="text-[7px] text-[#7A7168]" style={{ fontFamily: 'var(--font-lora), serif' }}>
+                          ₹{ref.referrerBonusAmount} bonus in {ref.holdDaysRemaining}-day fraud hold
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
 
         {/* ─── Documents Section ─── */}
         <motion.div

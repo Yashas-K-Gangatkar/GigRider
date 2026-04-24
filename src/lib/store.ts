@@ -116,13 +116,15 @@ export interface Transaction {
   amount: number;
   description: string;
   platform: string;
-  status: 'completed' | 'pending' | 'failed';
+  status: 'completed' | 'pending' | 'failed' | 'on_hold';
   timestamp: number;
+  holdDaysRemaining?: number; // For referral bonuses on 7-day hold
 }
 
 export interface WalletState {
   balance: number;
   pendingAmount: number;
+  lockedReferralAmount: number; // Referral bonuses on 7-day hold
   transactions: Transaction[];
   bankAccount: string;
   upiId: string;
@@ -254,6 +256,55 @@ export function generateStack(connectedPlatforms: PlatformId[]): Order[] | null 
   return [o1, o2];
 }
 
+// ==================== REFERRAL & KYC ====================
+
+export interface ReferralRecord {
+  id: string;
+  referrerId: string;
+  refereeId: string;
+  refereeName: string; // Name of the friend who joined
+  status: 'pending' | 'qualified' | 'on_hold' | 'paid' | 'rejected' | 'fraud_detected';
+  referrerBonusAmount: number;
+  refereeBonusAmount: number;
+  refereeDeliveriesCompleted: number;
+  deliveriesRequired: number; // 10
+  holdDaysRemaining: number;
+  qualifiedAt: number | null;
+  holdEndDate: number | null;
+  createdAt: number;
+}
+
+export interface KYCState {
+  level: number; // 0=none, 1=basic(Aadhaar), 2=full(all verified)
+  overallStatus: 'unverified' | 'pending' | 'basic_verified' | 'fully_verified' | 'rejected';
+  aadhaarVerified: boolean;
+  panVerified: boolean;
+  selfieVerified: boolean;
+  bankVerified: boolean;
+  livenessPassed: boolean;
+  bankName: string;
+  bankAccountMasked: string; // e.g. "****4523"
+  upiId: string;
+}
+
+export const DEFAULT_KYC: KYCState = {
+  level: 0,
+  overallStatus: 'unverified',
+  aadhaarVerified: false,
+  panVerified: false,
+  selfieVerified: false,
+  bankVerified: false,
+  livenessPassed: false,
+  bankName: '',
+  bankAccountMasked: '',
+  upiId: '',
+};
+
+export const REFERRAL_BONUS_REFERRER = 200; // ₹200 for the person who refers
+export const REFERRAL_BONUS_REFEREE = 100;  // ₹100 for the new user
+export const REFERRAL_MIN_DELIVERIES = 10;  // Must complete 10 deliveries
+export const REFERRAL_HOLD_DAYS = 7;        // 7-day hold after qualifying
+
 // ==================== SETTINGS ====================
 
 export interface AppSettings {
@@ -373,6 +424,14 @@ interface GigRiderState {
   // Wallet
   wallet: WalletState;
 
+  // Referral tracking
+  referralCode: string;
+  referralStats: { totalReferred: number; qualified: number; earned: number; pending: number; onHold: number; };
+  referrals: ReferralRecord[];
+
+  // KYC
+  kyc: KYCState;
+
   // Settings
   settings: AppSettings;
 
@@ -402,6 +461,10 @@ interface GigRiderState {
   clearNotifications: () => void;
   updateWallet: (partial: Partial<WalletState>) => void;
   addTransaction: (transaction: Omit<Transaction, 'id'>) => void;
+  updateReferralStats: (stats: Partial<GigRiderState['referralStats']>) => void;
+  addReferral: (referral: ReferralRecord) => void;
+  updateReferral: (id: string, updates: Partial<ReferralRecord>) => void;
+  updateKYC: (partial: Partial<KYCState>) => void;
   updateSettings: (partial: Partial<AppSettings>) => void;
   reset: () => void;
 }
@@ -497,6 +560,7 @@ export const useGigRiderStore = create<GigRiderState>()(
       wallet: {
         balance: Math.round(845 * 0.7), // 70% of todayEarnings
         pendingAmount: Math.round(845 * 0.3), // 30% settlement in progress
+        lockedReferralAmount: 400, // ₹400 in referral bonuses on 7-day hold
         transactions: [
           { id: 'tx-1', type: 'delivery', amount: 65, description: 'Royal Biryani House delivery', platform: 'Swiggy', status: 'completed', timestamp: Date.now() - 1800000 },
           { id: 'tx-2', type: 'tip', amount: 15, description: 'Tip from Royal Biryani order', platform: 'Swiggy', status: 'completed', timestamp: Date.now() - 1800000 },
@@ -508,14 +572,30 @@ export const useGigRiderStore = create<GigRiderState>()(
           { id: 'tx-8', type: 'withdrawal', amount: -500, description: 'Withdrawal to HDFC Bank', platform: 'GigRider', status: 'completed', timestamp: Date.now() - 43200000 },
           { id: 'tx-9', type: 'delivery', amount: 55, description: 'Imperial Wok delivery', platform: 'Uber Eats', status: 'completed', timestamp: Date.now() - 50400000 },
           { id: 'tx-10', type: 'tip', amount: 20, description: 'Tip from Imperial Wok order', platform: 'Uber Eats', status: 'completed', timestamp: Date.now() - 50400000 },
-          { id: 'tx-11', type: 'referral', amount: 200, description: 'Referral bonus - Friend joined', platform: 'GigRider', status: 'completed', timestamp: Date.now() - 86400000 },
-          { id: 'tx-12', type: 'payout', amount: -3200, description: 'Weekly payout to HDFC Bank', platform: 'GigRider', status: 'completed', timestamp: Date.now() - 172800000 },
+          { id: 'tx-11', type: 'referral', amount: 200, description: 'Referral bonus - Rahul joined', platform: 'GigRider', status: 'completed', timestamp: Date.now() - 86400000 },
+          { id: 'tx-12', type: 'referral', amount: 200, description: 'Referral bonus - Priya joined (7-day hold)', platform: 'GigRider', status: 'on_hold', timestamp: Date.now() - 172800000, holdDaysRemaining: 5 },
+          { id: 'tx-13', type: 'referral', amount: 200, description: 'Referral bonus - Amit joined (7-day hold)', platform: 'GigRider', status: 'on_hold', timestamp: Date.now() - 259200000, holdDaysRemaining: 3 },
+          { id: 'tx-14', type: 'payout', amount: -3200, description: 'Weekly payout to HDFC Bank', platform: 'GigRider', status: 'completed', timestamp: Date.now() - 345600000 },
         ],
         bankAccount: 'HDFC Bank ****4523',
         upiId: 'rider@upi',
         payoutSchedule: 'weekly',
         lastPayoutDate: new Date(Date.now() - 172800000).toISOString(),
       },
+
+      // Referral
+      referralCode: 'GIGRIDE200',
+      referralStats: { totalReferred: 5, qualified: 2, earned: 400, pending: 2, onHold: 400 },
+      referrals: [
+        { id: 'ref-1', referrerId: 'me', refereeId: 'r1', refereeName: 'Rahul K.', status: 'paid', referrerBonusAmount: 200, refereeBonusAmount: 100, refereeDeliveriesCompleted: 10, deliveriesRequired: 10, holdDaysRemaining: 0, qualifiedAt: Date.now() - 1209600000, holdEndDate: Date.now() - 604800000, createdAt: Date.now() - 2592000000 },
+        { id: 'ref-2', referrerId: 'me', refereeId: 'r2', refereeName: 'Priya S.', status: 'on_hold', referrerBonusAmount: 200, refereeBonusAmount: 100, refereeDeliveriesCompleted: 10, deliveriesRequired: 10, holdDaysRemaining: 5, qualifiedAt: Date.now() - 172800000, holdEndDate: Date.now() + 259200000, createdAt: Date.now() - 1296000000 },
+        { id: 'ref-3', referrerId: 'me', refereeId: 'r3', refereeName: 'Amit T.', status: 'on_hold', referrerBonusAmount: 200, refereeBonusAmount: 100, refereeDeliveriesCompleted: 10, deliveriesRequired: 10, holdDaysRemaining: 3, qualifiedAt: Date.now() - 345600000, holdEndDate: Date.now() + 172800000, createdAt: Date.now() - 1728000000 },
+        { id: 'ref-4', referrerId: 'me', refereeId: 'r4', refereeName: 'Sneha M.', status: 'pending', referrerBonusAmount: 200, refereeBonusAmount: 100, refereeDeliveriesCompleted: 4, deliveriesRequired: 10, holdDaysRemaining: 0, qualifiedAt: null, holdEndDate: null, createdAt: Date.now() - 432000000 },
+        { id: 'ref-5', referrerId: 'me', refereeId: 'r5', refereeName: 'Vikram D.', status: 'pending', referrerBonusAmount: 200, refereeBonusAmount: 100, refereeDeliveriesCompleted: 7, deliveriesRequired: 10, holdDaysRemaining: 0, qualifiedAt: null, holdEndDate: null, createdAt: Date.now() - 518400000 },
+      ],
+
+      // KYC
+      kyc: DEFAULT_KYC,
 
       // Settings
       settings: DEFAULT_SETTINGS,
@@ -784,14 +864,40 @@ export const useGigRiderStore = create<GigRiderState>()(
         const balanceChange = transaction.type === 'withdrawal' || transaction.type === 'payout'
           ? -Math.abs(transaction.amount)
           : Math.abs(transaction.amount);
+        // Referral bonuses on hold don't add to balance yet
+        const shouldAddToBalance = transaction.status !== 'on_hold';
         return {
           wallet: {
             ...state.wallet,
             transactions: [newTx, ...state.wallet.transactions],
-            balance: state.wallet.balance + balanceChange,
+            balance: shouldAddToBalance ? state.wallet.balance + balanceChange : state.wallet.balance,
+            lockedReferralAmount: transaction.type === 'referral' && transaction.status === 'on_hold'
+              ? state.wallet.lockedReferralAmount + Math.abs(transaction.amount)
+              : state.wallet.lockedReferralAmount,
           },
         };
       }),
+
+      updateReferralStats: (stats) => set((state) => ({
+        referralStats: { ...state.referralStats, ...stats },
+      })),
+
+      addReferral: (referral) => set((state) => ({
+        referrals: [referral, ...state.referrals],
+        referralStats: {
+          ...state.referralStats,
+          totalReferred: state.referralStats.totalReferred + 1,
+          pending: state.referralStats.pending + 1,
+        },
+      })),
+
+      updateReferral: (id, updates) => set((state) => ({
+        referrals: state.referrals.map(r => r.id === id ? { ...r, ...updates } : r),
+      })),
+
+      updateKYC: (partial) => set((state) => ({
+        kyc: { ...state.kyc, ...partial },
+      })),
 
       updateSettings: (partial) => set((state) => ({
         settings: { ...state.settings, ...partial },
@@ -815,12 +921,17 @@ export const useGigRiderStore = create<GigRiderState>()(
         wallet: {
           balance: 0,
           pendingAmount: 0,
+          lockedReferralAmount: 0,
           transactions: [],
           bankAccount: '',
           upiId: '',
           payoutSchedule: 'weekly',
           lastPayoutDate: null,
         },
+        referralCode: '',
+        referralStats: { totalReferred: 0, qualified: 0, earned: 0, pending: 0, onHold: 0 },
+        referrals: [],
+        kyc: DEFAULT_KYC,
         settings: DEFAULT_SETTINGS,
       }),
     }),
@@ -843,6 +954,10 @@ export const useGigRiderStore = create<GigRiderState>()(
         notifications: state.notifications,
         unreadNotificationCount: state.unreadNotificationCount,
         wallet: state.wallet,
+        referralCode: state.referralCode,
+        referralStats: state.referralStats,
+        referrals: state.referrals,
+        kyc: state.kyc,
         settings: state.settings,
       }),
     }

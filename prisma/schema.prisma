@@ -29,6 +29,10 @@ model Rider {
   notifications   Notification[]
   autoAcceptRules AutoAcceptRule[]
   settings        RiderSettings?
+  referralsMade   Referral[]      @relation("ReferralsMade")
+  referralsReceived Referral[]    @relation("ReferralsReceived")
+  deviceFingerprints DeviceFingerprint[]
+  kycVerification KYCVerification?
 }
 
 model RiderPlatform {
@@ -149,4 +153,77 @@ model RiderSettings {
   updatedAt            DateTime @updatedAt
 
   rider                Rider    @relation(fields: [riderId], references: [id], onDelete: Cascade)
+}
+
+// ==================== REFERRAL & FRAUD PREVENTION ====================
+
+model Referral {
+  id                    String   @id @default(cuid())
+  referrerId            String   // Rider who shared the code
+  refereeId             String   // Rider who used the code
+  referralCode          String   // Code used by referee
+  status                String   @default("pending") // pending, qualified, on_hold, paid, rejected, fraud_detected
+  referrerBonusAmount   Int      @default(20000) // in paisa (₹200)
+  refereeBonusAmount    Int      @default(10000) // in paisa (₹100)
+  refereeDeliveriesAtQualify Int  @default(0) // deliveries count when qualified
+  qualifiedAt           DateTime? // When referee completed 10 deliveries
+  holdEndDate           DateTime? // qualifiedAt + 7 days
+  paidAt                DateTime? // When bonus was actually paid
+  fraudFlags            String   @default("[]") // JSON array of fraud flag types
+  riskScore             Int      @default(0) // 0-100
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  referrer              Rider    @relation("ReferralsMade", fields: [referrerId], references: [id], onDelete: Cascade)
+  referee               Rider    @relation("ReferralsReceived", fields: [refereeId], references: [id], onDelete: Cascade)
+}
+
+model DeviceFingerprint {
+  id              String   @id @default(cuid())
+  riderId         String
+  deviceId        String   @unique // Hashed fingerprint - one device per account
+  userAgent       String   @default("")
+  screenResolution String  @default("")
+  timezone        String   @default("")
+  language        String   @default("")
+  platform        String   @default("")
+  canvasHash      String   @default("")
+  webglHash       String   @default("")
+  audioHash       String   @default("")
+  ipAddress       String   @default("")
+  latitude        Float?
+  longitude       Float?
+  createdAt       DateTime @default(now())
+
+  rider           Rider    @relation(fields: [riderId], references: [id], onDelete: Cascade)
+
+  @@index([deviceId])
+  @@index([ipAddress])
+}
+
+model KYCVerification {
+  id              String    @id @default(cuid())
+  riderId         String    @unique
+  aadhaarNumber   String?   // Last 4 digits only stored
+  aadhaarVerified Boolean   @default(false)
+  aadhaarVerifiedAt DateTime?
+  panNumber       String?   // Full PAN stored encrypted in production
+  panVerified     Boolean   @default(false)
+  panVerifiedAt   DateTime?
+  selfieVerified  Boolean   @default(false)
+  selfieVerifiedAt DateTime?
+  livenessPassed  Boolean   @default(false) // Did the selfie liveness check pass
+  bankAccount     String?   // Masked bank account number
+  bankIfsc        String?
+  bankVerified    Boolean   @default(false)
+  bankVerifiedAt  DateTime?
+  bankName        String?   // Bank name from IFSC lookup
+  upiId           String?
+  kycLevel        Int       @default(0) // 0=none, 1=basic(Aadhaar), 2=full(Aadhaar+PAN+Bank+Selfie)
+  overallStatus   String    @default("unverified") // unverified, pending, basic_verified, fully_verified, rejected
+  rejectionReason String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  rider           Rider     @relation(fields: [riderId], references: [id], onDelete: Cascade)
 }

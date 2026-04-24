@@ -22,6 +22,7 @@ import NotificationsScreen from '@/components/gigrider/NotificationsScreen';
 import SettingsScreen from '@/components/gigrider/SettingsScreen';
 import MapScreen from '@/components/gigrider/MapScreen';
 import WalletScreen from '@/components/gigrider/WalletScreen';
+import KYCVerificationScreen from '@/components/gigrider/KYCVerificationScreen';
 import BottomNav, { type ScreenType } from '@/components/gigrider/BottomNav';
 import { useGigRiderStore, type RiderProfile } from '@/lib/store';
 import { useOrderSimulation, useOnlineTimer } from '@/hooks/use-order-simulation';
@@ -119,7 +120,7 @@ export default function Home() {
       case 'activity':
         return <ActivityScreen />;
       case 'profile':
-        return <ProfileScreen onLogout={handleLogout} onOpenSettings={() => setActiveScreen('settings')} />;
+        return <ProfileScreen onLogout={handleLogout} onOpenSettings={() => setActiveScreen('settings')} onOpenKYC={() => setActiveScreen('kyc')} />;
       case 'notifications':
         return <NotificationsScreen onBack={() => setActiveScreen('home')} />;
       case 'settings':
@@ -128,6 +129,8 @@ export default function Home() {
         return <MapScreen onBack={() => setActiveScreen('home')} />;
       case 'wallet':
         return <WalletScreen onBack={() => setActiveScreen('earnings')} />;
+      case 'kyc':
+        return <KYCVerificationScreen onBack={() => setActiveScreen('profile')} />;
       default:
         return <HomeScreen />;
     }
@@ -164,7 +167,7 @@ export default function Home() {
   }
 
   // For settings and map screens, don't show bottom nav (they have their own back buttons)
-  const showBottomNav = activeScreen !== 'settings' && activeScreen !== 'map' && activeScreen !== 'wallet';
+  const showBottomNav = activeScreen !== 'settings' && activeScreen !== 'map' && activeScreen !== 'wallet' && activeScreen !== 'kyc';
 
   // Main app (authenticated)
   return (

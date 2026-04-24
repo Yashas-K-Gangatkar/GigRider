@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { useGigRiderStore } from '@/lib/store';
 
-export type ScreenType = 'home' | 'earnings' | 'platforms' | 'activity' | 'profile' | 'notifications' | 'settings' | 'map' | 'wallet';
+export type ScreenType = 'home' | 'earnings' | 'platforms' | 'activity' | 'profile' | 'notifications' | 'settings' | 'map' | 'wallet' | 'kyc';
 
 interface NavItem {
   id: ScreenType;

@@ -110,7 +110,7 @@ function formatRelativeTime(timestamp: number): string {
 }
 
 // Status badge component
-function StatusBadge({ status }: { status: Transaction['status'] }) {
+function StatusBadge({ status, holdDaysRemaining }: { status: Transaction['status']; holdDaysRemaining?: number }) {
   switch (status) {
     case 'completed':
       return (
@@ -126,6 +126,13 @@ function StatusBadge({ status }: { status: Transaction['status'] }) {
           Pending
         </span>
       );
+    case 'on_hold':
+      return (
+        <span className="inline-flex items-center gap-0.5 text-[8px] font-semibold text-[#1B2A4A] bg-[#1B2A4A]/10 px-1.5 py-0.5 rounded-full">
+          <Shield className="w-2.5 h-2.5" />
+          {holdDaysRemaining ? `${holdDaysRemaining}d hold` : 'On Hold'}
+        </span>
+      );
     case 'failed':
       return (
         <span className="inline-flex items-center gap-0.5 text-[8px] font-semibold text-[#722F37] bg-[#722F37]/10 px-1.5 py-0.5 rounded-full">
@@ -136,7 +143,7 @@ function StatusBadge({ status }: { status: Transaction['status'] }) {
   }
 }
 
-type FilterTab = 'all' | 'income' | 'withdrawals' | 'pending';
+type FilterTab = 'all' | 'income' | 'withdrawals' | 'pending' | 'on_hold';
 
 export default function WalletScreen({
   onBack,
@@ -195,6 +202,8 @@ export default function WalletScreen({
         );
       case 'pending':
         return txs.filter((t) => t.status === 'pending');
+      case 'on_hold':
+        return txs.filter((t) => t.status === 'on_hold');
       default:
         return txs;
     }
@@ -391,7 +400,7 @@ export default function WalletScreen({
             </div>
 
             {/* Balance breakdown */}
-            <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="grid grid-cols-3 gap-2 mb-4">
               <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
                 <p
                   className="text-[9px] text-white/50 tracking-wider uppercase mb-0.5"
@@ -419,11 +428,25 @@ export default function WalletScreen({
                 >
                   ₹{pendingSettlement.toLocaleString()}
                 </p>
+              </div>
+              <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
                 <p
-                  className="text-[8px] text-white/40 mt-0.5"
+                  className="text-[9px] text-white/50 tracking-wider uppercase mb-0.5"
                   style={{ fontFamily: 'var(--font-lora), serif' }}
                 >
-                  Settlement in progress
+                  On Hold
+                </p>
+                <p
+                  className="text-lg font-bold text-[#1B2A4A]"
+                  style={{ fontFamily: 'var(--font-playfair), serif' }}
+                >
+                  ₹{wallet.lockedReferralAmount.toLocaleString()}
+                </p>
+                <p
+                  className="text-[7px] text-white/40 mt-0.5"
+                  style={{ fontFamily: 'var(--font-lora), serif' }}
+                >
+                  7-day fraud hold
                 </p>
               </div>
             </div>
@@ -588,6 +611,7 @@ export default function WalletScreen({
                   { id: 'income', label: 'Income' },
                   { id: 'withdrawals', label: 'Withdrawals' },
                   { id: 'pending', label: 'Pending' },
+                  { id: 'on_hold', label: 'On Hold' },
                 ] as const
               ).map((tab) => (
                 <button
@@ -687,7 +711,7 @@ export default function WalletScreen({
                               {isIncome ? '+' : '-'}₹
                               {Math.abs(tx.amount).toLocaleString()}
                             </p>
-                            <StatusBadge status={tx.status} />
+                            <StatusBadge status={tx.status} holdDaysRemaining={tx.holdDaysRemaining} />
                           </div>
                           {isExpanded ? (
                             <ChevronUp className="w-3.5 h-3.5 text-[#7A7168]" />
@@ -790,6 +814,25 @@ export default function WalletScreen({
                                   {tx.id}
                                 </p>
                               </div>
+                              {tx.status === 'on_hold' && tx.holdDaysRemaining && (
+                                <div className="col-span-2 mt-1 p-2 bg-[#1B2A4A]/5 rounded-lg border border-[#1B2A4A]/10">
+                                  <div className="flex items-center gap-1.5">
+                                    <Shield className="w-3 h-3 text-[#1B2A4A]/60" />
+                                    <p
+                                      className="text-[9px] text-[#1B2A4A]/70 font-semibold"
+                                      style={{ fontFamily: 'var(--font-lora), serif' }}
+                                    >
+                                      Referral bonus on {tx.holdDaysRemaining}-day fraud hold
+                                    </p>
+                                  </div>
+                                  <p
+                                    className="text-[8px] text-[#7A7168] mt-0.5 ml-[18px]"
+                                    style={{ fontFamily: 'var(--font-lora), serif' }}
+                                  >
+                                    Bonus unlocks after hold period to verify genuine referrals
+                                  </p>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </motion.div>
