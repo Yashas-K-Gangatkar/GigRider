@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SignJWT } from 'jose';
+import { createHash } from 'crypto';
 
-// In production, use Twilio/MSG91 to send real OTPs
-// For now, we generate an OTP and store it in a temporary map
-const otpStore = new Map<string, { otp: string; expires: number }>();
+// Hash the OTP so it's not stored in plain text in the JWT
+function hashOtp(otp: string): string {
+  return createHash('sha256').update(otp + '-gigrider-otp-salt').digest('hex');
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,17 +18,19 @@ export async function POST(req: NextRequest) {
     // Generate 6-digit OTP
     const otp = String(Math.floor(100000 + Math.random() * 900000));
 
-    // Store OTP with 5-minute expiry
-    otpStore.set(phone, { otp, expires: Date.now() + 5 * 60 * 1000 });
-
     // In production: Send via Twilio/MSG91
     // await twilio.messages.create({ to: phone, body: `Your GigRider OTP is ${otp}` });
 
     console.log(`[GigRider Auth] OTP for ${phone}: ${otp}`);
 
-    // Generate a temporary token for OTP verification
+    // Generate a temporary token that CONTAINS the hashed OTP
+    // This way verify-otp doesn't need any shared state
     const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET || 'gigrider-dev-secret');
-    const verifyToken = await new SignJWT({ phone, purpose: 'otp-verify' })
+    const verifyToken = await new SignJWT({
+      phone,
+      purpose: 'otp-verify',
+      otpHash: hashOtp(otp),
+    })
       .setProtectedHeader({ alg: 'HS256' })
       .setExpirationTime('5m')
       .sign(secret);
@@ -44,4 +48,4 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export { otpStore };
+export { hashOtp };
