@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify, SignJWT } from 'jose';
 import { hashOtp } from '../send-otp/route';
-import { prisma } from '@/lib/db';
+
+// Dynamic Prisma import — won't crash the route if DB isn't set up yet
+async function getPrisma() {
+  try {
+    const { prisma } = await import('@/lib/db');
+    return prisma;
+  } catch {
+    console.warn('[GigRider] Prisma client not available — running in demo mode. Run: npx prisma generate && npx prisma db push');
+    return null;
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,10 +31,10 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Invalid token purpose' }, { status: 401 });
       }
     } catch {
-      return NextResponse.json({ error: 'Invalid or expired verification token' }, { status: 401 });
+      return NextResponse.json({ error: 'Invalid or expired verification token. Please resend OTP and try again.' }, { status: 401 });
     }
 
-    // Verify OTP by comparing hashes (no shared state needed!)
+    // Verify OTP by comparing hashes
     const storedOtpHash = tokenPayload.otpHash as string | undefined;
     const inputOtpHash = hashOtp(otp);
 
@@ -37,42 +47,47 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Phone number mismatch' }, { status: 401 });
     }
 
-    // Find or create rider
+    // Find or create rider — gracefully handles missing database
+    const prisma = await getPrisma();
     let rider;
-    try {
-      rider = await prisma.rider.findUnique({
-        where: { phone },
-      });
-    } catch (dbError) {
-      console.warn('Database unavailable, creating demo rider:', dbError);
+
+    if (prisma) {
+      try {
+        rider = await prisma.rider.findUnique({ where: { phone } });
+      } catch (dbError) {
+        console.warn('[GigRider] DB read failed:', dbError);
+      }
+
+      if (!rider) {
+        try {
+          rider = await prisma.rider.create({
+            data: {
+              phone,
+              name: name || `Rider ${phone.slice(-4)}`,
+              vehicleType: vehicleType || 'bicycle',
+            },
+          });
+        } catch (dbError) {
+          console.warn('[GigRider] DB create failed:', dbError);
+        }
+      }
     }
 
+    // Fallback demo rider if database is unavailable
     if (!rider) {
-      try {
-        rider = await prisma.rider.create({
-          data: {
-            phone,
-            name: name || `Rider ${phone.slice(-4)}`,
-            vehicleType: vehicleType || 'bicycle',
-          },
-        });
-      } catch (dbError) {
-        console.warn('Database create failed, using demo rider:', dbError);
-        // Fallback: create a demo rider object
-        rider = {
-          id: `demo-${Date.now()}`,
-          phone,
-          name: name || `Rider ${phone.slice(-4)}`,
-          email: null,
-          vehicleType: vehicleType || 'bicycle',
-          rating: 4.5,
-          tier: 'free',
-          totalDeliveries: 0,
-          totalEarnings: 0,
-          isOnline: false,
-          mpgcsScore: 50,
-        };
-      }
+      rider = {
+        id: `demo-${Date.now()}`,
+        phone,
+        name: name || `Rider ${phone.slice(-4)}`,
+        email: null,
+        vehicleType: vehicleType || 'bicycle',
+        rating: 4.5,
+        tier: 'free',
+        totalDeliveries: 0,
+        totalEarnings: 0,
+        isOnline: false,
+        mpgcsScore: 50,
+      };
     }
 
     // Generate session token
@@ -104,6 +119,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error('OTP verification error:', error);
-    return NextResponse.json({ error: 'Verification failed' }, { status: 500 });
+    return NextResponse.json({ error: 'Verification failed. Please try again.' }, { status: 500 });
   }
 }
